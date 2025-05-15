@@ -1,0 +1,265 @@
+<?php $Auth = $this->session->userdata['username']; ?>
+<style>
+table.dataTable thead>tr>th.sorting,
+table.dataTable thead>tr>th.sorting_asc,
+table.dataTable thead>tr>th.sorting_desc,
+table.dataTable thead>tr>th.sorting_asc_disabled,
+table.dataTable thead>tr>th.sorting_desc_disabled,
+table.dataTable thead>tr>td.sorting,
+table.dataTable thead>tr>td.sorting_asc,
+table.dataTable thead>tr>td.sorting_desc,
+table.dataTable thead>tr>td.sorting_asc_disabled,
+table.dataTable thead>tr>td.sorting_desc_disabled {
+    cursor: pointer;
+    position: relative;
+    /* padding-right: 26px; */
+    padding: 30px;
+}
+</style>
+<div class="card w-100 bg-info-subtle shadow-none position-relative overflow-hidden mb-4">
+    <div class="card-body px-4 py-3">
+        <div class="row align-items-center">
+            <div class="col-9">
+                <h4 class="fw-semibold mb-8">Agenda Managements</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a class="text-muted text-decoration-none" href="./">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item" aria-current="page">Agenda</li>
+                        <li class="breadcrumb-item" aria-current="page">Agenda Management</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-3">
+                <div class="text-center mb-n5">
+                    <img src="<?php echo base_url(); ?>dist/images/backgrounds/welcome-bg.svg" alt=""
+                        class="img-fluid mb-n4" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="tambah_nomor">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Tambah Pegawai</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="<?= base_url('broadcast/create_group'); ?>" id="submitFormGroup" method="POST">
+                    <div class="mb-3 mt-3">
+                        <label for="email" class="form-label">Nama</label>
+                        <input type="text" class="form-control" name="group" required>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" name="simpan" class="btn btn-primary" id="addGroupButton">Simpan</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<?php
+$check_data = 1;
+// $check_data = $this->db->get_where('broadcast', array('id' => $Auth['email']))->num_rows();
+if ($check_data <= 0): ?>
+<div class="card text-center">
+    <div class="card-body">
+        <h2> Management</h2>
+        <br>
+        <br>
+        <img src="<?php echo base_url('assets/wabot.png') ?>" width="260px" alt="">
+        <br>
+        <br>
+        <br>
+
+    </div>
+
+</div>
+<?php else: ?>
+
+<style>
+.table-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.table-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-icon {
+    width: 1.5rem;
+    text-align: center;
+    color: #198754;
+}
+
+.agenda-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.pagination {
+    font-size: 1.2rem;
+}
+
+.pagination .page-item .page-link {
+    border-radius: 12px;
+    margin: 0 4px;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #e2f0e9;
+    color: #198754;
+    border-color: #198754;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+</style>
+<?php if ($this->session->flashdata('success')): ?>
+<div class="alert alert-success">
+    <?= $this->session->flashdata('success'); ?>
+</div>
+<?php endif; ?>
+
+<?php if ($this->session->flashdata('error')): ?>
+<div class="alert alert-danger">
+    <?= $this->session->flashdata('error'); ?>
+</div>
+<?php endif; ?>
+
+<div class="card w-100 position-relative overflow-hidden">
+    <div class="px-4 pt-4 card-header" nowrap="">
+        <div style="float: right;">
+            <a href="<?php echo base_url('agenda/agenda/add'); ?>" class="btn btn-outline-primary btn-lg rounded-end"
+                style="border-radius: 3px !important;">
+                <i class="ti ti-users"></i> &nbsp Tambah Agenda
+            </a>
+
+            <button id="actionGroup" type="button" class="btn btn-outline-primary btn-lg rounded-end dropdown-toggle"
+                style="border-radius: 3px !important;" data-bs-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                <i class="ti ti-list-details"></i> Action
+            </button>
+            <div class="dropdown-menu" aria-labelledby="actionGroup" style="">
+                <a class="dropdown-item" href="#" id="sendToServerButton">Delete</a>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-4">
+        <?php 
+            $no=1;
+            $per_page = 5;
+            $page = (int) $this->input->get('page', TRUE);
+            $page = ($page < 1) ? 1 : $page;
+            $offset = ($page - 1) * $per_page;
+
+            // Hitung total data
+            $total_data = $this->db->count_all('master_agenda');
+            $total_page = ceil($total_data / $per_page);
+
+            // Ambil data dengan limit
+            $this->db->limit($per_page, $offset);
+            $result = $this->db->order_by('tanggal', 'DESC')->get("master_agenda")->result_array();
+            foreach ($result as $data) :
+        ?>
+        <div class="table-card">
+            <div class="row">
+                <div class="col-md-10">
+                    <div class="agenda-title mb-1">
+                        <i class="bi bi-pin-angle-fill text-success me-2"></i><?php echo $data['judul']; ?>
+                    </div>
+                    <div>
+                        <i class="bi bi-calendar-event table-icon"></i>
+                        <?php echo format_tanggal($data['tanggal']); ?>
+                    </div>
+                    <div>
+                        <i class="bi bi-clock table-icon"></i>
+                        Jam: <?php echo date('H:i', strtotime($data['jam_mulai'])); ?> -
+                        <?php echo date('H:i', strtotime($data['jam_selesai'])); ?>
+                    </div>
+                    <div>
+                        <i class="bi bi-geo-alt table-icon"></i>
+                        Lokasi: <?php echo $data['lokasi']; ?>
+                    </div>
+                    <div>
+                        <i class="bi bi-info-circle table-icon"></i>
+                        Keterangan: <?php echo $data['keterangan']; ?>
+                    </div>
+                </div>
+                <div class="col-md-2 text-end">
+                    <form method="POST" action="<?php echo base_url('agenda/agenda'); ?>"
+                        onsubmit="return confirm('Apakah anda yakin ingin menghapus?');">
+                       
+                        <a class="btn btn-outline-success mb-1"
+                            href="<?php echo base_url('show_form_participant/'.$data['id']); ?>">
+                            <i class="bi bi-eye"></i>
+                        </a><br>
+                         <a class="btn btn-outline-primary mb-1"
+                            href="<?php echo base_url('agenda/agenda/add/'.$data['id']); ?>">
+                            <i class="bi bi-pencil-square"></i>
+                        </a> <br>
+                        <input type="hidden" name="id" value="<?php echo $data['id'] ?>">
+                        <button class="btn btn-outline-danger" name="hapus" type="submit">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <?php if ($page > 1): ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $total_page; $i++): ?>
+                <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                    <a class="page-link" href="?page=<?php echo $i ?>"><?php echo $i ?></a>
+                </li>
+                <?php endfor; ?>
+
+                <?php if ($page < $total_page): ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+
+    </div>
+
+</div>
+<?php endif; ?>
+<script>
+var table = $('#DataBroadcast').DataTable({});
+</script>
