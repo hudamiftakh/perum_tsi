@@ -95,6 +95,13 @@ class dashboard extends CI_Controller
 		$this->load->view('modul', $data);
 	}
 
+	public function show_participant()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/show_participant';
+		$this->load->view('modul', $data);
+	}
+
 	public function show_form_participant()
 	{
 		$this->load->view('dashboard/show_form_participant');

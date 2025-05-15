@@ -1,21 +1,8 @@
-<?php $Auth = $this->session->userdata['username']; ?>
-<style>
-table.dataTable thead>tr>th.sorting,
-table.dataTable thead>tr>th.sorting_asc,
-table.dataTable thead>tr>th.sorting_desc,
-table.dataTable thead>tr>th.sorting_asc_disabled,
-table.dataTable thead>tr>th.sorting_desc_disabled,
-table.dataTable thead>tr>td.sorting,
-table.dataTable thead>tr>td.sorting_asc,
-table.dataTable thead>tr>td.sorting_desc,
-table.dataTable thead>tr>td.sorting_asc_disabled,
-table.dataTable thead>tr>td.sorting_desc_disabled {
-    cursor: pointer;
-    position: relative;
-    /* padding-right: 26px; */
-    padding: 30px;
-}
-</style>
+<?php
+$Auth = $this->session->userdata['username']; 
+$this->load->library('encryption');
+?>
+
 <div class="card w-100 bg-info-subtle shadow-none position-relative overflow-hidden mb-4">
     <div class="card-body px-4 py-3">
         <div class="row align-items-center">
@@ -135,7 +122,33 @@ if ($check_data <= 0): ?>
     font-weight: 600;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
+
+.card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: scale(1.01);
+    transition: all 0.3s ease;
+}
+
+.btn-outline-teal {
+    color: #20c997;
+    border-color: #20c997;
+}
+
+.btn-outline-teal:hover {
+    background-color: #20c997;
+    color: white;
+}
+
+.rounded-4 {
+    border-radius: 1.25rem !important;
+}
+
+.btn .badge {
+    font-size: 0.65rem;
+    padding: 0.3em 0.45em;
+}
 </style>
+
 <?php if ($this->session->flashdata('success')): ?>
 <div class="alert alert-success">
     <?= $this->session->flashdata('success'); ?>
@@ -183,52 +196,79 @@ if ($check_data <= 0): ?>
             $result = $this->db->order_by('tanggal', 'DESC')->get("master_agenda")->result_array();
             foreach ($result as $data) :
         ?>
-        <div class="table-card">
+        <div class="table-card shadow-sm p-3 rounded-3 border mb-3">
             <div class="row">
                 <div class="col-md-10">
-                    <div class="agenda-title mb-1">
-                        <i class="bi bi-pin-angle-fill text-success me-2"></i><?php echo $data['judul']; ?>
-                    </div>
-                    <div>
-                        <i class="bi bi-calendar-event table-icon"></i>
+                     <h4 class="fw-bold text-success mb-3">
+                        <i class="bi bi-pin-angle-fill me-2"></i><?php echo $data['judul']; ?>
+                    </h4>
+
+                    <div class="mb-1 text-muted">
+                        <i class="bi bi-calendar-event me-2 text-primary"></i>
                         <?php echo format_tanggal($data['tanggal']); ?>
                     </div>
-                    <div>
-                        <i class="bi bi-clock table-icon"></i>
+
+                    <div class="mb-1 text-muted">
+                        <i class="bi bi-clock me-2 text-warning"></i>
                         Jam: <?php echo date('H:i', strtotime($data['jam_mulai'])); ?> -
                         <?php echo date('H:i', strtotime($data['jam_selesai'])); ?>
                     </div>
-                    <div>
-                        <i class="bi bi-geo-alt table-icon"></i>
+
+                    <div class="mb-1 text-muted">
+                        <i class="bi bi-geo-alt me-2 text-danger"></i>
                         Lokasi: <?php echo $data['lokasi']; ?>
                     </div>
-                    <div>
-                        <i class="bi bi-info-circle table-icon"></i>
+
+                    <div class="mb-2 text-muted">
+                        <i class="bi bi-info-circle me-2 text-secondary"></i>
                         Keterangan: <?php echo $data['keterangan']; ?>
                     </div>
+
+                    <!-- Jumlah Hadir -->
+                    <div class="mt-2">
+                        <span class="badge bg-danger rounded-pill px-3 py-2 fs-2">
+                            <i class="bi bi-people-fill me-1"></i>
+                            <?php echo $data['jumlah_hadir']; ?> 10 Peserta Hadir
+                        </span>
+                    </div>
                 </div>
-                <div class="col-md-2 text-end">
-                    <form method="POST" action="<?php echo base_url('agenda/agenda'); ?>"
-                        onsubmit="return confirm('Apakah anda yakin ingin menghapus?');">
-                       
-                        <a class="btn btn-outline-success mb-1"
-                            href="<?php echo base_url('show_form_participant/'.$data['id']); ?>">
+                <div class="col-md-2 mt-3 mt-md-0">
+                    <div class="d-flex flex-md-column flex-row flex-wrap gap-2 justify-content-md-end justify-content-center">
+                        <!-- Tombol 1 -->
+                         <?php 
+                        $id = $data['id'];
+                        $CI =& get_instance();
+                        $CI->load->library('encryption');
+                        $encrypted = $CI->encryption->encrypt($id);
+                        $url_safe = strtr($encrypted, ['+' => '-', '/' => '_', '=' => '~']);
+                        ?>
+                        <a class="btn btn-outline-success" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">
                             <i class="bi bi-eye"></i>
-                        </a><br>
-                         <a class="btn btn-outline-primary mb-1"
-                            href="<?php echo base_url('agenda/agenda/add/'.$data['id']); ?>">
+                        </a>
+
+                        <!-- Tombol 2 -->
+                        <a class="btn btn-outline-success" href="<?php echo base_url('agenda/show_participant/'.$url_safe); ?>">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </a>
+
+                        <!-- Tombol 3 -->
+                        <a class="btn btn-outline-primary" href="<?php echo base_url('agenda/agenda/add/'.$data['id']); ?>">
                             <i class="bi bi-pencil-square"></i>
-                        </a> <br>
-                        <input type="hidden" name="id" value="<?php echo $data['id'] ?>">
-                        <button class="btn btn-outline-danger" name="hapus" type="submit">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
+                        </a>
 
-
+                        <!-- Tombol Delete -->
+                        <form method="POST" action="<?php echo base_url('agenda/agenda'); ?>"
+                            onsubmit="return confirm('Apakah anda yakin ingin menghapus?');">
+                            <input type="hidden" name="id" value="<?php echo $data['id']; ?>">
+                            <button class="btn btn-outline-danger" style="width: 100%;" name="hapus" type="submit">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
         <?php endforeach; ?>
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
