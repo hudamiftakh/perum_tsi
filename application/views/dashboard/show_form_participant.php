@@ -8,14 +8,16 @@
     <link href="<?php echo base_url(); ?>dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-    html, body {
+    html,
+    body {
         height: 100%;
         margin: 0;
         padding: 0;
     }
 
     body {
-        background-color: #d4edda; /* Hijau pastel */
+        background-color: #d4edda;
+        /* Hijau pastel */
         font-family: 'Segoe UI', sans-serif;
         display: flex;
         align-items: center;
@@ -69,12 +71,12 @@
             padding: 20px 15px;
         }
     }
-</style>
+    </style>
 
 </head>
 
 <body>
-    
+
     <?php 
         $CI =& get_instance();
         $CI->load->library('encryption');
@@ -127,7 +129,13 @@
         }
 
     ?>
-    <div style="min-height: 10vh; display: flex; align-items: center; justify-content: center; background-color: #d4edda;">
+    <style>
+    #signature {
+        touch-action: none;
+    }
+    </style>
+    <div
+        style="min-height: 10vh; display: flex; align-items: center; justify-content: center; background-color: #d4edda;">
         <div class="wrapper">
             <div class="form-container">
                 <div class="text-center mb-3">
@@ -169,28 +177,59 @@
         const ctx = canvas.getContext('2d');
         let drawing = false;
 
-        canvas.addEventListener('mousedown', () => drawing = true);
-        canvas.addEventListener('mouseup', () => {
+        function getPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            if (e.touches) {
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            } else {
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+        }
+
+        function startDraw(e) {
+            drawing = true;
+            const pos = getPosition(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault(); // mencegah scrolling saat menggambar
+        }
+
+        function endDraw(e) {
             drawing = false;
             ctx.beginPath();
-        });
-        canvas.addEventListener('mouseout', () => {
-            drawing = false;
-            ctx.beginPath();
-        });
-        canvas.addEventListener('mousemove', draw);
+            e.preventDefault();
+        }
 
         function draw(e) {
             if (!drawing) return;
-            const rect = canvas.getBoundingClientRect();
+            const pos = getPosition(e);
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#000';
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
         }
+
+        // Mouse events
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mouseout', endDraw);
+        canvas.addEventListener('mousemove', draw);
+
+        // Touch events
+        canvas.addEventListener('touchstart', startDraw);
+        canvas.addEventListener('touchend', endDraw);
+        canvas.addEventListener('touchcancel', endDraw);
+        canvas.addEventListener('touchmove', draw);
 
         function clearSignature() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -203,6 +242,7 @@
             return true;
         }
         </script>
+
 
 </body>
 
