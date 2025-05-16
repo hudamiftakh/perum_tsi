@@ -98,6 +98,25 @@ class dashboard extends CI_Controller
 	public function show_participant()
 	{
 		$this->checkSession();
+		$id = $this->input->post('id');
+		if (isset($id)) {
+       		$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
+			if (is_numeric($id)) {
+				$id = (int) $id;
+				$this->db->where('id', $id);
+				$this->db->delete('master_partisipant');
+
+				if ($this->db->affected_rows() > 0) {
+					$this->session->set_flashdata('success', 'Agenda berhasil dihapus.');
+				} else {
+					$this->session->set_flashdata('error', 'Gagal menghapus agenda.');
+				}
+			} else {
+				$this->session->set_flashdata('error', 'ID tidak valid.');
+			}
+
+			redirect(current_url()); // Refresh halaman agar tidak submit ulang
+		}
 		$data['halaman'] = 'dashboard/show_participant';
 		$this->load->view('modul', $data);
 	}

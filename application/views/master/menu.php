@@ -36,7 +36,7 @@
                         <span class="hide-menu">Agenda</span>
                     </a>
                 </li>
-                <li class="sidebar-item">
+                <!-- <li class="sidebar-item">
                     <a href="<?php echo base_url('agenda/report_agenda') ?>"
                         class="sidebar-link <?php echo (in_array($submenu, array('report_agenda'))) ? 'active' : ''; ?>">
                         <div class="round-16 d-flex align-items-center justify-content-center">
@@ -44,7 +44,7 @@
                         </div>
                         <span class="hide-menu">Report Agenda</span>
                     </a>
-                </li>
+                </li> -->
             </ul>
         </li>
         <?php endif; ?>

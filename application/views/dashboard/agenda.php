@@ -51,7 +51,6 @@ $this->load->library('encryption');
 </div>
 <?php
 $check_data = 1;
-// $check_data = $this->db->get_where('broadcast', array('id' => $Auth['email']))->num_rows();
 if ($check_data <= 0): ?>
 <div class="card text-center">
     <div class="card-body">
@@ -195,12 +194,13 @@ if ($check_data <= 0): ?>
             $this->db->limit($per_page, $offset);
             $result = $this->db->order_by('tanggal', 'DESC')->get("master_agenda")->result_array();
             foreach ($result as $data) :
+                $data['jumlah_hadir'] = $this->db->query("SELECT * FROM master_partisipant WHERE agenda_id='".$data['id']."'")->num_rows();
         ?>
         <div class="table-card shadow-sm p-3 rounded-3 border mb-3">
             <div class="row">
                 <div class="col-md-10">
-                     <h4 class="fw-bold text-success mb-3">
-                        <i class="bi bi-pin-angle-fill me-2"></i><?php echo $data['judul']; ?>
+                    <h4 class="fw-bold text-success mb-3 agenda-title">
+                         <span class="agenda-number"><?= $no++ ?>.</span> <i class="bi bi-pin-angle-fill me-2"></i><?php echo $data['judul']; ?>
                     </h4>
 
                     <div class="mb-1 text-muted">
@@ -228,7 +228,7 @@ if ($check_data <= 0): ?>
                     <div class="mt-2">
                         <span class="badge bg-danger rounded-pill px-3 py-2 fs-2">
                             <i class="bi bi-people-fill me-1"></i>
-                            <?php echo $data['jumlah_hadir']; ?> 10 Peserta Hadir
+                            <?php echo $data['jumlah_hadir']; ?> Peserta Hadir
                         </span>
                     </div>
                 </div>

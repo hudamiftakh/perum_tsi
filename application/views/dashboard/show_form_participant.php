@@ -6,16 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Hadir - Jotform Style</title>
     <link href="<?php echo base_url(); ?>dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
     body {
-        background-color: #f4f6f8;
+        background-color: #d4edda; /* Hijau pastel */
         font-family: 'Segoe UI', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
 
     .form-container {
         max-width: 600px;
-        margin: 40px auto;
+        width: 100%;
         background: white;
         border: 2px solid #dee2e6;
         border-radius: 12px;
@@ -59,10 +69,12 @@
             padding: 20px 15px;
         }
     }
-    </style>
+</style>
+
 </head>
 
 <body>
+    
     <?php 
         $CI =& get_instance();
         $CI->load->library('encryption');
@@ -86,26 +98,43 @@
             $result = $this->db->insert('master_partisipant', $data);
             $current_url = $_SERVER['REQUEST_URI'];
             if ($result) {
-                echo '<div class="alert alert-success mt-3">✅ Data berhasil disimpan!</div>';
-                echo '<meta http-equiv="refresh" content="2;url=' . htmlspecialchars($current_url) . '">';
+                echo "
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Data kehadiran berhasil disimpan.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '" . htmlspecialchars($current_url) . "';
+                    });
+                </script>";
             } else {
-                echo '<div class="alert alert-danger mt-3">❌ Gagal menyimpan data!</div>';
-                echo '<meta http-equiv="refresh" content="2;url=' . htmlspecialchars($current_url) . '">';
+                echo "
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Data gagal disimpan. Silakan coba lagi.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '" . htmlspecialchars($current_url) . "';
+                    });
+                </script>";
             }
         }
 
     ?>
-    <div class="container">
-        <div class="form-container">
-            <!-- <h2 class="form-title text-center">Form Daftar Hadir</h2>
-            <h3 class="form-title text-center mb-3">Deskripsi Rapat</h3>
-            <p class="text-center text-muted mb-4">
-                Form ini digunakan untuk mencatat kehadiran peserta dalam rapat yang diselenggarakan.
-                Mohon lengkapi informasi dengan benar, termasuk tanda tangan digital sebagai bukti keikutsertaan.
-            </p> -->
+    <div style="min-height: 10vh; display: flex; align-items: center; justify-content: center; background-color: #d4edda;">
+        <div class="wrapper">
+            <div class="form-container">
+                <div class="text-center mb-3">
+                    <img src="<?php echo base_url(); ?>logo_2-removebg-preview.png" alt="Logo"
+                        style="width: 90px; height: auto;">
+                </div>
 
-            <div class="card-body">
-                <!-- Judul dan Tanggal Rapat -->
                 <div class="text-center mb-4">
                     <h5 class="fw-semibold mb-1">Daftar Hadir <?php echo $result_agenda['judul']; ?></h5>
                     <small class="text-muted"><?php echo format_tanggal($result_agenda['tanggal']); ?></small>
@@ -130,7 +159,6 @@
                     </div>
 
                     <input type="hidden" name="ttd" id="ttd">
-
                     <button type="submit" name="simpan" class="btn btn-primary w-100">Kirim Kehadiran</button>
                 </form>
             </div>
