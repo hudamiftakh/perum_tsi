@@ -210,6 +210,15 @@ if ($check_data <= 0): ?>
         line-height: 1.4;
     }
 
+    #pdfArea img.signature {
+        max-height: 40px;
+        /* atur tinggi maksimum */
+        max-width: 100px;
+        /* atur lebar maksimum */
+        object-fit: contain;
+        /* menjaga proporsi gambar */
+    }
+
     /* Tambahan opsional: rapikan margin print */
     @media print {
         body {
@@ -218,7 +227,6 @@ if ($check_data <= 0): ?>
     }
     </style>
     <div class="header">
-        <img src="<?php echo base_url(); ?>logo_2-removebg-preview.png" alt="Logo" class="logo">
         <h2>DAFTAR HADIR RAPAT BULANAN</h2>
     </div>
 
@@ -248,7 +256,7 @@ if ($check_data <= 0): ?>
             <tr>
                 <td><?= $no++ ?></td>
                 <td style="text-align: left;"><?= strtoupper($row['nama']) ?></td>
-                <td><img src="<?= $row['ttd_base64'] ?>" alt="TTD"></td>
+                <td><img src="<?= $row['ttd_base64'] ?>" class="signature" alt="TTD"></td>
                 <td><?= format_tanggal_jam($row['hadir_pada']); ?></td>
             </tr>
             <?php endforeach; ?>
@@ -265,26 +273,13 @@ function downloadPDF() {
     element.style.display = 'block';
 
     const opt = {
-        margin: [0.5, 0.5, 0.7, 0.5], // Atas, kanan, bawah, kiri (dalam inch)
-        filename: 'daftar_hadir_rapat.pdf',
-        image: {
-            type: 'jpeg',
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2,
-            scrollY: 0
-        },
-        jsPDF: {
-            unit: 'in',
-            format: 'a4',
-            orientation: 'portrait'
-        },
-        pagebreak: {
-            mode: ['avoid-all', 'css', 'legacy']
-        }
+        margin: [0.3, 0.3, 0.3, 0.3], // kecilkan margin biar tidak terpotong
+        filename: 'daftar_hadir.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, scrollY: 0 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
-
     html2pdf().from(element).set(opt).save().then(() => {
         element.style.display = 'none';
     });
