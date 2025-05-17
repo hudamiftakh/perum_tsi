@@ -153,7 +153,7 @@
                     <small class="text-muted"><?php echo format_tanggal($result_agenda['tanggal']); ?></small>
                 </div>
 
-                <form method="POST" action="" onsubmit="return prepareSignature()">
+                <form method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>" onsubmit="return prepareSignature()">
                     <div class="mb-4">
                         <label for="nama" class="form-label">Nama Lengkap</label>
                         <input type="text" class="form-control" id="nama" name="nama"
