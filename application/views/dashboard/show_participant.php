@@ -214,7 +214,7 @@ if ($check_data <= 0): ?>
                 <td><?= $no++ ?></td>
                 <td><?= strtoupper($row['nama']) ?></td>
                 <td><img src="<?= $row['ttd_base64'] ?>" alt="TTD"></td>
-                <td><?= format_tanggal($row['hadir_pada']); ?></td>
+                <td><?= format_tanggal_jam($row['hadir_pada']); ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

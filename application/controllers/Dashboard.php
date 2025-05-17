@@ -107,9 +107,9 @@ class dashboard extends CI_Controller
 				$this->db->delete('master_partisipant');
 
 				if ($this->db->affected_rows() > 0) {
-					$this->session->set_flashdata('success', 'Agenda berhasil dihapus.');
+					$this->session->set_flashdata('success', 'participants berhasil dihapus.');
 				} else {
-					$this->session->set_flashdata('error', 'Gagal menghapus agenda.');
+					$this->session->set_flashdata('error', 'Gagal menghapus participants.');
 				}
 			} else {
 				$this->session->set_flashdata('error', 'ID tidak valid.');
