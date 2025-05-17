@@ -130,8 +130,13 @@
 
     ?>
     <style>
-    #signature {
+    canvas {
+        width: 100% !important;
+        height: auto;
+        background: #fff;
+        border-radius: 6px;
         touch-action: none;
+        /* Cegah zoom atau scroll saat sentuh canvas */
     }
     </style>
     <div
@@ -158,7 +163,7 @@
                     <div class="mb-4">
                         <label class="form-label">Tanda Tangan Digital</label>
                         <div class="signature-box">
-                            <canvas id="signature" width="700" height="250"></canvas>
+                            <canvas id="signature" width="700" height="400"></canvas>
                         </div>
                         <div class="mt-2 text-end">
                             <button type="button" class="btn btn-outline-secondary btn-sm btn-clear"
@@ -177,9 +182,19 @@
         const ctx = canvas.getContext('2d');
         let drawing = false;
 
+        // Ukuran canvas otomatis mengikuti container
+        function resizeCanvas() {
+            const containerWidth = canvas.parentElement.offsetWidth;
+            canvas.width = containerWidth;
+            canvas.height = 400; // Tinggi diperbesar agar lebih nyaman di HP
+        }
+
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
         function getPosition(e) {
             const rect = canvas.getBoundingClientRect();
-            if (e.touches) {
+            if (e.touches && e.touches.length > 0) {
                 return {
                     x: e.touches[0].clientX - rect.left,
                     y: e.touches[0].clientY - rect.top
@@ -197,12 +212,6 @@
             const pos = getPosition(e);
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
-            e.preventDefault(); // mencegah scrolling saat menggambar
-        }
-
-        function endDraw(e) {
-            drawing = false;
-            ctx.beginPath();
             e.preventDefault();
         }
 
@@ -214,22 +223,36 @@
             ctx.strokeStyle = '#000';
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            ctx.moveTo(pos.x, pos.y); // Jangan panggil beginPath lagi
             e.preventDefault();
         }
 
-        // Mouse events
+        function endDraw(e) {
+            if (!drawing) return;
+            drawing = false;
+            e.preventDefault();
+            ctx.closePath();
+        }
+
+        // Event mouse
         canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseout', endDraw);
-        canvas.addEventListener('mousemove', draw);
 
-        // Touch events
-        canvas.addEventListener('touchstart', startDraw);
-        canvas.addEventListener('touchend', endDraw);
-        canvas.addEventListener('touchcancel', endDraw);
-        canvas.addEventListener('touchmove', draw);
+        // Event sentuhan (HP/tablet)
+        canvas.addEventListener('touchstart', startDraw, {
+            passive: false
+        });
+        canvas.addEventListener('touchmove', draw, {
+            passive: false
+        });
+        canvas.addEventListener('touchend', endDraw, {
+            passive: false
+        });
+        canvas.addEventListener('touchcancel', endDraw, {
+            passive: false
+        });
 
         function clearSignature() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -238,10 +261,11 @@
 
         function prepareSignature() {
             const ttdInput = document.getElementById('ttd');
-            ttdInput.value = canvas.toDataURL();
+            ttdInput.value = canvas.toDataURL('image/png');
             return true;
         }
         </script>
+
 
 
 </body>
