@@ -148,6 +148,16 @@ if ($check_data <= 0): ?>
 <div id="pdfArea"
     style="font-family: 'Arial', sans-serif; padding: 30px; color: #000; background-color: #fff; display: none;">
     <style>
+    #pdfArea {
+        font-family: 'Arial', sans-serif;
+        padding: 30px;
+        color: #000;
+        background-color: #fff;
+        display: none;
+        /* pastikan tidak ada overflow tersembunyi */
+        overflow: visible;
+    }
+
     #pdfArea h2 {
         text-align: center;
         margin-bottom: 10px;
@@ -166,6 +176,22 @@ if ($check_data <= 0): ?>
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
+        page-break-inside: auto;
+    }
+
+    #pdfArea thead {
+        display: table-header-group;
+        /* header tabel muncul di tiap halaman */
+    }
+
+    #pdfArea tbody {
+        display: table-row-group;
+    }
+
+    #pdfArea tr {
+        page-break-inside: avoid;
+        /* hindari potong baris */
+        page-break-after: auto;
     }
 
     #pdfArea th,
@@ -184,6 +210,7 @@ if ($check_data <= 0): ?>
         max-height: 60px;
     }
     </style>
+
 
     <h2>DAFTAR HADIR RAPAT</h2>
 
