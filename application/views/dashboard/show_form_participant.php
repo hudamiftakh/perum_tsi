@@ -60,7 +60,8 @@
             border-radius: 6px;
             width: 100% !important;
             height: auto;
-            touch-action: none; /* cegah zoom/scroll saat sentuh canvas */
+            max-height: 200px; /* batasi tinggi maksimum supaya tidak terlalu tinggi */
+            touch-action: none;
         }
 
         .btn-clear {
@@ -132,7 +133,7 @@
         style="min-height: 10vh; display: flex; align-items: center; justify-content: center; background-color: #d4edda;">
         <div class="wrapper">
             <div class="form-container">
-                <div class="text-center mb-3">
+                <div class="text-center mb-3 mt-10">
                     <img src="<?php echo base_url(); ?>logo_2-removebg-preview.png" alt="Logo" style="width: 90px; height: auto;" />
                 </div>
 
@@ -150,7 +151,7 @@
                     <div class="mb-4">
                         <label class="form-label">Tanda Tangan Digital</label>
                         <div class="signature-box">
-                            <canvas id="signature" width="700" height="260"></canvas>
+                            <canvas id="signature"></canvas>
                         </div>
                         <div class="mt-2 text-end">
                             <button type="button" class="btn btn-outline-secondary btn-sm btn-clear" onclick="clearSignature()">Bersihkan Tanda Tangan</button>
@@ -169,14 +170,14 @@
         const ctx = canvas.getContext('2d');
         let drawing = false;
 
-        // Fungsi resize canvas dengan simpan isi agar tidak hilang saat resize/scroll
         function resizeCanvas() {
+            const containerWidth = canvas.parentElement.offsetWidth;
+
             const tempImage = new Image();
             tempImage.src = canvas.toDataURL();
 
-            const containerWidth = canvas.parentElement.offsetWidth;
             canvas.width = containerWidth;
-            canvas.height = 400; // tinggi fix supaya nyaman di HP
+            canvas.height = containerWidth * 0.4; // rasio tinggi:lebar = 0.4 agar tidak terlalu tinggi
 
             tempImage.onload = function () {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -218,7 +219,7 @@
             ctx.strokeStyle = '#000';
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
-            ctx.moveTo(pos.x, pos.y); // jangan beginPath lagi supaya garis halus
+            ctx.moveTo(pos.x, pos.y);
             e.preventDefault();
         }
 
