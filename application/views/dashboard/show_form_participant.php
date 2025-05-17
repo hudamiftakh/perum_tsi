@@ -150,7 +150,7 @@
                     <div class="mb-4">
                         <label class="form-label">Tanda Tangan Digital</label>
                         <div class="signature-box">
-                            <canvas id="signature" width="700" height="300"></canvas>
+                            <canvas id="signature" width="700" height="260"></canvas>
                         </div>
                         <div class="mt-2 text-end">
                             <button type="button" class="btn btn-outline-secondary btn-sm btn-clear" onclick="clearSignature()">Bersihkan Tanda Tangan</button>
