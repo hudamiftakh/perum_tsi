@@ -56,12 +56,19 @@
     }
 
     .img-logo {
+        display: block;
         max-width: 100px;
         height: auto;
-        display: block;
-        margin: 0 auto;
-        padding-top: 100px;
+        margin: 20px auto 10px auto;
         object-fit: contain;
+    }
+
+    @media (min-width: 768px) {
+        .img-logo {
+            max-width: 120px;
+            /* Logo lebih besar di layar laptop */
+            margin-top: 30px;
+        }
     }
     </style>
 </head>
