@@ -148,21 +148,13 @@ if ($check_data <= 0): ?>
 <div id="pdfArea"
     style="font-family: 'Arial', sans-serif; padding: 30px; color: #000; background-color: #fff; display: none;">
     <style>
-    #pdfArea {
-        font-family: 'Arial', sans-serif;
-        padding: 30px;
-        color: #000;
-        background-color: #fff;
-        display: none;
-        /* pastikan tidak ada overflow tersembunyi */
-        overflow: visible;
-    }
-
+    /* Judul */
     #pdfArea h2 {
         text-align: center;
         margin-bottom: 10px;
     }
 
+    /* Info metadata (tanggal, tempat, dll) */
     #pdfArea .meta-info {
         margin-bottom: 20px;
         font-size: 14px;
@@ -172,26 +164,13 @@ if ($check_data <= 0): ?>
         margin-bottom: 5px;
     }
 
+    /* Tabel */
     #pdfArea table {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
         page-break-inside: auto;
-    }
-
-    #pdfArea thead {
-        display: table-header-group;
-        /* header tabel muncul di tiap halaman */
-    }
-
-    #pdfArea tbody {
-        display: table-row-group;
-    }
-
-    #pdfArea tr {
-        page-break-inside: avoid;
-        /* hindari potong baris */
-        page-break-after: auto;
+        /* izinkan pemisahan antar table, bukan di dalam row */
     }
 
     #pdfArea th,
@@ -206,13 +185,42 @@ if ($check_data <= 0): ?>
         background-color: #f2f2f2;
     }
 
+    /* Gambar tanda tangan */
     #pdfArea img {
         max-height: 60px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Hindari baris tabel terpotong */
+    #pdfArea tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    /* Pemisah halaman manual jika diperlukan */
+    .page-break {
+        page-break-after: always;
+    }
+
+    /* Opsional: Atur ukuran font global jika ingin ringkas */
+    #pdfArea {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    /* Tambahan opsional: rapikan margin print */
+    @media print {
+        body {
+            margin: 0;
+        }
     }
     </style>
-
-
-    <h2>DAFTAR HADIR RAPAT</h2>
+    <div class="header">
+        <img src="<?php echo base_url(); ?>logo_2-removebg-preview.png" alt="Logo" class="logo">
+        <h2>DAFTAR HADIR RAPAT BULANAN</h2>
+    </div>
 
     <div class="meta-info">
         <div><strong>Judul:</strong> <?= $data['judul']; ?></div>
@@ -256,26 +264,29 @@ function downloadPDF() {
     const element = document.getElementById('pdfArea');
     element.style.display = 'block';
 
-    console.log('coba');
     const opt = {
-        margin: 0.5,
+        margin: [0.5, 0.5, 0.7, 0.5], // Atas, kanan, bawah, kiri (dalam inch)
         filename: 'daftar_hadir_rapat.pdf',
         image: {
             type: 'jpeg',
             quality: 0.98
         },
         html2canvas: {
-            scale: 2
+            scale: 2,
+            scrollY: 0
         },
         jsPDF: {
             unit: 'in',
             format: 'a4',
             orientation: 'portrait'
+        },
+        pagebreak: {
+            mode: ['avoid-all', 'css', 'legacy']
         }
     };
 
     html2pdf().from(element).set(opt).save().then(() => {
-        element.style.display = 'none'; // Sembunyikan lagi setelah selesai
+        element.style.display = 'none';
     });
 }
 </script>
