@@ -2,77 +2,77 @@
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Daftar Hadir - Jotform Style</title>
-    <link href="<?php echo base_url(); ?>dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo base_url(); ?>dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    body {
-        background-color: #d4edda;
-        /* Hijau pastel */
-        font-family: 'Segoe UI', sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .form-container {
-        max-width: 600px;
-        width: 100%;
-        background: white;
-        border: 2px solid #dee2e6;
-        border-radius: 12px;
-        padding: 30px 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-title {
-        font-weight: 600;
-        margin-bottom: 25px;
-        color: #333;
-    }
-
-    .form-label {
-        font-weight: 500;
-    }
-
-    .signature-box {
-        border: 2px dashed #adb5bd;
-        border-radius: 8px;
-        background: #fff;
-        padding: 10px;
-        display: block;
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    canvas {
-        background: #fff;
-        border-radius: 4px;
-        width: 100%;
-        height: auto;
-    }
-
-    .btn-clear {
-        font-size: 0.875rem;
-    }
-
-    @media (max-width: 576px) {
-        .form-container {
-            padding: 20px 15px;
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
-    }
-    </style>
 
+        body {
+            background-color: #d4edda;
+            /* Hijau pastel */
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-title {
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .signature-box {
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 10px;
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        canvas {
+            background: #fff;
+            border-radius: 6px;
+            width: 100% !important;
+            height: auto;
+            touch-action: none; /* cegah zoom/scroll saat sentuh canvas */
+        }
+
+        .btn-clear {
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -86,7 +86,6 @@
         // Dekripsi
         $agenda_id = $CI->encryption->decrypt($encrypted_id);
         $result_agenda = $this->db->where(array('id'=>$agenda_id))->get("master_agenda")->row_array();
-        // var_dump($result_agenda);
         if(isset($_POST['simpan'])){
             $nama = $_REQUEST['nama'];
             $ttd = htmlspecialchars($_REQUEST['ttd']);
@@ -127,25 +126,14 @@
                 </script>";
             }
         }
-
     ?>
-    <style>
-    canvas {
-        width: 100% !important;
-        height: auto;
-        background: #fff;
-        border-radius: 6px;
-        touch-action: none;
-        /* Cegah zoom atau scroll saat sentuh canvas */
-    }
-    </style>
+
     <div
         style="min-height: 10vh; display: flex; align-items: center; justify-content: center; background-color: #d4edda;">
         <div class="wrapper">
             <div class="form-container">
                 <div class="text-center mb-3">
-                    <img src="<?php echo base_url(); ?>logo_2-removebg-preview.png" alt="Logo"
-                        style="width: 90px; height: auto;">
+                    <img src="<?php echo base_url(); ?>logo_2-removebg-preview.png" alt="Logo" style="width: 90px; height: auto;" />
                 </div>
 
                 <div class="text-center mb-4">
@@ -156,8 +144,7 @@
                 <form method="POST" action="<?php echo $_SERVER['REQUEST_URI']; ?>" onsubmit="return prepareSignature()">
                     <div class="mb-4">
                         <label for="nama" class="form-label">Nama Lengkap</label>
-                        <input type="text" class="form-control" id="nama" name="nama"
-                            placeholder="Tuliskan nama lengkap Anda" required>
+                        <input type="text" class="form-control" id="nama" name="nama" placeholder="Tuliskan nama lengkap Anda" required />
                     </div>
 
                     <div class="mb-4">
@@ -166,27 +153,35 @@
                             <canvas id="signature" width="700" height="300"></canvas>
                         </div>
                         <div class="mt-2 text-end">
-                            <button type="button" class="btn btn-outline-secondary btn-sm btn-clear"
-                                onclick="clearSignature()">Bersihkan Tanda Tangan</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm btn-clear" onclick="clearSignature()">Bersihkan Tanda Tangan</button>
                         </div>
                     </div>
 
-                    <input type="hidden" name="ttd" id="ttd">
+                    <input type="hidden" name="ttd" id="ttd" />
                     <button type="submit" name="simpan" class="btn btn-primary w-100">Kirim Kehadiran</button>
                 </form>
             </div>
         </div>
+    </div>
 
-        <script>
+    <script>
         const canvas = document.getElementById('signature');
         const ctx = canvas.getContext('2d');
         let drawing = false;
 
-        // Ukuran canvas otomatis mengikuti container
+        // Fungsi resize canvas dengan simpan isi agar tidak hilang saat resize/scroll
         function resizeCanvas() {
+            const tempImage = new Image();
+            tempImage.src = canvas.toDataURL();
+
             const containerWidth = canvas.parentElement.offsetWidth;
             canvas.width = containerWidth;
-            canvas.height = 400; // Tinggi diperbesar agar lebih nyaman di HP
+            canvas.height = 400; // tinggi fix supaya nyaman di HP
+
+            tempImage.onload = function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempImage, 0, 0, canvas.width, canvas.height);
+            };
         }
 
         window.addEventListener('load', resizeCanvas);
@@ -197,12 +192,12 @@
             if (e.touches && e.touches.length > 0) {
                 return {
                     x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
+                    y: e.touches[0].clientY - rect.top,
                 };
             } else {
                 return {
                     x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
+                    y: e.clientY - rect.top,
                 };
             }
         }
@@ -223,15 +218,15 @@
             ctx.strokeStyle = '#000';
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
-            ctx.moveTo(pos.x, pos.y); // Jangan panggil beginPath lagi
+            ctx.moveTo(pos.x, pos.y); // jangan beginPath lagi supaya garis halus
             e.preventDefault();
         }
 
         function endDraw(e) {
             if (!drawing) return;
             drawing = false;
-            e.preventDefault();
             ctx.closePath();
+            e.preventDefault();
         }
 
         // Event mouse
@@ -240,19 +235,11 @@
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseout', endDraw);
 
-        // Event sentuhan (HP/tablet)
-        canvas.addEventListener('touchstart', startDraw, {
-            passive: false
-        });
-        canvas.addEventListener('touchmove', draw, {
-            passive: false
-        });
-        canvas.addEventListener('touchend', endDraw, {
-            passive: false
-        });
-        canvas.addEventListener('touchcancel', endDraw, {
-            passive: false
-        });
+        // Event touch (HP/tablet)
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', endDraw, { passive: false });
+        canvas.addEventListener('touchcancel', endDraw, { passive: false });
 
         function clearSignature() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -264,9 +251,7 @@
             ttdInput.value = canvas.toDataURL('image/png');
             return true;
         }
-        </script>
-
-
+    </script>
 
 </body>
 
