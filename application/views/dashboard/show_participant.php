@@ -212,7 +212,7 @@ if ($check_data <= 0): ?>
             foreach ($result as $row): ?>
             <tr>
                 <td><?= $no++ ?></td>
-                <td><?= strtoupper($row['nama']) ?></td>
+                <td style="text-align: left;"><?= strtoupper($row['nama']) ?></td>
                 <td><img src="<?= $row['ttd_base64'] ?>" alt="TTD"></td>
                 <td><?= format_tanggal_jam($row['hadir_pada']); ?></td>
             </tr>

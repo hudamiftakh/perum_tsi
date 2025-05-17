@@ -241,6 +241,7 @@ if ($check_data <= 0): ?>
                         $CI->load->library('encryption');
                         $encrypted = $CI->encryption->encrypt($id);
                         $url_safe = strtr($encrypted, ['+' => '-', '/' => '_', '=' => '~']);
+                        // var_dump($url_safe);
                         ?>
                         <a class="btn btn-outline-success" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">
                             <i class="bi bi-eye"></i>

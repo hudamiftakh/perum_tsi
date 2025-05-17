@@ -63,6 +63,8 @@ $route['agenda/agenda/add/(:any)'] = 'dashboard/add_agenda/$1';
 $route['agenda/report_agenda'] = 'dashboard/report_agenda';
 $route['agenda/show_participant/(:any)'] = 'dashboard/show_participant/$1';
 $route['show_form_participant/(:any)'] = 'dashboard/show_form_participant/$1';
+// Pendataan
+$route['pendataan-keluarga'] = 'dashboard/pendataan_keluarga';
 $route['404_override'] = '';
 $route['cli/migrate'] = 'migration/index';
 $route['translate_uri_dashes'] = FALSE;

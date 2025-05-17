@@ -95,6 +95,12 @@ class dashboard extends CI_Controller
 		$this->load->view('modul', $data);
 	}
 
+	public function pendataan_keluarga()
+	{
+		$data['halaman'] = '';
+		$this->load->view('dashboard/pendataan_keluarga', $data);
+	}
+
 	public function show_participant()
 	{
 		$this->checkSession();
