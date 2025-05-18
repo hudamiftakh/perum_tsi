@@ -96,34 +96,35 @@
             </div>
 
             <div class="col-md-6">
-              <label for="statusRumah" class="form-label">Status Tempat Tinggal</label>
+              <label for="statusRumah" class="form-label">Status Tempat Tinggal (Rumah TSI)</label>
               <select class="form-select" id="statusRumah" name="status_rumah" required>
                 <option value="">Pilih Status</option>
                 <option value="Rumah Sendiri">Rumah Sendiri</option>
                 <option value="Sewa/Kontrak">Sewa/Kontrak</option>
                 <option value="Musiman">Musiman</option>
+                <option value="Usaha">Usaha</option>
               </select>
             </div>
 
             <div class="col-md-6">
-              <label for="alamat" class="form-label">Alamat Lengkap</label>
+              <label for="alamat" class="form-label">Alamat Lengkap (KK)</label>
               <input type="text" class="form-control" id="alamat" name="alamat" required />
             </div>
 
             <div class="col-sm-6 col-md-3">
-              <label for="provinsi" class="form-label">Provinsi</label>
+              <label for="provinsi" class="form-label">Provinsi (KK)</label>
               <select class="form-select select2" id="provinsi" name="provinsi" required></select>
             </div>
             <div class="col-sm-6 col-md-3">
-              <label for="kota" class="form-label">Kota/Kabupaten</label>
+              <label for="kota" class="form-label">Kota/Kabupaten (KK)</label>
               <select class="form-select select2" id="kota" name="kota" required></select>
             </div>
             <div class="col-sm-6 col-md-3">
-              <label for="kecamatan" class="form-label">Kecamatan</label>
+              <label for="kecamatan" class="form-label">Kecamatan (KK)</label>
               <select class="form-select select2" id="kecamatan" name="kecamatan" required></select>
             </div>
             <div class="col-sm-6 col-md-3">
-              <label for="kelurahan" class="form-label">Kelurahan</label>
+              <label for="kelurahan" class="form-label">Kelurahan (KK)</label>
               <select class="form-select select2" id="kelurahan" name="kelurahan" required></select>
             </div>
 

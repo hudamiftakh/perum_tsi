@@ -94,6 +94,7 @@ $this->load->library('encryption');
                         <th>NIK</th>
                         <th>NAMA</th>
                         <th>JENIS KELAMIN</th>
+                        <th>TANGGAL LAHIR</th>
                         <th>SDHK</th>
                         <th>PEKERJAAN</th>
                         <th>AGAMA</th>
@@ -157,6 +158,17 @@ $this->load->library('encryption');
                                 <?php endforeach;?>
                             </table>
                         </td>
+                         
+                        <td style="vertical-align: top;" nowrap="">
+                            <table class="table-striped">
+                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                <tr>
+                                    <td><?php echo format_tanggal_v2($dt_anggota['tgl_lahir']); ?></td>
+                                </tr>
+                                <?php endforeach;?>
+                            </table>
+                        </td>
+                        
                         <td style="vertical-align: top;" nowrap="">
                             <table class="table-striped">
                                 <?php foreach ($anggota_keluarga as $dt_anggota): ?>
@@ -175,24 +187,17 @@ $this->load->library('encryption');
                                 <?php endforeach;?>
                             </table>
                         </td>
-                        <td style="vertical-align: top;" nowrap="">
+                       
+                         <td style="vertical-align: top;" nowrap="">
                             <table class="table-striped">
                                 <?php foreach ($anggota_keluarga as $dt_anggota): ?>
                                 <tr>
-                                    <td><?php echo $dt_anggota['tgl_lahir']; ?></td>
+                                    <td nowrap=""><?php echo $dt_anggota['agama']; ?></td>
                                 </tr>
                                 <?php endforeach;?>
                             </table>
                         </td>
-                        <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td><?php echo $dt_anggota['agama']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
+                        <td style="vertical-align: middle;"><?php echo $value['alamat']; ?></td>
                         <td style="vertical-align: middle;"><?php echo $value['kelurahan']; ?></td>
                         <td style="vertical-align: middle;"><?php echo $value['kecamatan']; ?></td>
                         <td style="vertical-align: middle;"><?php echo $value['kota']; ?></td>

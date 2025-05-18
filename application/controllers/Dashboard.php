@@ -128,7 +128,7 @@ class dashboard extends CI_Controller
 		if (!empty($keyword)) {
 			$this->db->group_start()
 					->like('no_kk', $keyword)
-					->or_where("id IN (SELECT keluarga_id FROM master_anggota_keluarga WHERE nik LIKE '%$keyword%')", null, false)
+					->or_where("id IN (SELECT keluarga_id FROM master_anggota_keluarga WHERE nik LIKE '%$keyword%' OR nama LIKE '%$keyword%')", null, false)
 					->group_end();
 		}
 
