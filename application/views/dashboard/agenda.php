@@ -243,8 +243,8 @@ if ($check_data <= 0): ?>
                         $url_safe = strtr($encrypted, ['+' => '-', '/' => '_', '=' => '~']);
                         // var_dump($url_safe);
                         ?>
-                        <a class="btn btn-outline-success" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">
-                            <i class="bi bi-eye"></i>
+                        <a class="btn btn-outline-success" target="blank" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">
+                            <i class="bi bi-pen"></i>
                         </a>
 
                         <!-- Tombol 2 -->
