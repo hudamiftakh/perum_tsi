@@ -97,8 +97,66 @@ class dashboard extends CI_Controller
 
 	public function pendataan_keluarga()
 	{
-		$data['halaman'] = '';
 		$this->load->view('dashboard/pendataan_keluarga', $data);
+	}
+
+	public function warga()
+	{	
+		$this->checkSession();
+		$id = $this->input->post('id');
+		if (isset($id)) {
+       		$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
+			if (is_numeric($id)) {
+				$id = (int) $id;
+				$this->db->where('id', $id);
+				$this->db->delete('master_keluarga');
+
+				if ($this->db->affected_rows() > 0) {
+					$this->session->set_flashdata('success', 'KK berhasil dihapus.');
+				} else {
+					$this->session->set_flashdata('error', 'Gagal menghapus KK.');
+				}
+			} else {
+				$this->session->set_flashdata('error', 'ID tidak valid.');
+			}
+
+			redirect(current_url()); // Refresh halaman agar tidak submit ulang
+		}
+
+		$this->load->library('pagination');
+		$keyword = $this->input->get('keyword');
+		if (!empty($keyword)) {
+			$this->db->group_start()
+					->like('no_kk', $keyword)
+					->or_where("id IN (SELECT keluarga_id FROM master_anggota_keluarga WHERE nik LIKE '%$keyword%')", null, false)
+					->group_end();
+		}
+
+		$this->db->from('master_keluarga');
+		$total_rows = $this->db->count_all_results('', false);
+
+		$config['base_url'] = base_url('keluarga/index');
+		$config['total_rows'] = $total_rows;
+		$config['per_page'] = 10;
+		$config['uri_segment'] = 3;
+		// (opsional) tambahkan config bootstrap pagination style...
+
+		$this->pagination->initialize($config);
+
+		$start = $this->uri->segment(3, 0);
+		$this->db->limit($config['per_page'], $start);
+		$keluarga_result = $this->db->get()->result_array();
+
+		foreach ($keluarga_result as &$row) {
+			$row['anggota'] = $this->db->get_where('master_anggota_keluarga', ['keluarga_id' => $row['id']])->result_array();
+		}
+
+		$data['keluarga'] = $keluarga_result;
+		$data['pagination'] = $this->pagination->create_links();
+
+		// $this->load->view('keluarga_view', $data);
+		$data['halaman'] = 'dashboard/warga';
+		$this->load->view('modul', $data);
 	}
 
 	public function save_pendataan_keluarga()
@@ -165,6 +223,8 @@ class dashboard extends CI_Controller
                     'agama' => $this->input->post('agama')[$key],
                     'status_perkawinan' => $this->input->post('status_perkawinan')[$key],
                     'hubungan' => $this->input->post('hubungan')[$key],
+                    'pekerjaan' => $this->input->post('pekerjaan')[$key],
+                    'jenis_kelamin' => $this->input->post('jenis_kelamin')[$key],
                     'tgl_lahir' => $this->input->post('tgl_lahir')[$key]
                 ]);
             }

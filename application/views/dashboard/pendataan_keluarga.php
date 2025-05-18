@@ -166,6 +166,30 @@
           <label class="form-label">NIK</label>
           <input type="text" class="form-control" name="nik[]" required />
         </div>
+      <div class="col-md-6">
+        <label class="form-label">Pekerjaan</label>
+        <select class="form-select" name="pekerjaan[]" required>
+          <option value="">Pilih Pekerjaan...</option>
+          <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
+          <option value="ASN">ASN</option>
+          <option value="TNI/Polri">TNI/Polri</option>
+          <option value="Pegawai Swasta">Pegawai Swasta</option>
+          <option value="Wiraswasta">Wiraswasta</option>
+          <option value="Petani">Petani</option>
+          <option value="Nelayan">Nelayan</option>
+          <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
+          <option value="Pensiunan">Pensiunan</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Jenis Kelamin</label>
+        <select class="form-select" name="jenis_kelamin[]" required>
+          <option value="">Pilih Jenis Kelamin...</option>
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
        <div class="col-md-6">
           <label class="form-label">Agama</label>
           <select class="form-select" name="agama[]" required>
@@ -274,56 +298,66 @@
     const kecamatan = $('#kecamatan');
     const kelurahan = $('#kelurahan');
 
-    fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
+   fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
+    .then(res => res.json())
+    .then(data => {
+      provinsi.empty().append('<option value="">Pilih Provinsi</option>');
+      data.forEach(p => {
+        provinsi.append(`<option value="${p.name}" data-id="${p.id}">${p.name}</option>`);
+      });
+    });
+
+  // On Provinsi Change → Load Kota
+  provinsi.on('change', function () {
+    kota.empty().append('<option>Loading...</option>');
+    kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
+    kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+
+    const provinsiId = $('#provinsi option:selected').data('id');
+
+    fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinsiId}.json`)
       .then(res => res.json())
       .then(data => {
-        provinsi.empty().append('<option></option>');
-        data.forEach(p => {
-          provinsi.append(`<option value="${p.id}">${p.name}</option>`);
+        kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
+        data.forEach(k => {
+          kota.append(`<option value="${k.name}" data-id="${k.id}">${k.name}</option>`);
         });
       });
+  });
 
-    provinsi.on('change', function () {
-      kota.empty().append('<option>Loading...</option>');
-      kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
-      kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+  // On Kota Change → Load Kecamatan
+  kota.on('change', function () {
+    kecamatan.empty().append('<option>Loading...</option>');
+    kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
 
-      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${this.value}.json`)
-        .then(res => res.json())
-        .then(data => {
-          kota.empty().append('<option></option>');
-          data.forEach(k => {
-            kota.append(`<option value="${k.id}">${k.name}</option>`);
-          });
+    const kotaId = $('#kota option:selected').data('id');
+
+    fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${kotaId}.json`)
+      .then(res => res.json())
+      .then(data => {
+        kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
+        data.forEach(kec => {
+          kecamatan.append(`<option value="${kec.name}" data-id="${kec.id}">${kec.name}</option>`);
         });
-    });
+      });
+  });
 
-    kota.on('change', function () {
-      kecamatan.empty().append('<option>Loading...</option>');
-      kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+  // On Kecamatan Change → Load Kelurahan
+  kecamatan.on('change', function () {
+    kelurahan.empty().append('<option>Loading...</option>');
 
-      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${this.value}.json`)
-        .then(res => res.json())
-        .then(data => {
-          kecamatan.empty().append('<option></option>');
-          data.forEach(kec => {
-            kecamatan.append(`<option value="${kec.id}">${kec.name}</option>`);
-          });
+    const kecamatanId = $('#kecamatan option:selected').data('id');
+
+    fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${kecamatanId}.json`)
+      .then(res => res.json())
+      .then(data => {
+        kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+        data.forEach(kel => {
+          kelurahan.append(`<option value="${kel.name}" data-id="${kel.id}">${kel.name}</option>`);
         });
-    });
+      });
+  });
 
-    kecamatan.on('change', function () {
-      kelurahan.empty().append('<option>Loading...</option>');
-
-      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${this.value}.json`)
-        .then(res => res.json())
-        .then(data => {
-          kelurahan.empty().append('<option></option>');
-          data.forEach(kel => {
-            kelurahan.append(`<option value="${kel.id}">${kel.name}</option>`);
-          });
-        });
-    });
 
     // Load 1 anggota keluarga default
     window.onload = tambahAnggota;

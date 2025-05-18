@@ -47,6 +47,28 @@
                 </li> -->
             </ul>
         </li>
+
+        <li class="sidebar-item">
+            <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('warga'))) ? 'active' : ''; ?>"
+                href="javascript:void(0)" aria-expanded="false">
+                <span class="d-flex">
+                    <i class="ti ti-users"></i>
+                </span>
+                <span class="hide-menu">Warga</span>
+            </a>
+            <ul aria-expanded="false"
+                class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : ''; ?>">
+                <li class="sidebar-item">
+                    <a href="<?php echo base_url('warga/warga') ?>"
+                        class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                        <div class="round-16 d-flex align-items-center justify-content-center">
+                            <i class="ti ti-circle"></i>
+                        </div>
+                        <span class="hide-menu">Data Keluarga</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
         <?php endif; ?>
        
         <li class="sidebar-item">
