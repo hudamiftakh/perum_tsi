@@ -101,6 +101,78 @@ class dashboard extends CI_Controller
 		$this->load->view('dashboard/pendataan_keluarga', $data);
 	}
 
+	public function save_pendataan_keluarga()
+	{
+		$this->load->library('upload');
+        $config['upload_path'] = './uploads/';
+        $config['allowed_types'] = 'pdf|jpg|jpeg|png';
+        $config['max_size'] = 5120;
+
+        $this->upload->initialize($config);
+
+        if (!$this->upload->do_upload('file_kk')) {
+            echo json_encode(['status' => 'error', 'message' => $this->upload->display_errors()]);
+            return;
+        }
+
+        $file_data = $this->upload->data();
+		$ext = $file_data['file_ext']; // ekstensi file, contoh ".jpg"
+		$no_kk = $this->input->post('no_kk');
+
+		// Rename file dengan nama no_kk + ekstensi
+		$new_file_name = $no_kk . $ext;
+		$new_file_path = $file_data['file_path'] . $new_file_name;
+
+		rename($file_data['full_path'], $new_file_path);
+
+        // Resize Image
+        $config_resize['image_library'] = 'gd2';
+        $config_resize['source_image'] = $file_path;
+        $config_resize['maintain_ratio'] = TRUE;
+        $config_resize['width'] = 800;
+        $config_resize['height'] = 800;
+        $this->load->library('image_lib', $config_resize);
+        $this->image_lib->resize();
+
+        $file_kk = $file_data['file_name'];
+
+		$nomor_rumah = implode('| ', $this->input->post('nomor_rumah'));
+
+        $keluarga_data = [
+            'nomor_rumah' => $nomor_rumah,
+            'no_kk' => $this->input->post('no_kk'),
+            'status_rumah' => $this->input->post('status_rumah'),
+            'alamat' => $this->input->post('alamat'),
+            'provinsi' => $this->input->post('provinsi'),
+            'kota' => $this->input->post('kota'),
+            'kecamatan' => $this->input->post('kecamatan'),
+            'kelurahan' => $this->input->post('kelurahan'),
+            'file_kk' => $new_file_name,
+            'no_hp' => $this->input->post('no_hp')
+        ];
+
+        $this->db->insert('master_keluarga', $keluarga_data);
+        $keluarga_id = $this->db->insert_id();
+
+        $anggota = $this->input->post('nama');
+
+        if ($anggota) {
+            foreach ($anggota as $key => $nama) {
+                $this->db->insert('master_anggota_keluarga', [
+                    'keluarga_id' => $keluarga_id,
+                    'nama' => $nama,
+                    'nik' => $this->input->post('nik')[$key],
+                    'agama' => $this->input->post('agama')[$key],
+                    'status_perkawinan' => $this->input->post('status_perkawinan')[$key],
+                    'hubungan' => $this->input->post('hubungan')[$key],
+                    'tgl_lahir' => $this->input->post('tgl_lahir')[$key]
+                ]);
+            }
+        }
+
+        echo json_encode(['status' => 'success', 'message' => 'Data berhasil disimpan.']);
+    }
+
 	public function show_participant()
 	{
 		$this->checkSession();

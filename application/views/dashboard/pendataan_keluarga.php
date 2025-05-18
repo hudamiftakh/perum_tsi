@@ -4,11 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Form Pendataan Keluarga</title>
-
+   <link rel="shortcut icon" type="image/png" href="<?php echo base_url() ?>dist/logo_2.png" />
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Select2 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- SweetAlert2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
 
   <style>
     body {
@@ -71,7 +78,7 @@
             <!-- Nomor Rumah pakai select2 -->
             <div class="col-md-6">
               <label for="nomorRumah" class="form-label">Nomor Rumah</label>
-              <select class="form-select select2" id="nomorRumah" name="nomor_rumah"  multiple="multiple"  required>
+              <select class="form-select select2" id="nomorRumah" name="nomor_rumah[]"  multiple="multiple"  required>
                 <option value="">Pilih Nomor Rumah</option>
                 <?php 
                   $result_rumah = $this->db->get("master_rumah")->result_array();
@@ -212,7 +219,7 @@
     // Init Select2 for nomor rumah
     $(document).ready(function() {
       $('.select2').select2({
-        placeholder: 'Pilih Opsi',
+        placeholder: 'Pilih Nomor Rumah',
         allowClear: true
       });
 
@@ -260,18 +267,6 @@
         card.querySelector('.nomor-anggota').textContent = index + 1;
       });
     }
-
-    // Submit form handler
-    document.getElementById('formKeluarga').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const file = formData.get("file_kk");
-      if (file && file.size > 5 * 1024 * 1024) {
-        alert("Ukuran file terlalu besar. Maksimal 5MB.");
-        return;
-      }
-      alert("Data berhasil disimpan! (proses penyimpanan belum dihubungkan ke backend)");
-    });
 
     // API wilayah Indonesia
     const provinsi = $('#provinsi');
@@ -333,5 +328,62 @@
     // Load 1 anggota keluarga default
     window.onload = tambahAnggota;
   </script>
+  
+  <script>
+    $(document).ready(function() {
+    $('#formKeluarga').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '<?php echo base_url('dashboard/save_pendataan_keluarga'); ?>',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            dataType: 'json',
+            beforeSend: function() {
+                Swal.fire({
+                    title: 'Mengirim data...',
+                    text: 'Mohon tunggu sebentar...',
+                    icon: 'info',
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+            },
+            success: function(response) {
+                Swal.close();
+                if (response.status === 'success') {
+                    Swal.fire({
+                        title: 'Sukses!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                Swal.close();
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Terjadi kesalahan: ' + error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+});
+  </script>
+
 </body>
 </html>
