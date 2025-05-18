@@ -64,6 +64,7 @@ $route['agenda/report_agenda'] = 'dashboard/report_agenda';
 $route['agenda/show_participant/(:any)'] = 'dashboard/show_participant/$1';
 $route['show_form_participant/(:any)'] = 'dashboard/show_form_participant/$1';
 $route['warga/warga'] = 'dashboard/warga';
+$route['warga/warga/(:any)'] = 'dashboard/warga/$1';
 // Pendataan
 $route['pendataan-keluarga'] = 'dashboard/pendataan_keluarga';
 $route['edit-pendataan-keluarga/(:any)'] = 'dashboard/edit_pendataan_keluarga/$1';

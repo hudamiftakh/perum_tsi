@@ -124,61 +124,119 @@ class dashboard extends CI_Controller
 	}
 
 	public function warga()
-	{	
+	{
+		// Check session
 		$this->checkSession();
+
+		// Handle delete action
 		$id = $this->input->post('id');
 		if (isset($id)) {
-       		$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
+			$id = $this->input->post('id', true);  // XSS clean
+
 			if (is_numeric($id)) {
 				$id = (int) $id;
-				$this->db->where('id', $id);
-				$this->db->delete('master_keluarga');
 
-				if ($this->db->affected_rows() > 0) {
-					$this->session->set_flashdata('success', 'KK berhasil dihapus.');
+				// Start transaction for data consistency
+				$this->db->trans_start();
+
+				// First delete anggota keluarga
+				$this->db->where('keluarga_id', $id)->delete('master_anggota_keluarga');
+
+				// Then delete kepala keluarga
+				$this->db->where('id', $id)->delete('master_keluarga');
+
+				$this->db->trans_complete();
+
+				if ($this->db->trans_status() === FALSE) {
+					$this->session->set_flashdata('error', 'Gagal menghapus data keluarga.');
 				} else {
-					$this->session->set_flashdata('error', 'Gagal menghapus KK.');
+					$this->session->set_flashdata('success', 'Data keluarga berhasil dihapus.');
 				}
 			} else {
 				$this->session->set_flashdata('error', 'ID tidak valid.');
 			}
 
-			redirect(current_url()); // Refresh halaman agar tidak submit ulang
+			redirect(current_url()); // Refresh to prevent form resubmission
 		}
 
+		// Setup pagination and search
 		$this->load->library('pagination');
-		$keyword = $this->input->get('keyword');
+
+		$keyword = $this->input->get('keyword', true); // XSS clean
+		$page = $this->uri->segment(3, 0);
+
+		// Main query with search condition
+		$this->db->select('*')->from('master_keluarga');
+
 		if (!empty($keyword)) {
 			$this->db->group_start()
-					->like('no_kk', $keyword)
-					->or_where("id IN (SELECT keluarga_id FROM master_anggota_keluarga WHERE nik LIKE '%$keyword%' OR nama LIKE '%$keyword%')", null, false)
-					->group_end();
+				->like('no_kk', $keyword)
+				->or_like('alamat', $keyword)
+				->or_where("id IN (SELECT keluarga_id FROM master_anggota_keluarga WHERE nik LIKE '%" . $this->db->escape_like_str($keyword) . "%' OR nama LIKE '%" . $this->db->escape_like_str($keyword) . "%')", NULL, FALSE)
+				->group_end();
 		}
 
-		$this->db->from('master_keluarga');
-		$total_rows = $this->db->count_all_results('', false);
+		// Clone the query for counting
+		$db_clone = clone $this->db;
+		// $total_rows = $db_clone->count_all_results('', FALSE);
+		$total_rows = $db_clone->count_all_results('', FALSE);
 
-		$config['base_url'] = base_url('keluarga/index');
+		// Pagination config with Bootstrap 5 styling
+		$config['base_url'] = base_url('warga/warga');
 		$config['total_rows'] = $total_rows;
 		$config['per_page'] = 10;
 		$config['uri_segment'] = 3;
-		// (opsional) tambahkan config bootstrap pagination style...
+		$config['reuse_query_string'] = TRUE;
+
+		$start = $this->uri->segment($config['uri_segment'], 0);
+
+		// Bootstrap 5 Pagination Style
+		$config['full_tag_open'] = '<nav><ul class="pagination">';
+		$config['full_tag_close'] = '</ul></nav>';
+		$config['attributes'] = ['class' => 'page-link'];
+		$config['first_tag_open'] = '<li class="page-item">';
+		$config['first_tag_close'] = '</li>';
+		$config['prev_tag_open'] = '<li class="page-item">';
+		$config['prev_tag_close'] = '</li>';
+		$config['next_tag_open'] = '<li class="page-item">';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-item">';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><a class="page-link" href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li class="page-item">';
+		$config['num_tag_close'] = '</li>';
 
 		$this->pagination->initialize($config);
 
-		$start = $this->uri->segment(3, 0);
-		$this->db->limit($config['per_page'], $start);
+		// Get paginated results
+		$this->db->limit($config['per_page'], $page);
 		$keluarga_result = $this->db->get()->result_array();
 
+		// Get anggota for each keluarga
 		foreach ($keluarga_result as &$row) {
-			$row['anggota'] = $this->db->get_where('master_anggota_keluarga', ['keluarga_id' => $row['id']])->result_array();
+			$row['anggota'] = $this->db
+				->select('*')
+				->from('master_anggota_keluarga')
+				->where('keluarga_id', $row['id'])
+				->order_by('hubungan', 'ASC')
+				->get()
+				->result_array();
 		}
 
-		$data['keluarga'] = $keluarga_result;
-		$data['pagination'] = $this->pagination->create_links();
+		// Prepare data for view
+		$data = [
+			'start'=> $start,
+			'total_rows'=> $total_rows,
+			'per_page'=> $config['per_page'],
+			'current_page'=> floor($start / $config['per_page']) + 1,
+			'total_pages'=> ceil($total_rows / $config['per_page']),
+			'keluarga' => $keluarga_result,
+			'pagination' => $this->pagination->create_links(),
+			'keyword' => $keyword,
+			'halaman' => 'dashboard/warga'
+		];
 
-		// $this->load->view('keluarga_view', $data);
-		$data['halaman'] = 'dashboard/warga';
 		$this->load->view('modul', $data);
 	}
 

@@ -1,5 +1,5 @@
 <?php
-$Auth = $this->session->userdata['username']; 
+$Auth = $this->session->userdata['username'];
 $this->load->library('encryption');
 ?>
 
@@ -28,36 +28,57 @@ $this->load->library('encryption');
     </div>
 </div>
 <style>
-.table-striped {
-    border-collapse: collapse;
-    width: 100%;
-}
+    .table-striped {
+        border-collapse: collapse;
+        width: 100%;
+    }
 
-.table-striped tr:nth-child(odd) {
-    background-color: #f2f2f2;
-}
+    .table-striped tr:nth-child(odd) {
+        background-color: #f2f2f2;
+    }
 
-.table-striped td {
-    padding: 4px 8px;
-    border: 1px solid #ddd;
-}
+    .table-striped td {
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+    }
 
-.table-custom td,
-.table-custom th {
-    padding: 4px 8px;
-    /* atas-bawah 4px, kiri-kanan 8px */
-}
+    .table-custom td,
+    .table-custom th {
+        padding: 4px 8px;
+        /* atas-bawah 4px, kiri-kanan 8px */
+    }
 
-.table-bordered-dark td,
-.table-bordered-dark th {
-    border: 2px solidrgb(244, 244, 244);
-    /* Abu-abu gelap */
-}
+    .table-bordered-dark td,
+    .table-bordered-dark th {
+        border: 2px solidrgb(244, 244, 244);
+        /* Abu-abu gelap */
+    }
 
-.table-bordered-dark {
-    border-color: rgb(205, 195, 195);
-    /* Untuk elemen luar */
-}
+    .table-bordered-dark {
+        border-color: rgb(205, 195, 195);
+        /* Untuk elemen luar */
+    }
+
+    .dataTables_info {
+        padding-top: 0.5rem;
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .pagination li a {
+        border-radius: 1rem !important;
+    }
+
+    .pagination .active a {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+        color: #fff !important;
+    }
+
+    .pagination a:hover {
+        background-color: #f0f0f0;
+        color: #0d6efd;
+    }
 </style>
 
 <?php if ($this->session->flashdata('success')): ?>
@@ -77,11 +98,26 @@ $this->load->library('encryption');
     <div class="card-body p-4">
         <div class="table-responsive mt-4">
             <!-- Form pencarian -->
-            <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3">
-                <div class="input-group" style="max-width: 400px;">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari No KK atau NIK..."
-                        value="<?= $this->input->get('keyword'); ?>">
-                    <button class="btn btn-success" type="submit">Cari</button>
+            <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3 row g-3 align-items-center">
+                <div class="col-auto">
+                    <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-success">
+                        <i class="fa fa-plus-circle me-1"></i> Tambah Pendataan
+                    </a>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="text" name="keyword" class="form-control"
+                            placeholder="Cari No NIK atau Nama..."
+                            value="<?= html_escape($this->input->get('keyword')); ?>">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa fa-search me-1"></i> Cari
+                        </button>
+                        <?php if ($this->input->get('keyword')): ?>
+                            <a href="<?= base_url('warga/warga'); ?>" class="btn btn-outline-danger">
+                                <i class="fa fa-times me-1"></i> Reset
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </form>
 
@@ -108,131 +144,153 @@ $this->load->library('encryption');
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
+                    <?php
                     $no = $this->uri->segment(3, 0) + 1;
-                    foreach ($keluarga as $value): 
+                    foreach ($keluarga as $value):
                         $anggota_keluarga = $value['anggota'];
                     ?>
-                    <tr>
-                        <td style="vertical-align: middle;"><?php echo $no++ ?></td>
-                        <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php 
-                                $nomor_rumah_list = explode('|', $value['nomor_rumah']); 
-                                foreach ($nomor_rumah_list as $nr): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo trim($nr); ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                        <td style="vertical-align: middle;">
-                            <?php echo $value['no_kk']; ?>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalKK<?php echo $value['id']; ?>">
-                                <i class="bi bi-image"></i>
-                            </a>
-                        </td>
-                        <td style="vertical-align: top;">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td><?php echo $dt_anggota['nik']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                        <td style="vertical-align: top;">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo strtoupper($dt_anggota['nama']); ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                         <td style="vertical-align: top;">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo $dt_anggota['jenis_kelamin']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                         
-                        <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td><?php echo format_tanggal_v2($dt_anggota['tgl_lahir']); ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                        
-                        <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo $dt_anggota['hubungan']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
+                        <tr>
+                            <td style="vertical-align: middle;"><?php echo $no++ ?></td>
+                            <td style="vertical-align: top;" nowrap="">
+                                <table class="table-striped">
+                                    <?php
+                                    $nomor_rumah_list = explode('|', $value['nomor_rumah']);
+                                    foreach ($nomor_rumah_list as $nr): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo trim($nr); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <?php echo $value['no_kk']; ?>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalKK<?php echo $value['id']; ?>">
+                                    <i class="bi bi-image"></i>
+                                </a>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td><?php echo $dt_anggota['nik']; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo strtoupper($dt_anggota['nama']); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo $dt_anggota['jenis_kelamin']; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
 
-                        <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo $dt_anggota['golongan_darah']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                        
-                        <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo $dt_anggota['pekerjaan']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                       
-                         <td style="vertical-align: top;" nowrap="">
-                            <table class="table-striped">
-                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
-                                <tr>
-                                    <td nowrap=""><?php echo $dt_anggota['agama']; ?></td>
-                                </tr>
-                                <?php endforeach;?>
-                            </table>
-                        </td>
-                        <td style="vertical-align: middle;"><?php echo $value['alamat']; ?></td>
-                        <td style="vertical-align: middle;"><?php echo $value['kelurahan']; ?></td>
-                        <td style="vertical-align: middle;"><?php echo $value['kecamatan']; ?></td>
-                        <td style="vertical-align: middle;"><?php echo $value['kota']; ?></td>
-                        <td style="vertical-align: middle;"><?php echo $value['provinsi']; ?></td>
-                        <td style="vertical-align: middle;" nowrap="">
-                            <form method="post" action="<?= base_url('warga/warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');">
-                                <input type="hidden" name="id" value="<?= $value['id']; ?>">
-                                <a class="btn btn-success" href="<?php echo base_url('edit-pendataan-keluarga/'.$value['id']); ?>"><i class="fa fa-pencil"></i></a>
-                                <button type="submit" name="hapus" class="btn btn-danger"><i class="fa fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
+                            <td style="vertical-align: top;" nowrap="">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td><?php echo format_tanggal_v2($dt_anggota['tgl_lahir']); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+
+                            <td style="vertical-align: top;" nowrap="">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo $dt_anggota['hubungan']; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+
+                            <td style="vertical-align: top;" nowrap="">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo $dt_anggota['golongan_darah']; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+
+                            <td style="vertical-align: top;" nowrap="">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo $dt_anggota['pekerjaan']; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+
+                            <td style="vertical-align: top;" nowrap="">
+                                <table class="table-striped">
+                                    <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                        <tr>
+                                            <td nowrap=""><?php echo $dt_anggota['agama']; ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </td>
+                            <td style="vertical-align: middle;"><?php echo $value['alamat']; ?></td>
+                            <td style="vertical-align: middle;"><?php echo $value['kelurahan']; ?></td>
+                            <td style="vertical-align: middle;"><?php echo $value['kecamatan']; ?></td>
+                            <td style="vertical-align: middle;"><?php echo $value['kota']; ?></td>
+                            <td style="vertical-align: middle;"><?php echo $value['provinsi']; ?></td>
+                            <td style="vertical-align: middle;" nowrap="">
+                                <form method="post" action="<?= base_url('warga/warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');">
+                                    <input type="hidden" name="id" value="<?= $value['id']; ?>">
+                                    <a class="btn btn-success" href="<?php echo base_url('edit-pendataan-keluarga/' . $value['id']); ?>"><i class="fa fa-pencil"></i></a>
+                                    <button type="submit" name="hapus" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
-
-            <!-- Tampilkan Pagination -->
-            <div class="mt-4">
-                <?= $pagination ?>
+        </div>
+        <!-- Tampilkan Pagination -->
+        <div class="row mt-4 align-items-center">
+            <div class="col-md-4" style="vertical-align: top;">
+                <div class="text-muted">
+                    <i class="fa fa-database me-1"></i>
+                    Menampilkan <strong><?= ($start + 1) ?> - <?= min($start + $per_page, $total_rows) ?></strong> dari <strong><?= $total_rows ?></strong> data
+                </div>
             </div>
-
-            <!-- Modal Preview KK -->
-            <?php foreach ($keluarga as $value): ?>
+            <div class="col-md-8">
+                <div class="d-flex justify-content-end gap-2">
+                    <div class="dropdown d-inline-block me-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-chevron-down me-1"></i> Halaman <?= $current_page ?>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                <li><a class="dropdown-item <?= $i == $current_page ? 'active' : '' ?>"
+                                        href="<?= base_url('warga/warga/' . (($i - 1) * $per_page)) ?>">
+                                        Halaman <?= $i ?>
+                                    </a></li>
+                            <?php endfor; ?>
+                        </ul>
+                    </div>
+                    <?= $pagination ?>
+                </div>
+            </div>
+        </div>
+        <!-- Modal Preview KK -->
+        <?php foreach ($keluarga as $value): ?>
             <div class="modal fade" id="modalKK<?php echo $value['id']; ?>" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
@@ -242,24 +300,23 @@ $this->load->library('encryption');
                         </div>
                         <div class="modal-body text-center">
                             <?php
-                    $file = $value['file_kk'];
-                    $ext = pathinfo($file, PATHINFO_EXTENSION);
-                    $file_url = base_url('uploads/' . $file);
-                    if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif'])): ?>
-                            <img src="<?php echo $file_url; ?>" alt="Foto KK" class="img-fluid"
-                                style="max-height: 80vh; object-fit: contain;">
+                            $file = $value['file_kk'];
+                            $ext = pathinfo($file, PATHINFO_EXTENSION);
+                            $file_url = base_url('uploads/' . $file);
+                            if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif'])): ?>
+                                <img src="<?php echo $file_url; ?>" alt="Foto KK" class="img-fluid"
+                                    style="max-height: 80vh; object-fit: contain;">
                             <?php elseif (strtolower($ext) === 'pdf'): ?>
-                            <iframe src="<?php echo $file_url; ?>" width="100%" height="500px"
-                                style="border:none;"></iframe>
+                                <iframe src="<?php echo $file_url; ?>" width="100%" height="500px"
+                                    style="border:none;"></iframe>
                             <?php else: ?>
-                            <p class="text-danger">Format file tidak didukung untuk preview.</p>
+                                <p class="text-danger">Format file tidak didukung untuk preview.</p>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
-            <?php endforeach; ?>
+        <?php endforeach; ?>
 
-        </div>
     </div>
 </div>
