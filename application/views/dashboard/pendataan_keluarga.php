@@ -72,7 +72,7 @@
     </div>
       <div class="card-body">
         <form id="formKeluarga" enctype="multipart/form-data">
-          <h6 class="mb-3">Data Keluarga</h6>
+          <h6 class="mb-3">Data Kartu Keluarga</h6>
           <div class="row g-3 mb-3">
 
             <!-- Nomor Rumah pakai select2 -->
