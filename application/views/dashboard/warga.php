@@ -14,7 +14,7 @@ $this->load->library('encryption');
                             <a class="text-muted text-decoration-none" href="./">Dashboard</a>
                         </li>
                         <li class="breadcrumb-item" aria-current="page">Warga</li>
-                        <li class="breadcrumb-item" aria-current="page">Manajemen</li>
+                        <li class="breadcrumb-item" aria-current="page">Manajemen System</li>
                     </ol>
                 </nav>
             </div>
