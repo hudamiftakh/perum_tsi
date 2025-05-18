@@ -57,9 +57,9 @@
 <body>
   <div class="container py-4">
     <div class="card shadow-lg">
-     <div style="height: 160px; background-color:rgb(181, 192, 187)" class="card-header text-white text-center d-flex align-items-center justify-content-center">
+     <div style="height: 160px; background-color:rgb(243, 247, 245)" class="card-header text-white text-center d-flex align-items-center justify-content-center">
      <center> <img style="width: 200px;" src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>" alt=""> 
-     <h5 class="mb-0">Form Pendataan Keluarga <br> Perumahan Taman Sukodono Indah</h5>
+     <h5 class="mb-0" style="color: black;">Form Pendataan Keluarga <br> Perumahan Taman Sukodono Indah</h5>
     </center>  <br>
     
     </div>
