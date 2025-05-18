@@ -277,7 +277,11 @@ function downloadPDF() {
         filename: 'daftar_hadir.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, scrollY: 0 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+         jsPDF: {
+            unit: 'in',
+            format: [8.27, 13.0], // F4 size in inches
+            orientation: 'portrait'
+        },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
     html2pdf().from(element).set(opt).save().then(() => {
