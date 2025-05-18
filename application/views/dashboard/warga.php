@@ -202,9 +202,10 @@ $this->load->library('encryption');
                         <td style="vertical-align: middle;"><?php echo $value['kecamatan']; ?></td>
                         <td style="vertical-align: middle;"><?php echo $value['kota']; ?></td>
                         <td style="vertical-align: middle;"><?php echo $value['provinsi']; ?></td>
-                        <td style="vertical-align: middle;">
+                        <td style="vertical-align: middle;" nowrap="">
                             <form method="post" action="<?= base_url('warga/warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');">
                                 <input type="hidden" name="id" value="<?= $value['id']; ?>">
+                                <a class="btn btn-success" href="<?php echo base_url('edit-pendataan-keluarga/'.$value['id']); ?>"><i class="fa fa-pencil"></i></a>
                                 <button type="submit" name="hapus" class="btn btn-danger"><i class="fa fa-trash"></i></button>
                             </form>
                         </td>
