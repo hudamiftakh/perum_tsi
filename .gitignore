@@ -3,3 +3,4 @@ application/config/database.php
 # Abaikan folder session
 application/session/
 .htaccess
+/uploads/
