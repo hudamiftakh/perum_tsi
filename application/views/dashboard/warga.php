@@ -96,6 +96,7 @@ $this->load->library('encryption');
                         <th>JENIS KELAMIN</th>
                         <th>TANGGAL LAHIR</th>
                         <th>SDHK</th>
+                        <th>GOLDAR</th>
                         <th>PEKERJAAN</th>
                         <th>AGAMA</th>
                         <th>ALAMAT</th>
@@ -178,6 +179,17 @@ $this->load->library('encryption');
                                 <?php endforeach;?>
                             </table>
                         </td>
+
+                        <td style="vertical-align: top;" nowrap="">
+                            <table class="table-striped">
+                                <?php foreach ($anggota_keluarga as $dt_anggota): ?>
+                                <tr>
+                                    <td nowrap=""><?php echo $dt_anggota['golongan_darah']; ?></td>
+                                </tr>
+                                <?php endforeach;?>
+                            </table>
+                        </td>
+                        
                         <td style="vertical-align: top;" nowrap="">
                             <table class="table-striped">
                                 <?php foreach ($anggota_keluarga as $dt_anggota): ?>
