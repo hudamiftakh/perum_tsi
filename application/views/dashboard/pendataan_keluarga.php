@@ -1,142 +1,311 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>OCR Kartu Keluarga</title>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Pendataan Keluarga</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    canvas { border: 1px solid #ccc; margin-top: 10px; max-width: 100%; }
-    input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; }
-    label { font-weight: bold; display: block; margin-top: 15px; }
-    button { padding: 10px 15px; font-size: 16px; }
+    body {
+      background-color: #f8f9fa;
+    }
+    .card {
+      border-radius: 1rem;
+    }
+    .remove-member-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+    .anggota-header {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #0d6efd;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 576px) {
+      .form-label {
+        font-size: 0.9rem;
+      }
+      .form-control, .form-select {
+        font-size: 0.9rem;
+      }
+      .remove-member-btn {
+        right: 5px;
+        top: 5px;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+      }
+      .anggota-header {
+        font-size: 1rem;
+      }
+    }
+    /* Select2 full width fix */
+    .select2-container {
+      width: 100% !important;
+    }
   </style>
 </head>
 <body>
+  <div class="container py-4">
+    <div class="card shadow-lg">
+      <div class="card-header bg-primary text-white text-center">
+        <h5 class="mb-0">Form Pendataan Keluarga</h5>
+      </div>
+      <div class="card-body">
+        <form id="formKeluarga" enctype="multipart/form-data">
+          <h6 class="mb-3">Data Keluarga</h6>
+          <div class="row g-3 mb-3">
 
-<h2>Upload Gambar KK</h2>
-<input type="file" accept="image/*" id="uploadKK">
-<canvas id="canvas"></canvas>
+            <!-- Nomor Rumah pakai select2 -->
+            <div class="col-md-6">
+              <label for="nomorRumah" class="form-label">Nomor Rumah</label>
+              <select class="form-select select2" id="nomorRumah" name="nomor_rumah"  multiple="multiple"  required>
+                <option value="">Pilih Nomor Rumah</option>
+                <?php 
+                  $result_rumah = $this->db->get("master_rumah")->result_array();
+                  foreach ($result_rumah as $key => $value) :
 
-<h3>Hasil OCR:</h3>
-<textarea id="ocrText" rows="10" placeholder="Tunggu hasil OCR..."></textarea>
+                ?>
+                  <option value="<?php echo $value['alamat']; ?>"><?php echo $value['alamat']; ?> - <?php echo $value['nama']; ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
 
-<h3>Form Otomatis dari OCR:</h3>
-<form id="kkForm">
-  <label>No KK:</label>
-  <input type="text" name="no_kk" id="no_kk">
+            <div class="col-md-6">
+              <label for="noKK" class="form-label">Nomor KK</label>
+              <input type="text" class="form-control" id="noKK" name="no_kk" required />
+            </div>
 
-  <label>Alamat:</label>
-  <input type="text" name="alamat" id="alamat">
+            <div class="col-md-6">
+              <label for="statusRumah" class="form-label">Status Tempat Tinggal</label>
+              <select class="form-select" id="statusRumah" name="status_rumah" required>
+                <option value="">Pilih Status</option>
+                <option value="Rumah Sendiri">Rumah Sendiri</option>
+                <option value="Sewa/Kontrak">Sewa/Kontrak</option>
+                <option value="Musiman">Musiman</option>
+              </select>
+            </div>
 
-  <label>RT:</label>
-  <input type="text" name="rt" id="rt">
+            <div class="col-md-6">
+              <label for="alamat" class="form-label">Alamat Lengkap</label>
+              <input type="text" class="form-control" id="alamat" name="alamat" required />
+            </div>
 
-  <label>RW:</label>
-  <input type="text" name="rw" id="rw">
+            <div class="col-sm-6 col-md-3">
+              <label for="provinsi" class="form-label">Provinsi</label>
+              <select class="form-select select2" id="provinsi" name="provinsi" required></select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <label for="kota" class="form-label">Kota/Kabupaten</label>
+              <select class="form-select select2" id="kota" name="kota" required></select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <label for="kecamatan" class="form-label">Kecamatan</label>
+              <select class="form-select select2" id="kecamatan" name="kecamatan" required></select>
+            </div>
+            <div class="col-sm-6 col-md-3">
+              <label for="kelurahan" class="form-label">Kelurahan</label>
+              <select class="form-select select2" id="kelurahan" name="kelurahan" required></select>
+            </div>
 
-  <button type="submit">Kirim Data</button>
-</form>
+            <!-- Upload KK di paling belakang -->
+            <div class="col-md-6 mt-3">
+              <label for="fileKK" class="form-label">Upload Kartu Keluarga</label>
+              <input type="file" class="form-control" id="fileKK" name="file_kk" accept=".pdf,.jpg,.jpeg,.png" required />
+            </div>
 
-<script>
-    const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const ocrText = document.getElementById('ocrText');
-const uploadKK = document.getElementById('uploadKK');
+             <div class="col-md-6 mt-3">
+              <label for="fileKK" class="form-label">Nomor Whatsapp</label>
+              <input type="text" class="form-control" id="noHp" name="no_hp" required />
+            </div>
 
-uploadKK.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  const reader = new FileReader();
+          </div>
 
-  reader.onload = function(ev) {
-    const img = new Image();
-    img.onload = function() {
-      const isPortrait = img.height > img.width;
+          <h6 class="mt-4 mb-3">Anggota Keluarga</h6>
+          <div id="anggotaKeluargaWrapper"></div>
+          <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="tambahAnggota()">+ Tambah Anggota Keluarga</button>
 
-      // Tentukan ukuran canvas dan scaling
-      const scaleFactor = 2;
-      let canvasWidth, canvasHeight;
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-success w-100">Simpan Data</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-      if (isPortrait) {
-        canvasWidth = img.height * scaleFactor;
-        canvasHeight = img.width * scaleFactor;
-      } else {
-        canvasWidth = img.width * scaleFactor;
-        canvasHeight = img.height * scaleFactor;
-      }
+  <!-- Template anggota keluarga -->
+  <template id="templateAnggota">
+    <div class="card border rounded p-3 mt-3 position-relative anggota-keluarga">
+      <button type="button" class="btn btn-sm btn-danger remove-member-btn" onclick="hapusAnggota(this)">X</button>
+      <div class="anggota-header">Anggota Ke-<span class="nomor-anggota"></span></div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nama Lengkap</label>
+          <input type="text" class="form-control" name="nama[]" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">NIK</label>
+          <input type="text" class="form-control" name="nik[]" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Hubungan</label>
+          <select class="form-select" name="hubungan[]" required>
+            <option value="">Pilih...</option>
+            <option value="Kepala Keluarga">Kepala Keluarga</option>
+            <option value="Istri">Istri</option>
+            <option value="Anak">Anak</option>
+            <option value="Orang Tua">Orang Tua</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Tanggal Lahir</label>
+          <input type="date" class="form-control" name="tgl_lahir[]" required />
+        </div>
+      </div>
+    </div>
+  </template>
 
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+  <!-- jQuery (required by Select2) -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.imageSmoothingEnabled = false;
-
-      ctx.save();
-      ctx.scale(scaleFactor, scaleFactor);
-
-      if (isPortrait) {
-        // Rotate canvas -90 derajat dan sesuaikan posisi
-        ctx.translate(img.height / 2, img.width / 2);
-        ctx.rotate(-90 * Math.PI / 180);
-        ctx.drawImage(img, -img.width / 2, -img.height / 2);
-      } else {
-        ctx.drawImage(img, 0, 0);
-      }
-
-      ctx.restore();
-
-      ocrText.value = 'Mendeteksi teks...';
-
-      Tesseract.recognize(canvas, 'ind', {
-        logger: m => console.log(m),
-        // gunakan opsi PSM mode 6 (single block of text)
-        // oem di default sudah 3, bisa dicoba
-        // sesuaikan opsi yang benar
-        // psm = page segmentation mode
-        // lihat dokumentasi tesseract.js
-        // bisa menggunakan config langsung di recognize kedua argumen
-      }).then(({ data: { text } }) => {
-        // Bersihkan text dari karakter yang tidak perlu (misal: ganti O dengan 0 jika di No KK)
-        let cleanedText = text.replace(/[^0-9A-Za-z\s\.\:\-\/]/g, '');
-        cleanedText = cleanedText.replace(/O/g, '0'); // O sering tertukar dengan 0
-        cleanedText = cleanedText.replace(/I/g, '1'); // I sering tertukar dengan 1
-
-        ocrText.value = cleanedText;
-
-        autoFillForm(cleanedText);
-      }).catch(err => {
-        ocrText.value = 'Gagal membaca OCR: ' + err.message;
+  <script>
+    // Init Select2 for nomor rumah
+    $(document).ready(function() {
+      $('.select2').select2({
+        placeholder: 'Pilih Opsi',
+        allowClear: true
       });
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
 
-function autoFillForm(text) {
-  // Regex lebih fleksibel, tanpa harus persis 'No KK' tapi cari digit 16
-  const noKK = text.match(/(?:No\.?\s*KK\s*[:\-]?\s*|No\s*KK\s*[:\-]?\s*)?(\d{16})/i);
-  // Cari alamat setelah 'Jl' sampai akhir baris
-  const alamat = text.match(/Jl\.?\s*([^\n\r]+)/i);
-  // RT/RW bisa dengan berbagai format, cari RT 2 digit dan RW 2 digit
-  const rtRw = text.match(/RT\.?\s*(\d{1,3})\s*\/\s*RW\.?\s*(\d{1,3})/i);
+      $('#provinsi').select2({
+        placeholder: 'Pilih Provinsi',
+        allowClear: true
+      });
 
-  if (noKK) document.getElementById('no_kk').value = noKK[1];
-  if (alamat) document.getElementById('alamat').value = 'Jl ' + alamat[1].trim();
-  if (rtRw) {
-    document.getElementById('rt').value = rtRw[1];
-    document.getElementById('rw').value = rtRw[2];
-  }
-}
+      $('#kota').select2({
+        placeholder: 'Pilih Kota/Kabupaten',
+        allowClear: true
+      });
 
-document.getElementById('kkForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
-  alert('Data siap dikirim:\n' + JSON.stringify(data, null, 2));
-});
+      $('#kecamatan').select2({
+        placeholder: 'Pilih Kecamatan',
+        allowClear: true
+      });
 
-</script>
+      $('#kelurahan').select2({
+        placeholder: 'Pilih Kelurahan',
+        allowClear: true
+      });
+    });
 
+    // Tambah anggota keluarga
+    function tambahAnggota() {
+      const wrapper = document.getElementById('anggotaKeluargaWrapper');
+      const template = document.getElementById('templateAnggota').content.cloneNode(true);
+      const count = wrapper.children.length + 1;
+      template.querySelector('.nomor-anggota').textContent = count;
+      wrapper.appendChild(template);
+      updateNomorAnggota();
+    }
 
+    // Hapus anggota keluarga
+    function hapusAnggota(btn) {
+      btn.closest('.anggota-keluarga').remove();
+      updateNomorAnggota();
+    }
+
+    // Update nomor anggota
+    function updateNomorAnggota() {
+      const cards = document.querySelectorAll('.anggota-keluarga');
+      cards.forEach((card, index) => {
+        card.querySelector('.nomor-anggota').textContent = index + 1;
+      });
+    }
+
+    // Submit form handler
+    document.getElementById('formKeluarga').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const file = formData.get("file_kk");
+      if (file && file.size > 5 * 1024 * 1024) {
+        alert("Ukuran file terlalu besar. Maksimal 5MB.");
+        return;
+      }
+      alert("Data berhasil disimpan! (proses penyimpanan belum dihubungkan ke backend)");
+    });
+
+    // API wilayah Indonesia
+    const provinsi = $('#provinsi');
+    const kota = $('#kota');
+    const kecamatan = $('#kecamatan');
+    const kelurahan = $('#kelurahan');
+
+    fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
+      .then(res => res.json())
+      .then(data => {
+        provinsi.empty().append('<option></option>');
+        data.forEach(p => {
+          provinsi.append(`<option value="${p.id}">${p.name}</option>`);
+        });
+      });
+
+    provinsi.on('change', function () {
+      kota.empty().append('<option>Loading...</option>');
+      kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
+      kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+
+      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${this.value}.json`)
+        .then(res => res.json())
+        .then(data => {
+          kota.empty().append('<option></option>');
+          data.forEach(k => {
+            kota.append(`<option value="${k.id}">${k.name}</option>`);
+          });
+        });
+    });
+
+    kota.on('change', function () {
+      kecamatan.empty().append('<option>Loading...</option>');
+      kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+
+      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${this.value}.json`)
+        .then(res => res.json())
+        .then(data => {
+          kecamatan.empty().append('<option></option>');
+          data.forEach(kec => {
+            kecamatan.append(`<option value="${kec.id}">${kec.name}</option>`);
+          });
+        });
+    });
+
+    kecamatan.on('change', function () {
+      kelurahan.empty().append('<option>Loading...</option>');
+
+      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${this.value}.json`)
+        .then(res => res.json())
+        .then(data => {
+          kelurahan.empty().append('<option></option>');
+          data.forEach(kel => {
+            kelurahan.append(`<option value="${kel.id}">${kel.name}</option>`);
+          });
+        });
+    });
+
+    // Load 1 anggota keluarga default
+    window.onload = tambahAnggota;
+  </script>
 </body>
 </html>
