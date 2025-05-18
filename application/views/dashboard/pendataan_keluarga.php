@@ -12,7 +12,7 @@
 
   <style>
     body {
-      background-color: #f8f9fa;
+      background-color: #d4edda;
     }
     .card {
       border-radius: 1rem;
@@ -57,9 +57,12 @@
 <body>
   <div class="container py-4">
     <div class="card shadow-lg">
-      <div class="card-header bg-primary text-white text-center">
-        <h5 class="mb-0">Form Pendataan Keluarga</h5>
-      </div>
+     <div style="height: 160px; background-color:rgb(181, 192, 187)" class="card-header text-white text-center d-flex align-items-center justify-content-center">
+     <center> <img style="width: 200px;" src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>" alt=""> 
+     <h5 class="mb-0">Form Pendataan Keluarga <br> Perumahan Taman Sukodono Indah</h5>
+    </center>  <br>
+    
+    </div>
       <div class="card-body">
         <form id="formKeluarga" enctype="multipart/form-data">
           <h6 class="mb-3">Data Keluarga</h6>
@@ -155,6 +158,29 @@
         <div class="col-md-6">
           <label class="form-label">NIK</label>
           <input type="text" class="form-control" name="nik[]" required />
+        </div>
+       <div class="col-md-6">
+          <label class="form-label">Agama</label>
+          <select class="form-select" name="agama[]" required>
+            <option value="">Pilih Agama...</option>
+            <option value="Islam">Islam</option>
+            <option value="Kristen Protestan">Kristen Protestan</option>
+            <option value="Katolik">Katolik</option>
+            <option value="Hindu">Hindu</option>
+            <option value="Buddha">Buddha</option>
+            <option value="Konghucu">Konghucu</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Status Perkawinan</label>
+          <select class="form-select" name="status_perkawinan[]" required>
+            <option value="">Pilih Status Perkawinan...</option>
+            <option value="Belum Kawin">Belum Kawin</option>
+            <option value="Kawin">Kawin</option>
+            <option value="Cerai Hidup">Cerai Hidup</option>
+            <option value="Cerai Mati">Cerai Mati</option>
+          </select>
         </div>
         <div class="col-md-6">
           <label class="form-label">Hubungan</label>
