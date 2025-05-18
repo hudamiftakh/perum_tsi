@@ -166,22 +166,7 @@
           <label class="form-label">NIK</label>
           <input type="text" class="form-control" name="nik[]" required />
         </div>
-      <div class="col-md-6">
-        <label class="form-label">Pekerjaan</label>
-        <select class="form-select" name="pekerjaan[]" required>
-          <option value="">Pilih Pekerjaan...</option>
-          <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
-          <option value="ASN">ASN</option>
-          <option value="TNI/Polri">TNI/Polri</option>
-          <option value="Pegawai Swasta">Pegawai Swasta</option>
-          <option value="Wiraswasta">Wiraswasta</option>
-          <option value="Petani">Petani</option>
-          <option value="Nelayan">Nelayan</option>
-          <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
-          <option value="Pensiunan">Pensiunan</option>
-          <option value="Lainnya">Lainnya</option>
-        </select>
-      </div>
+     
       <div class="col-md-6">
         <label class="form-label">Jenis Kelamin</label>
         <select class="form-select" name="jenis_kelamin[]" required>
@@ -190,6 +175,7 @@
           <option value="Perempuan">Perempuan</option>
         </select>
       </div>
+    
        <div class="col-md-6">
           <label class="form-label">Agama</label>
           <select class="form-select" name="agama[]" required>
@@ -227,6 +213,33 @@
         <div class="col-md-6">
           <label class="form-label">Tanggal Lahir</label>
           <input type="date" class="form-control" name="tgl_lahir[]" required />
+        </div>
+         <div class="col-md-6">
+            <label class="form-label">Pekerjaan</label>
+            <select class="form-select" name="pekerjaan[]" required>
+              <option value="">Pilih Pekerjaan...</option>
+              <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
+              <option value="ASN">ASN</option>
+              <option value="TNI/Polri">TNI/Polri</option>
+              <option value="Pegawai Swasta">Pegawai Swasta</option>
+              <option value="Wiraswasta">Wiraswasta</option>
+              <option value="Petani">Petani</option>
+              <option value="Nelayan">Nelayan</option>
+              <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
+              <option value="Pensiunan">Pensiunan</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+         <div class="col-md-6">
+          <label class="form-label">Golongan Darah</label>
+          <select class="form-select" name="golongan_darah[]">
+            <option value="">Pilih Golongan Darah...</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="AB">AB</option>
+            <option value="O">O</option>
+            <option value="Tidak Tahu">Tidak Tahu</option>
+          </select>
         </div>
       </div>
     </div>
