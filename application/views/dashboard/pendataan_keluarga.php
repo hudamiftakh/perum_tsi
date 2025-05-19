@@ -64,12 +64,20 @@
 <body>
   <div class="container py-4">
     <div class="card shadow-lg">
-     <div style="height: 160px; background-color:rgb(243, 247, 245)" class="card-header text-white text-center d-flex align-items-center justify-content-center">
-     <center> <img style="width: 200px;" src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>" alt=""> 
-     <h5 class="mb-0" style="color: black;">Form Pendataan Keluarga <br> Perumahan Taman Sukodono Indah</h5>
-    </center>  <br>
-    
-    </div>
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div
+          class="card-header text-center d-flex flex-column align-items-center justify-content-center p-4"
+          style="height: 160px; background: linear-gradient(135deg,rgb(209, 241, 212), #ffffff);">
+          <img
+            src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>"
+            alt="Logo TSI"
+            style="width: 150px; margin-bottom: 15px;">
+          <h4 class="fw-bold mb-1 text-dark">PENDATAAN WARGA</h4>
+          <p class="mb-0 text-muted" style="font-size: 1.1rem;">
+            Perumahan Taman Sukodono Indah
+          </p>
+        </div>
+      </div>
       <div class="card-body">
         <form id="formKeluarga" enctype="multipart/form-data">
           <h6 class="mb-3">Data Kartu Keluarga</h6>
