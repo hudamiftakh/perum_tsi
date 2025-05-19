@@ -67,7 +67,7 @@
       <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
         <div
           class="card-header text-center d-flex flex-column align-items-center justify-content-center p-4"
-          style="height: 160px; background: linear-gradient(135deg,rgb(209, 241, 212), #ffffff);">
+          style="height: 160px; background: linear-gradient(135deg,rgb(225, 248, 227), #ffffff);">
           <img
             src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>"
             alt="Logo TSI"
