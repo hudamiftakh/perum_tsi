@@ -235,7 +235,7 @@ if ($check_data <= 0): ?>
                 <div class="col-md-2 mt-3 mt-md-0">
                     <div class="d-flex flex-md-column flex-row flex-wrap gap-2 justify-content-md-end justify-content-center">
                         <!-- Tombol 1 -->
-                         <?php 
+                        <?php 
                         $id = $data['id'];
                         $CI =& get_instance();
                         $CI->load->library('encryption');

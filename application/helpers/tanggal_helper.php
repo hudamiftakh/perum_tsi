@@ -330,4 +330,46 @@ function generateSecretKey($length = 32)
 	}
 	return $secretKey;
 }
+
+/**
+ * Enkripsi string dan buat URL-safe (ganti +, /, =)
+ *
+ * @param string $data Data yang mau dienkripsi
+ * @return string Enkripsi yang sudah URL safe
+ */
+if (!function_exists('encrypt_url')) {
+    function encrypt_url($data) {
+        $CI =& get_instance();
+        $CI->load->library('encryption');
+
+        // Enkripsi data
+        $encrypted = $CI->encryption->encrypt($data);
+
+        // Ganti karakter supaya URL-safe
+        $url_safe = strtr($encrypted, ['+' => '-', '/' => '_', '=' => '~']);
+
+        return $url_safe;
+    }
+}
+
+/**
+ * Fungsi untuk mendekripsi string hasil encrypt_url
+ *
+ * @param string $data Enkripsi yang sudah URL safe
+ * @return string|null Hasil dekripsi atau null kalau gagal
+ */
+if (!function_exists('decrypt_url')) {
+    function decrypt_url($data) {
+        $CI =& get_instance();
+        $CI->load->library('encryption');
+
+        // Balikin karakter ke bentuk asli
+        $url_unsafe = strtr($data, ['-' => '+', '_' => '/', '~' => '=']);
+
+        // Dekripsi data
+        $decrypted = $CI->encryption->decrypt($url_unsafe);
+
+        return $decrypted === false ? null : $decrypted;
+    }
+}
 ?>

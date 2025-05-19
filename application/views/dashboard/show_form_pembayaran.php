@@ -50,7 +50,7 @@
             src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>"
             alt="Logo TSI"
             style="width: 150px; margin-bottom: 15px;">
-          <h4 class="fw-bold mb-1 text-dark">PEMBAYARAN IPL</h4>
+          <h4 class="fw-bold mb-1 text-dark">KONFIRMASI PEMBAYARAN IPL</h4>
           <p class="mb-0 text-muted" style="font-size: 1.1rem;">
             Perumahan Taman Sukodono Indah
           </p>

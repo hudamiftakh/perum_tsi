@@ -287,7 +287,7 @@ class dashboard extends CI_Controller
             'kecamatan' => $this->input->post('kecamatan'),
             'kelurahan' => $this->input->post('kelurahan'),
             'file_kk' => $new_file_name,
-            'no_hp' => $this->input->post('no_hp')
+            'no_hp' => $this->input->post('no_hp')	
         ];
 
         $this->db->insert('master_keluarga', $keluarga_data);
@@ -582,13 +582,15 @@ class dashboard extends CI_Controller
 			}
 
 			if ($bulan_mulai) {
+				$nominal_per_bulan = 125000;
 				$startDate = new DateTime($bulan_mulai . '-01');
 				for ($i = 0; $i < $bulanCount; $i++) {
 					$bulan = $startDate->format('Y-m-01');
 
 					$this->db->insert('master_detail_pembayaran_bulanan', [
 						'pembayaran_id' => $pembayaran_id,
-						'bulan' => $bulan
+						'bulan'         => $bulan,
+						'nominal'       => $nominal_per_bulan
 					]);
 					$startDate->modify('+1 month');
 				}
@@ -596,7 +598,7 @@ class dashboard extends CI_Controller
 		}
 
 		$this->session->set_flashdata('success', 'Pembayaran berhasil disimpan');
-		redirect('pembayaran');
+		redirect('pembayaran-sukses?data=' . urlencode(json_encode($data_pembayaran)));
 	}
 
 

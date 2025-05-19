@@ -33,9 +33,9 @@ $this->load->library('encryption');
         width: 100%;
     }
 
-    .table-striped tr:nth-child(odd) {
+    /* .table-striped tr:nth-child(odd) {
         background-color: #f2f2f2;
-    }
+    } */
 
     .table-striped td {
         padding: 4px 8px;
@@ -79,6 +79,22 @@ $this->load->library('encryption');
         background-color: #f0f0f0;
         color: #0d6efd;
     }
+
+    table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+
+    table tbody tr:hover {
+        background-color: #f1fdf3;
+    }
+
+    table {
+        border-radius: 15px;
+        overflow: hidden;
+    }
 </style>
 
 <?php if ($this->session->flashdata('success')): ?>
@@ -97,61 +113,68 @@ $this->load->library('encryption');
 <div class="card w-100 position-relative overflow-hidden">
     <div class="card-body p-4">
         <!-- Form pencarian -->
-        <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3 row g-3 align-items-center">
-            <div class="col-auto">
-                <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-success">
-                    <i class="fa fa-plus-circle me-1"></i> Tambah Pendataan
-                </a>
-            </div>
+        <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3">
+            <div class="row gy-2 gx-3 align-items-center">
 
-            <div class="col">
-                <div class="input-group">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari No NIK atau Nama..."
-                        value="<?= html_escape($this->input->get('keyword')); ?>">
-                    <button class="btn btn-success" type="submit">
-                        <i class="fa fa-search me-1"></i> Cari
-                    </button>
-                    <?php if ($this->input->get('keyword')): ?>
-                        <a href="<?= base_url('warga/warga'); ?>" class="btn btn-outline-danger">
-                            <i class="fa fa-times me-1"></i> Reset
+                <!-- Tombol Tambah -->
+                <div class="col-12 col-md-auto">
+                    <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-success w-100">
+                        <i class="fa fa-plus-circle me-1"></i> Tambah Pendataan
+                    </a>
+                </div>
+
+                <!-- Input Pencarian -->
+                <div class="col-12 col-md">
+                    <div class="input-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="Cari No NIK atau Nama..."
+                            value="<?= html_escape($this->input->get('keyword')); ?>">
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa fa-search me-1"></i> Cari
+                        </button>
+                        <?php if ($this->input->get('keyword')): ?>
+                            <a href="<?= base_url('warga/warga'); ?>" class="btn btn-outline-danger">
+                                <i class="fa fa-times me-1"></i> Reset
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Tombol Export -->
+                <div class="col-12 col-md-auto">
+                    <div class="btn-group w-100" role="group">
+                        <a href="<?= base_url('warga/export_excel'); ?>" class="btn btn-outline-success">
+                            <i class="fa fa-file-excel-o me-1"></i> Excel
                         </a>
-                    <?php endif; ?>
+                        <a href="<?= base_url('warga/export_pdf'); ?>" class="btn btn-outline-danger">
+                            <i class="fa fa-file-pdf-o me-1"></i> PDF
+                        </a>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Tombol Export -->
-            <div class="col-auto">
-                <div class="btn-group" role="group" aria-label="Export options">
-                    <a href="<?= base_url('warga/export_excel'); ?>" class="btn btn-outline-success">
-                        <i class="fa fa-file-excel-o me-1"></i> Excel
-                    </a>
-                    <a href="<?= base_url('warga/export_pdf'); ?>" class="btn btn-outline-danger">
-                        <i class="fa fa-file-pdf-o me-1"></i> PDF
-                    </a>
-                </div>
             </div>
         </form>
+
         <div class="table-responsive mt-4">
             <table class="table table-striped table-custom table-bordered-dark" id="DataBroadcast" style="width: 100%;">
-                <thead class="bg-success" style="height: 60px; vertical-align: middle;">
-                    <tr>
-                        <th>No</th>
-                        <th>RUMAH</th>
-                        <th>NO KK</th>
+                <thead style="background: linear-gradient(to right, #28a745, #218838) !important; color: white !important; vertical-align: middle !important;">
+                    <tr style="height: 60px;" class="text-center align-middle">
+                        <th style="min-width: 40px;">No</th>
+                        <th>Rumah</th>
+                        <th>No KK</th>
                         <th>NIK</th>
-                        <th>NAMA</th>
-                        <th>JENIS KELAMIN</th>
-                        <th>TANGGAL LAHIR</th>
+                        <th>Nama</th>
+                        <th>Jenis Kelamin</th>
+                        <th>Tanggal Lahir</th>
                         <th>SDHK</th>
-                        <th>GOLDAR</th>
-                        <th>PEKERJAAN</th>
-                        <th>AGAMA</th>
-                        <th>ALAMAT</th>
-                        <th>KELURAHAN</th>
-                        <th>KECAMATAN</th>
-                        <th>KABUPATEN/KOTA</th>
-                        <th>PROVINSI</th>
-                        <th>AKSI</th>
+                        <th>Gol. Darah</th>
+                        <th>Pekerjaan</th>
+                        <th>Agama</th>
+                        <th>Alamat</th>
+                        <th>Kelurahan</th>
+                        <th>Kecamatan</th>
+                        <th>Kab/Kota</th>
+                        <th>Provinsi</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -161,7 +184,21 @@ $this->load->library('encryption');
                         $anggota_keluarga = $value['anggota'];
                     ?>
                         <tr>
-                            <td style="vertical-align: middle;"><?php echo $no++ ?></td>
+                            <td style="vertical-align: middle;">
+                                <div style="width: 32px;
+                                        height: 32px;
+                                        background-color: #198754;
+                                        color: white;
+                                        font-weight: bold;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 14px;
+                                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                                    <?php echo $no++; ?>
+                                </div>
+                            </td>
                             <td style="vertical-align: top;" nowrap="">
                                 <table class="table-striped">
                                     <?php
@@ -173,11 +210,24 @@ $this->load->library('encryption');
                                     <?php endforeach; ?>
                                 </table>
                             </td>
-                            <td style="vertical-align: middle;">
-                                <?php echo $value['no_kk']; ?>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalKK<?php echo $value['id']; ?>">
-                                    <i class="bi bi-image"></i>
-                                </a>
+                            <td style="vertical-align: middle;" nowrap="">
+                                <div>
+                                    <!-- Nomor KK -->
+                                    <span style="font-weight: bold;"><?= htmlspecialchars($value['no_kk']) ?></span>
+                                </div>
+                                <div class="mt-1 align-items-center gap-3">
+                                    <!-- Icon Gambar KK, klik buka modal -->
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalKK<?= $value['id'] ?>" class="text-primary d-flex align-items-center gap-1" title="Lihat Foto KK">
+                                        <i class="bi bi-image fs-5"></i> <span>Lihat KK</span>
+                                    </a>
+
+                                    <!-- Icon WhatsApp dengan nomor HP -->
+                                    <?php if (!empty($value['no_hp'])): ?>
+                                        <a href="https://wa.me/<?= preg_replace('/\D/', '', $value['no_hp']) ?>" target="_blank" class="text-success d-flex align-items-center gap-1" title="Chat WhatsApp" rel="noopener">
+                                            <i class="bi bi-whatsapp fs-5"></i> <span><?= htmlspecialchars($value['no_hp']) ?></span>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td style="vertical-align: top;">
                                 <table class="table-striped">
@@ -262,11 +312,22 @@ $this->load->library('encryption');
                             <td style="vertical-align: middle;"><?php echo $value['kota']; ?></td>
                             <td style="vertical-align: middle;"><?php echo $value['provinsi']; ?></td>
                             <td style="vertical-align: middle;" nowrap="">
-                                <form method="post" action="<?= base_url('warga/warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');">
+                                <form method="post" action="<?= base_url('warga/warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');" class="d-inline">
                                     <input type="hidden" name="id" value="<?= $value['id']; ?>">
-                                    <a class="btn btn-success" href="<?php echo base_url('edit-pendataan-keluarga/' . $value['id']); ?>"><i class="fa fa-pencil"></i></a>
-                                    <button type="submit" name="hapus" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+
+                                    <div class="btn-group" role="group" aria-label="Aksi">
+                                        <!-- Tombol Edit -->
+                                        <a href="<?= base_url('edit-pendataan-keluarga/' . encrypt_url($value['id'])); ?>" class="btn  btn-outline-success" title="Edit">
+                                            <i class="fa fa-pencil"></i>
+                                        </a>
+
+                                        <!-- Tombol Hapus -->
+                                        <button type="submit" name="hapus" class="btn  btn-outline-danger" title="Hapus">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </form>
+
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -275,31 +336,42 @@ $this->load->library('encryption');
         </div>
         <!-- Tampilkan Pagination -->
         <div class="row mt-4 align-items-center">
-            <div class="col-md-4" style="vertical-align: top;">
+            <!-- Keterangan Jumlah Data -->
+            <div class="col-12 col-md-4 mb-2 mb-md-0">
                 <div class="text-muted">
                     <i class="fa fa-database me-1"></i>
                     Menampilkan <strong><?= ($start + 1) ?> - <?= min($start + $per_page, $total_rows) ?></strong> dari <strong><?= $total_rows ?></strong> data
                 </div>
             </div>
-            <div class="col-md-8">
-                <div class="d-flex justify-content-end gap-2">
-                    <div class="dropdown d-inline-block me-2">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+
+            <!-- Navigasi Halaman -->
+            <div class="col-12 col-md-8">
+                <div class="d-flex flex-wrap justify-content-md-end gap-2">
+                    <!-- Dropdown Halaman -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 w-md-auto" type="button" data-bs-toggle="dropdown">
                             <i class="fa fa-chevron-down me-1"></i> Halaman <?= $current_page ?>
                         </button>
                         <ul class="dropdown-menu">
                             <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                <li><a class="dropdown-item <?= $i == $current_page ? 'active' : '' ?>"
+                                <li>
+                                    <a class="dropdown-item <?= $i == $current_page ? 'active' : '' ?>"
                                         href="<?= base_url('warga/warga/' . (($i - 1) * $per_page)) ?>">
                                         Halaman <?= $i ?>
-                                    </a></li>
+                                    </a>
+                                </li>
                             <?php endfor; ?>
                         </ul>
                     </div>
-                    <?= $pagination ?>
+
+                    <!-- Pagination -->
+                    <div>
+                        <?= $pagination ?>
+                    </div>
                 </div>
             </div>
         </div>
+
         <!-- Modal Preview KK -->
         <?php foreach ($keluarga as $value): ?>
             <div class="modal fade" id="modalKK<?php echo $value['id']; ?>" tabindex="-1">

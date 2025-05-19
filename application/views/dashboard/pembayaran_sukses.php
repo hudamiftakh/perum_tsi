@@ -69,8 +69,8 @@
                   d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 11.03a.75.75 0 0 0 1.08 0l4.992-4.992a.75.75 0 1 0-1.08-1.04L7.5 9.477 5.523 7.5a.75.75 0 0 0-1.06 1.06l2.507 2.47z" />
               </svg>
             </div>
-            <h3 class="fw-bold text-success">Pembayaran Berhasil!</h3>
-            <p class="text-muted">Terima kasih, pembayaran IPL Anda telah diterima dengan baik.</p>
+            <h3 class="fw-bold text-success">Konfirmasi Pembayaran Berhasil!</h3>
+            <p class="text-muted">Terima kasih, Konfirmasi pembayaran IPL Anda telah diterima dengan baik.</p>
           </div>
           <div class="card-body">
             <div class="bukti-info mb-4">

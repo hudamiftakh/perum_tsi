@@ -101,7 +101,7 @@
                     <h6 class="mb-3">Data Kartu Keluarga</h6>
                     <div class="row g-3 mb-3">
                         <?php
-                        $id = $this->uri->segment(2);
+                        $id = decrypt_url($this->uri->segment(2));
                         $data_kk = $this->db->get_where("master_keluarga", array('id' => $id))->row_array();
                         $data_keluarga = $this->db->get_where("master_anggota_keluarga", array('keluarga_id' => $id))->result_array();
                         $selected_nomor_rumah = explode('| ', $data_kk['nomor_rumah']);

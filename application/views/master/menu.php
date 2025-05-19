@@ -21,7 +21,7 @@
             <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('agenda'))) ? 'active' : ''; ?>"
                 href="javascript:void(0)" aria-expanded="false">
                 <span class="d-flex">
-                    <i class="ti ti-database-export"></i>
+                    <i class="ti ti-calendar-event"></i>
                 </span>
                 <span class="hide-menu">Rapat</span>
             </a>
