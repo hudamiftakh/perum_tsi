@@ -472,6 +472,139 @@ class dashboard extends CI_Controller
 	{
 		$this->load->view('dashboard/show_form_participant');
 	}
+
+	public function show_form_pembayaran()
+	{
+		$this->load->view('dashboard/show_form_pembayaran');
+	}
+
+	public function save_pembayaran()
+	{
+		// Ambil data dari POST
+		$user_id = $this->input->post('user_id');
+		$metode = $this->input->post('metode');
+		$bulan_mulai = $this->input->post('bulan_mulai'); // format yyyy-mm
+		$jumlah_bayar = $this->input->post('jumlah_bayar');
+		$keterangan = $this->input->post('keterangan');
+
+		$lama_cicilan = $this->input->post('lama_cicilan');
+		$total_cicilan = $this->input->post('total_cicilan');
+
+		// Validasi sederhana
+		if (!$user_id || !$metode || !$jumlah_bayar) {
+			$this->session->set_flashdata('error', 'Data wajib diisi lengkap');
+			redirect('pembayaran');
+			return;
+		}
+
+		// Ambil metode bayar
+		$pembayaran_via = $this->input->post('pembayaran_via');
+
+		// Inisialisasi variabel untuk bukti
+		$nama_file_bukti = null;
+
+		// Jika via transfer, lakukan upload
+		if ($pembayaran_via === 'transfer') {
+			$config['upload_path']   = './uploads/bukti/';
+			$config['allowed_types'] = 'jpg|jpeg|png|pdf';
+			$config['max_size']      = 2048; // 2MB
+			$config['encrypt_name']  = TRUE;
+
+			$this->load->library('upload', $config);
+
+			if (!$this->upload->do_upload('bukti')) {
+				$this->session->set_flashdata('error', 'Upload bukti gagal: ' . $this->upload->display_errors('', ''));
+				redirect('pembayaran');
+				return;
+			} else {
+				$upload_data = $this->upload->data();
+				$nama_file_bukti = $upload_data['file_name'];
+
+				// Kompres jika gambar
+				if (in_array(strtolower($upload_data['file_ext']), ['.jpg', '.jpeg', '.png'])) {
+					$config['image_library'] = 'gd2';
+					$config['source_image'] = $upload_data['full_path'];
+					$config['quality'] = '70%'; // Kompres kualitas 70%
+					$config['maintain_ratio'] = TRUE;
+
+					$this->load->library('image_lib', $config);
+
+					if (!$this->image_lib->resize()) {
+						$this->session->set_flashdata('error', 'Gagal kompres gambar: ' . $this->image_lib->display_errors('', ''));
+						redirect('pembayaran');
+						return;
+					}
+				}
+			}
+		}
+
+		// Siapkan data pembayaran
+		$data_pembayaran = [
+			'user_id' => $user_id,
+			'metode' => $metode,
+			'bulan_mulai' => $bulan_mulai ? $bulan_mulai . '-01' : null,
+			'jumlah_bayar' => $jumlah_bayar,
+			'bukti' => $nama_file_bukti, // <-- ini penting
+			'keterangan' => $keterangan,
+			'created_at' => date('Y-m-d H:i:s'),
+		];
+
+		// Insert ke tabel pembayaran
+		$this->db->insert('master_pembayaran', $data_pembayaran);
+		$pembayaran_id = $this->db->insert_id();
+
+		if (!$pembayaran_id) {
+			$this->session->set_flashdata('error', 'Gagal menyimpan pembayaran');
+			redirect('pembayaran');
+			return;
+		}
+
+		if ($metode === 'cicilan') {
+			if (!$lama_cicilan || !$total_cicilan) {
+				$this->session->set_flashdata('error', 'Data cicilan wajib diisi');
+				redirect('pembayaran');
+				return;
+			}
+
+			$data_cicilan = [
+				'pembayaran_id' => $pembayaran_id,
+				'lama_cicilan' => intval($lama_cicilan),
+				'total_cicilan' => intval($total_cicilan)
+			];
+			$this->db->insert('master_detail_cicilan', $data_cicilan);
+		} else {
+			// Hitung jumlah bulan bayar dari metode
+			$bulanCount = 1;
+			if (strpos($metode, '_bulan') !== false) {
+				$bulanCount = intval(explode('_', $metode)[0]);
+			} elseif ($metode === '7_tahun') {
+				$bulanCount = 12;
+			}
+
+			if ($bulan_mulai) {
+				$startDate = new DateTime($bulan_mulai . '-01');
+				for ($i = 0; $i < $bulanCount; $i++) {
+					$bulan = $startDate->format('Y-m-01');
+
+					$this->db->insert('master_detail_pembayaran_bulanan', [
+						'pembayaran_id' => $pembayaran_id,
+						'bulan' => $bulan
+					]);
+					$startDate->modify('+1 month');
+				}
+			}
+		}
+
+		$this->session->set_flashdata('success', 'Pembayaran berhasil disimpan');
+		redirect('pembayaran');
+	}
+
+
+	public function pembayaran_sukses()
+	{
+		$this->load->view('dashboard/pembayaran_sukses');
+	}
+
 	public function logout()
 	{
 		$this->session->sess_destroy();

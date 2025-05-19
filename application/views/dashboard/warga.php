@@ -96,31 +96,42 @@ $this->load->library('encryption');
 
 <div class="card w-100 position-relative overflow-hidden">
     <div class="card-body p-4">
-        <div class="table-responsive mt-4">
-            <!-- Form pencarian -->
-            <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3 row g-3 align-items-center">
-                <div class="col-auto">
-                    <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-success">
-                        <i class="fa fa-plus-circle me-1"></i> Tambah Pendataan
+        <!-- Form pencarian -->
+        <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3 row g-3 align-items-center">
+            <div class="col-auto">
+                <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-success">
+                    <i class="fa fa-plus-circle me-1"></i> Tambah Pendataan
+                </a>
+            </div>
+
+            <div class="col">
+                <div class="input-group">
+                    <input type="text" name="keyword" class="form-control" placeholder="Cari No NIK atau Nama..."
+                        value="<?= html_escape($this->input->get('keyword')); ?>">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa fa-search me-1"></i> Cari
+                    </button>
+                    <?php if ($this->input->get('keyword')): ?>
+                        <a href="<?= base_url('warga/warga'); ?>" class="btn btn-outline-danger">
+                            <i class="fa fa-times me-1"></i> Reset
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Tombol Export -->
+            <div class="col-auto">
+                <div class="btn-group" role="group" aria-label="Export options">
+                    <a href="<?= base_url('warga/export_excel'); ?>" class="btn btn-outline-success">
+                        <i class="fa fa-file-excel-o me-1"></i> Excel
+                    </a>
+                    <a href="<?= base_url('warga/export_pdf'); ?>" class="btn btn-outline-danger">
+                        <i class="fa fa-file-pdf-o me-1"></i> PDF
                     </a>
                 </div>
-                <div class="col">
-                    <div class="input-group">
-                        <input type="text" name="keyword" class="form-control"
-                            placeholder="Cari No NIK atau Nama..."
-                            value="<?= html_escape($this->input->get('keyword')); ?>">
-                        <button class="btn btn-success" type="submit">
-                            <i class="fa fa-search me-1"></i> Cari
-                        </button>
-                        <?php if ($this->input->get('keyword')): ?>
-                            <a href="<?= base_url('warga/warga'); ?>" class="btn btn-outline-danger">
-                                <i class="fa fa-times me-1"></i> Reset
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </form>
-
+            </div>
+        </form>
+        <div class="table-responsive mt-4">
             <table class="table table-striped table-custom table-bordered-dark" id="DataBroadcast" style="width: 100%;">
                 <thead class="bg-success" style="height: 60px; vertical-align: middle;">
                     <tr>
@@ -304,7 +315,7 @@ $this->load->library('encryption');
                             $ext = pathinfo($file, PATHINFO_EXTENSION);
                             $file_url = base_url('uploads/' . $file);
                             if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif'])): ?>
-                                <img src="<?php echo $file_url; ?>" alt="Foto KK" class="img-fluid"
+                                <img src="<?php echo $file_url; ?>" alt="Foto KK" class="img-fluid" width="100%"
                                     style="max-height: 80vh; object-fit: contain;">
                             <?php elseif (strtolower($ext) === 'pdf'): ?>
                                 <iframe src="<?php echo $file_url; ?>" width="100%" height="500px"
