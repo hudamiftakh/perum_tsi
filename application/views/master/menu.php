@@ -67,18 +67,27 @@
                         <span class="hide-menu">Data Keluarga</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a href="<?php echo base_url('warga/laporan-pembayaran') ?>"
+                        class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                        <div class="round-16 d-flex align-items-center justify-content-center">
+                            <i class="ti ti-circle"></i>
+                        </div>
+                        <span class="hide-menu">Laporan Pembayaran</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="<?php echo base_url('warga/verifikasi-pembayaran') ?>"
+                        class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                        <div class="round-16 d-flex align-items-center justify-content-center">
+                            <i class="ti ti-circle"></i>
+                        </div>
+                        <span class="hide-menu">Verifikasi Pembayaran</span>
+                    </a>
+                </li>
             </ul>
         </li>
         <?php endif; ?>
-       
-        <li class="sidebar-item">
-            <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>raport" aria-expanded="false">
-                <span class="rounded-3">
-                    <i class="ti ti-file-text"></i>
-                </span>
-                <span class="hide-menu"> Raport</span>
-            </a>
-        </li>
         <li class="sidebar-item">
             <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>logout" aria-expanded="false">
                 <span class="rounded-3">

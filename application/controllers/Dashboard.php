@@ -478,6 +478,26 @@ class dashboard extends CI_Controller
 		$this->load->view('dashboard/show_form_pembayaran');
 	}
 
+	public function laporan_pembayaran()
+	{
+		$data['halaman'] = 'dashboard/laporan_pembayaran';
+		$this->load->view('modul', $data);
+	}
+
+	public function verifikasi_pembayaran()
+	{
+		$sql = "
+            SELECT p.*, u.nama, u.rumah 
+            FROM master_pembayaran p
+            JOIN master_users u ON u.id = p.user_id
+            WHERE p.status = 'pending'
+            ORDER BY p.created_at DESC
+        ";
+        $data['pembayaran'] = $this->db->query($sql)->result();
+		$data['halaman'] = 'dashboard/verifikasi_pembayaran';
+		$this->load->view('modul', $data);
+	}
+
 	public function save_pembayaran()
 	{
 		// Ambil data dari POST
