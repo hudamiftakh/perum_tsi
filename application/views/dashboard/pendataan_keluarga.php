@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Form Pendataan Keluarga</title>
   <link rel="shortcut icon" type="image/png" href="<?php echo base_url() ?>dist/logo_2.png" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Select2 CSS -->
@@ -105,7 +106,19 @@
 
 <body>
   <div class="container py-4">
-    <div class="card shadow-lg">
+    <div id="countdown-timer"
+      class="position-fixed top-0 start-0 w-100 bg-white shadow-sm d-flex align-items-center justify-content-center gap-2 px-3 py-2"
+      style="z-index: 1050; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem;">
+      <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+        style="width: 32px; height: 32px;">
+        <i class="bi bi-clock-history fs-6"></i>
+      </div>
+      <div class="text-center">
+        <div class="fw-bold text-dark small">Berakhir pada </div>
+        <div id="timer-display" class="fw-semibold text-primary small">Loading...</div>
+      </div>
+    </div>
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden mt-5">
       <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
         <div
           class="card-header text-center d-flex flex-column align-items-center justify-content-center p-4"
@@ -540,6 +553,31 @@
         }
       });
     });
+  </script>
+  <script>
+    // 🕒 Atur tanggal & waktu akhir di sini
+    const countdownEndTime = new Date("2025-05-25T23:59:00").getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = countdownEndTime - now;
+
+      if (distance <= 0) {
+        document.getElementById("timer-display").innerHTML = "Waktu Habis!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("timer-display").innerHTML =
+        `${days}h ${hours}j ${minutes}m ${seconds}d`;
+    }
+
+    updateCountdown(); // Inisialisasi
+    setInterval(updateCountdown, 1000); // Update tiap detik
   </script>
 
 </body>
