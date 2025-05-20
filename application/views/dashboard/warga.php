@@ -113,7 +113,7 @@ $this->load->library('encryption');
 <div class="card w-100 position-relative overflow-hidden">
     <div class="card-body p-4">
         <!-- Form pencarian -->
-        <form method="get" action="<?= base_url('warga/warga'); ?>" class="mb-3">
+        <form method="get" action="<?= base_url('warga/data-warga'); ?>" class="mb-3">
             <div class="row gy-2 gx-3 align-items-center">
 
                 <!-- Tombol Tambah -->
@@ -132,7 +132,7 @@ $this->load->library('encryption');
                             <i class="fa fa-search me-1"></i> Cari
                         </button>
                         <?php if ($this->input->get('keyword')): ?>
-                            <a href="<?= base_url('warga/warga'); ?>" class="btn btn-outline-danger">
+                            <a href="<?= base_url('warga/data-warga'); ?>" class="btn btn-outline-danger">
                                 <i class="fa fa-times me-1"></i> Reset
                             </a>
                         <?php endif; ?>
@@ -142,10 +142,10 @@ $this->load->library('encryption');
                 <!-- Tombol Export -->
                 <div class="col-12 col-md-auto">
                     <div class="btn-group w-100" role="group">
-                        <a href="<?= base_url('warga/export_excel'); ?>" class="btn btn-outline-success">
+                        <a href="#" class="btn btn-outline-success">
                             <i class="fa fa-file-excel-o me-1"></i> Excel
                         </a>
-                        <a href="<?= base_url('warga/export_pdf'); ?>" class="btn btn-outline-danger">
+                        <a href="#" class="btn btn-outline-danger">
                             <i class="fa fa-file-pdf-o me-1"></i> PDF
                         </a>
                     </div>
@@ -312,7 +312,7 @@ $this->load->library('encryption');
                             <td style="vertical-align: middle;"><?php echo $value['kota']; ?></td>
                             <td style="vertical-align: middle;"><?php echo $value['provinsi']; ?></td>
                             <td style="vertical-align: middle;" nowrap="">
-                                <form method="post" action="<?= base_url('warga/warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');" class="d-inline">
+                                <form method="post" action="<?= base_url('warga/data-warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');" class="d-inline">
                                     <input type="hidden" name="id" value="<?= $value['id']; ?>">
 
                                     <div class="btn-group" role="group" aria-label="Aksi">
@@ -356,7 +356,7 @@ $this->load->library('encryption');
                             <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                                 <li>
                                     <a class="dropdown-item <?= $i == $current_page ? 'active' : '' ?>"
-                                        href="<?= base_url('warga/warga/' . (($i - 1) * $per_page)) ?>">
+                                        href="<?= base_url('warga/data-warga/' . (($i - 1) * $per_page)) ?>">
                                         Halaman <?= $i ?>
                                     </a>
                                 </li>

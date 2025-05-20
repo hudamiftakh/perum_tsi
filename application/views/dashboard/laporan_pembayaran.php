@@ -28,12 +28,16 @@ $this->load->library('encryption');
     </div>
 </div>
 <style>
+    table {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
     .table thead th {
         vertical-align: middle;
         text-align: center;
     }
 
-    .table td,
     .table th {
         text-align: center;
     }
@@ -66,24 +70,39 @@ $this->load->library('encryption');
             <div class="row gy-2 gx-3 align-items-end">
 
                 <!-- Input Pencarian Keyword -->
-                <div class="col-12 col-md-4">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari No NIK atau Nama..."
+                <div class="col-12 col-md-3">
+                    <input type="text" name="keyword" class="form-control" placeholder="Cari NIK atau Nama..."
                         value="<?= html_escape($this->input->get('keyword')); ?>">
                 </div>
                 <!-- Filter Tahun -->
                 <div class="col-6 col-md-2">
                     <select name="tahun" class="form-select">
-                        <option value="">Semua Tahun</option>
+                        <option value="">Pilih Tahun</option>
                         <?php
                         $start = 2020;
                         $end = date('Y');
-                        $selected_tahun = $this->input->get('tahun');
+                        $tahun_get = $this->input->get('tahun');
+                        $selected_tahun = (empty($tahun_get)) ? date('Y') : $tahun_get;
                         for ($tahun = $end; $tahun >= $start; $tahun--):
                         ?>
                             <option value="<?= $tahun; ?>" <?= $selected_tahun == $tahun ? 'selected' : ''; ?>>
                                 <?= $tahun; ?>
                             </option>
                         <?php endfor; ?>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <select name="id_koordinator" tyle="white-space: nowrap;" class="form-select">
+                        <option value="">Koordinator Blok</option>
+                        <?php
+                        $selected_koordinator = $_REQUEST['id_koordinator'];
+                        foreach ($koordinator as $key => $value) : ?>
+                            <option value="<?php echo $value['id']; ?>"
+                                <?php echo ($value['id'] == $selected_koordinator) ? 'selected' : ''; ?>>
+                                <?php echo $value['nama']; ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -94,7 +113,8 @@ $this->load->library('encryption');
                             <i class="fa fa-search me-1"></i> Cari
                         </button>
                         <?php if ($this->input->get('keyword') || $this->input->get('bulan') || $this->input->get('tahun')): ?>
-                            <a href="<?= base_url('warga/laporan-pembayaran'); ?>" class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
+                            <a href="<?= base_url('warga/laporan-pembayaran'); ?>"
+                                class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
                                 <i class="fa fa-times me-1"></i> Reset
                             </a>
                         <?php endif; ?>
@@ -113,44 +133,52 @@ $this->load->library('encryption');
 
 
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover" id="laporanTable">
-                <thead class="table-primary">
+            <table class="table table-bordered table-striped table-hover align-middle text-nowrap" id="laporanTable">
+                <thead class="table-primary text-center">
                     <tr>
                         <th>No</th>
-                        <th class="left">Nama</th>
-                        <th class="left">Rumah</th>
-                        <?php for ($i = 1; $i <= 12; $i++): ?>
+                        <th>Nama</th>
+                        <th>Rumah</th>
+                        <?php
+                        $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
+                        $tahun_sekarang = date('Y');
+                        $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
+
+                        for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
                             <th><?= date('M', mktime(0, 0, 0, $i, 1)) ?></th>
                         <?php endfor; ?>
-                        <th>Total Bayar</th>
-                        <th class="left">Metode Bayar</th>
-                        <th class="left">Status</th>
-                        <th class="left">Tanggal Bayar</th>
-                        <th class="left">Keterangan</th>
+                        <th>Total</th>
+                        <th>Keterangan</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     <?php $no = 1;
-                    foreach ($laporan_bulanan as $row): ?>
+                    foreach ($rumah as $key => $data_bulanan): ?>
                         <tr>
-                            <td><?= $no++ ?></td>
-                            <td class="left"><?= htmlspecialchars($row['nama']) ?></td>
-                            <td class="left"><?= htmlspecialchars($row['rt_rw']) ?></td>
-                            <?php for ($i = 1; $i <= 12; $i++):
-                                $key = sprintf('%d-%02d', $tahun, $i);
-                            ?>
-                                <td><?= number_format($row['bulanan'][$key] ?? 0, 0, ',', '.') ?></td>
+                            <td class="text-center"><?= $no++ ?></td>
+                            <td><?= $data_bulanan['nama'] ?></td>
+                            <td><?= $data_bulanan['alamat'] ?></td>
+
+                            <?php for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
+                                <td class="text-center">-</td>
                             <?php endfor; ?>
-                            <td><strong><?= number_format($row['total'], 0, ',', '.') ?></strong></td>
-                            <td class="left"><?= htmlspecialchars($row['metode_bayar'] ?? '-') ?></td>
-                            <td class="left"><?= htmlspecialchars($row['status_pembayaran'] ?? '-') ?></td>
-                            <td class="left"><?= htmlspecialchars($row['tanggal_bayar'] ?? '-') ?></td>
-                            <td class="left"><?= htmlspecialchars($row['keterangan'] ?? '-') ?></td>
+
+                            <td class="text-center">Rp0</td>
+                            <td>-</td>
+
+                            <!-- Tombol Aksi -->
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-success">
+                                    <i class="bi bi-cash-coin"></i> Bayar
+                                </button>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+
     </div>
 </div>

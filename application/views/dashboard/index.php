@@ -12,7 +12,7 @@
 								// echo $this->db->get("master_pegawai")->num_rows();
 							?>
 						</h2>
-                        <h6 class="fw-medium text-info mb-0">TOTAL ANGGOTA</h6>
+                        <h6 class="fw-medium text-info mb-0">TOTAL RUMAH</h6>
                     </div>
                     <div class="ms-auto">
                         <span class="text-info display-6"><i class="ti ti-file-text"></i></span>
@@ -46,7 +46,7 @@
 								// ")->num_rows();
 							?>
 						</h2>
-                        <h6 class="fw-medium text-primary mb-0">ANGGOTA AKTIF</h6>
+                        <h6 class="fw-medium text-primary mb-0">TOTAL RUMAH BAYAR IPL</h6>
                     </div>
                     <div class="ms-auto">
                         <span class="text-primary display-6"><i class="ti ti-users"></i></span>
@@ -81,7 +81,7 @@
                             // ")->num_rows();
 							?>
 						</h2>
-                        <h6 class="fw-medium text-success mb-0">ANGGOTA TIDAK AKTIF</h6>
+                        <h6 class="fw-medium text-success mb-0">IPL TERKUMPUL</h6>
                     </div>
                     <div class="ms-auto">
                         <span class="text-success display-6"><i class="ti ti-phone"></i></span>
@@ -95,8 +95,8 @@
             <div class="card-body">
                 <div class="d-flex no-block align-items-center">
                     <div>
-                        <h2 class="fs-7"><?php // echo $this->db->get("master_transaksi_aktivitas")->num_rows()?></h2>
-                        <h6 class="fw-medium text-danger mb-0">TOTAL AKTIVITAS</h6>
+                        <h2 class="fs-7">110.000<?php // echo $this->db->get("master_transaksi_aktivitas")->num_rows()?></h2>
+                        <h6 class="fw-medium text-danger mb-0">TOTAL SALDO</h6>
                     </div>
                     <div class="ms-auto">
                         <span class="text-danger display-6"><i class="ti ti-send"></i></span>

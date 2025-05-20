@@ -182,7 +182,7 @@ class dashboard extends CI_Controller
 		$total_rows = $db_clone->count_all_results('', FALSE);
 
 		// Pagination config with Bootstrap 5 styling
-		$config['base_url'] = base_url('warga/warga');
+		$config['base_url'] = base_url('warga/data-warga');
 		$config['total_rows'] = $total_rows;
 		$config['per_page'] = 10;
 		$config['uri_segment'] = 3;
@@ -478,8 +478,42 @@ class dashboard extends CI_Controller
 		$this->load->view('dashboard/show_form_pembayaran');
 	}
 
-	public function laporan_pembayaran()
+	public function laporan_pembayaran($tahun = null)
 	{
+		if ($tahun === null) {
+			$tahun = date('Y');
+		}
+		$keyword      = $this->input->get('keyword');
+		$tahun          = $this->input->get('tahun');
+		$id_koordinator = $this->input->get('id_koordinator');
+		// Ambil semua rumah
+		$filter = [];
+		if (!empty($id_koordinator)) {
+			$filter[] = "vb.id_koordinator = '" . $this->db->escape_str($id_koordinator) . "'";
+		}
+		if (!empty($keyword)) {
+			$filter[] = "(vb.nama LIKE '%" . $this->db->escape_str($keyword) . "%' OR vb.alamat LIKE '%" . $this->db->escape_str($keyword) . "%')";
+		}
+		// if (!empty($tahun)) {
+		// 	$filter[] = "YEAR(vb.tanggal_pelaporan) = '" . $this->db->escape_str($tahun) . "'";
+		// }
+		// Gabungkan semua kondisi dengan AND
+		$whereClause = '';
+		if (!empty($filter)) {
+			$whereClause = 'WHERE ' . implode(' AND ', $filter);
+		}
+
+		$rumah = $this->db->query("SELECT vb.* FROM (
+										SELECT DISTINCT b.alamat, b.nama, c.nama as koordinator,b.id_koordinator FROM master_users as a
+										LEFT JOIN master_rumah as b ON a.id = id_rumah
+										LEFT JOIN master_koordinator_blok as c ON b.id_koordinator = c.id
+										ORDER BY b.alamat ASC
+									) as vb ".$whereClause)->result_array();
+		$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
+
+		$data['tahun'] = $tahun;
+		$data['rumah'] = $rumah;
+		$data['koordinator'] = $koordinator;
 		$data['halaman'] = 'dashboard/laporan_pembayaran';
 		$this->load->view('modul', $data);
 	}

@@ -59,7 +59,7 @@
             <ul aria-expanded="false"
                 class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : ''; ?>">
                 <li class="sidebar-item">
-                    <a href="<?php echo base_url('warga/warga') ?>"
+                    <a href="<?php echo base_url('warga/data-warga') ?>"
                         class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
                         <div class="round-16 d-flex align-items-center justify-content-center">
                             <i class="ti ti-circle"></i>

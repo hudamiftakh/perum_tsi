@@ -15,45 +15,64 @@
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
-    body {
-        background: #f8f9fa;
-    }
+        body {
+            background: #f8f9fa;
+        }
 
-    .card {
-        border-radius: 16px;
-    }
+        .card {
+            border-radius: 16px;
+        }
 
-    .card-header {
-        border-top-left-radius: 16px;
-        border-top-right-radius: 16px;
-    }
+        .card-header {
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
 
-    .info-small {
-        font-size: 0.85em;
-        color: #6c757d;
-    }
+        .info-small {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
 
-    .form-label {
-        font-weight: 600;
-    }
+        .form-label {
+            font-weight: 600;
+        }
 
-    .highlight {
-        background-color: #e7f5ff;
-        padding: 10px;
-        border-left: 4px solid #0d6efd;
-        margin-bottom: 1rem;
-        border-radius: 6px;
-    }
+        .highlight {
+            background-color: #e7f5ff;
+            padding: 10px;
+            border-left: 4px solid #0d6efd;
+            margin-bottom: 1rem;
+            border-radius: 6px;
+        }
 
-    /* .select2-container--default .select2-selection--multiple {
-        min-height: 50px;
-        overflow-y: auto;
-    }
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            /* sesuaikan dengan kebutuhan */
+            display: flex;
+            align-items: center;
+        }
 
-    .select2-results {
-        max-height: 200px;
-        overflow-y: auto;
-    } */
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding-left: 8px;
+            /* agar teks tidak mentok kiri */
+            line-height: normal !important;
+            /* reset default line-height */
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+        }
+
+        .select2-container .select2-selection--multiple {
+            min-height: 100px !important;
+        }
+
+        .select2-results__options {
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 
@@ -65,7 +84,7 @@
                     style="height: 160px; background: linear-gradient(135deg,rgb(209, 241, 212), #ffffff);">
                     <img src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>" alt="Logo TSI"
                         style="width: 150px; margin-bottom: 15px;">
-                    <h4 class="fw-bold mb-1 text-dark">KONFIRMASI PEMBAYARAN IPL</h4>
+                    <h4 class="fw-bold mb-1 text-dark">PEMBAYARAN IPL</h4>
                     <p class="mb-0 text-muted" style="font-size: 1.1rem;">
                         Perumahan Taman Sukodono Indah
                     </p>
@@ -74,42 +93,43 @@
             <div class="card-body">
                 <div class="highlight d-none" id="infoPeriode"></div>
                 <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <?= $this->session->flashdata('success'); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <?= $this->session->flashdata('success'); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 <?php endif; ?>
                 <?php if ($this->session->flashdata('error')): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <?= $this->session->flashdata('error'); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?= $this->session->flashdata('error'); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 <?php endif; ?>
                 <form id="formBayar" method="post" action="<?php echo base_url('proses-pembayaran'); ?>"
                     enctype="multipart/form-data">
                     <div class="col-md-6">
                         <label for="nomorRumah" class="form-label">Nomor Rumah</label>
-                        <select class="form-select select2" id="nomorRumah" name="user_id" style="width: 100% !important;"
+                        <select class="form-select select2" id="nomorRumah" name="user_id" style="width: 100% !important; height: 100px;"
                             required>
                             <option value="">Pilih Nomor Rumah</option>
                             <?php
                             $selected_nomor_rumah = [''];
                             $result_rumah = $this->db->get("master_users")->result_array();
                             foreach ($result_rumah as $key => $value) : ?>
-                            <option value="<?php echo $value['id']; ?>"
-                                <?= in_array($value['id'], $selected_nomor_rumah) ? 'selected' : '' ?>>
-                                <?php echo $value['id']; ?> - <?php echo $value['nama']." - ".$value['rumah']; ?>
-                            </option>
+                                <option value="<?php echo $value['id']; ?>"
+                                    <?= in_array($value['id'], $selected_nomor_rumah) ? 'selected' : '' ?>>
+                                    <?php echo $value['id']; ?> - <?php echo $value['nama'] . " - " . $value['rumah']; ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
                     <div class="mb-3">
+                        <br>
                         <label class="form-label">Jenis Pembayaran</label>
                         <select class="form-select" name="metode" id="metode" onchange="tampilkanOpsi()" required>
                             <option value="">Pilih metode pembayaran...</option>
                             <option value="1_bulan">Bayar 1 Bulan</option>
-                            <option value="2_bulan">Rapel 2 Bulan</option>
+                            <!-- <option value="2_bulan">Rapel 2 Bulan</option>
                             <option value="3_bulan">Rapel 3 Bulan</option>
                             <option value="4_bulan">Rapel 4 Bulan</option>
                             <option value="5_bulan">Rapel 5 Bulan</option>
@@ -119,12 +139,12 @@
                             <option value="9_bulan">Rapel 9 Bulan</option>
                             <option value="10_bulan">Rapel 10 Bulan</option>
                             <option value="7_tahun">Bayar 1 Tahun Sekaligus</option>
-                            <option value="cicilan">Cicilan Beberapa Bulan</option>
+                            <option value="cicilan">Cicilan Beberapa Bulan</option> -->
                         </select>
                     </div>
 
                     <div id="opsiBulan" class="mb-3 d-none">
-                        <label for="bulan_mulai" class="form-label">Mulai Bulan</label>
+                        <label for="bulan_mulai" class="form-label">Bulan</label>
                         <input type="month" name="bulan_mulai" id="bulan_mulai" class="form-control">
                     </div>
 
@@ -179,51 +199,51 @@
     </div>
 
     <script>
-    function tampilkanOpsi() {
-        const metode = document.getElementById("metode").value;
-        const opsiBulan = document.getElementById("opsiBulan");
-        const opsiCicilan = document.getElementById("opsiCicilan");
-        const infoPeriode = document.getElementById("infoPeriode");
+        function tampilkanOpsi() {
+            const metode = document.getElementById("metode").value;
+            const opsiBulan = document.getElementById("opsiBulan");
+            const opsiCicilan = document.getElementById("opsiCicilan");
+            const infoPeriode = document.getElementById("infoPeriode");
 
-        opsiBulan.classList.remove("d-none");
-        infoPeriode.classList.remove("d-none");
-        opsiCicilan.classList.add("d-none");
+            opsiBulan.classList.remove("d-none");
+            infoPeriode.classList.remove("d-none");
+            opsiCicilan.classList.add("d-none");
 
-        let infoText = "";
+            let infoText = "";
 
-        if (metode === "cicilan") {
-            opsiCicilan.classList.remove("d-none");
-            infoText = "Anda memilih cicilan. Silakan tentukan mulai bulan dan total nominal yang ingin dicicil.";
-        } else if (metode.includes("_bulan")) {
-            let bulanCount = metode.split("_")[0];
-            infoText = `Akan membayar ${bulanCount} bulan iuran berturut-turut dari bulan yang dipilih.`;
-        } else if (metode === "7_tahun") {
-            infoText = "Akan membayar 12 bulan iuran sekaligus mulai dari bulan yang dipilih.";
-        } else {
-            opsiBulan.classList.add("d-none");
-            infoPeriode.classList.add("d-none");
+            if (metode === "cicilan") {
+                opsiCicilan.classList.remove("d-none");
+                infoText = "Anda memilih cicilan. Silakan tentukan mulai bulan dan total nominal yang ingin dicicil.";
+            } else if (metode.includes("_bulan")) {
+                let bulanCount = metode.split("_")[0];
+                infoText = `Akan membayar ${bulanCount} bulan iuran berturut-turut dari bulan yang dipilih.`;
+            } else if (metode === "7_tahun") {
+                infoText = "Akan membayar 12 bulan iuran sekaligus mulai dari bulan yang dipilih.";
+            } else {
+                opsiBulan.classList.add("d-none");
+                infoPeriode.classList.add("d-none");
+            }
+
+            infoPeriode.innerHTML = infoText;
         }
 
-        infoPeriode.innerHTML = infoText;
-    }
+        function cekMetodeBayar() {
+            const metode = document.getElementById("pembayaran_via").value;
+            const buktiField = document.getElementById("buktiTransfer");
 
-    function cekMetodeBayar() {
-        const metode = document.getElementById("pembayaran_via").value;
-        const buktiField = document.getElementById("buktiTransfer");
-
-        if (metode === "transfer") {
-            buktiField.classList.remove("d-none");
-        } else {
-            buktiField.classList.add("d-none");
+            if (metode === "transfer") {
+                buktiField.classList.remove("d-none");
+            } else {
+                buktiField.classList.add("d-none");
+            }
         }
-    }
-    $(document).ready(function() {
-        $('.select2').select2({
-            width: '100%',
-            placeholder: 'Pilih Nomor Rumah',
-            allowClear: true
+        $(document).ready(function() {
+            $('.select2').select2({
+                width: '100%',
+                placeholder: 'Pilih Nomor Rumah',
+                allowClear: true
+            });
         });
-    });
     </script>
 </body>
 
