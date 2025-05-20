@@ -97,7 +97,20 @@ class dashboard extends CI_Controller
 
 	public function pendataan_keluarga()
 	{
-		$this->load->view('dashboard/pendataan_keluarga');
+		// Ambil semua nomor_rumah dan id dari master_keluarga
+		$pengisian = $this->db->select('id, nomor_rumah')->get('master_keluarga')->result_array();
+
+		$alamat_terisi = []; // alamat = key, id terenkripsi = value
+
+		foreach ($pengisian as $item) {
+			$alamat_split = explode('|', $item['nomor_rumah']);
+			foreach ($alamat_split as $alamat) {
+				$trimmed = trim($alamat);
+				$alamat_terisi[$trimmed] = encrypt_url($item['id']); // simpan id terenkripsi
+			}
+		}
+		$data['alamat_terisi'] = $alamat_terisi;
+		$this->load->view('dashboard/pendataan_keluarga', $data);
 	}
 
 	public function hapus_anggota_keluarga()

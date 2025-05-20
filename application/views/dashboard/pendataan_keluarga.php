@@ -124,7 +124,9 @@
         <form id="formKeluarga" enctype="multipart/form-data">
           <h6 class="mb-3">Data Kartu Keluarga</h6>
           <div class="row g-3 mb-3">
-
+            <!-- <?php
+                  var_dump($alamat_terisi);
+                  ?> -->
             <!-- Nomor Rumah pakai select2 -->
             <div class="col-md-6">
               <label for="nomorRumah" class="form-label">Nomor Rumah</label>
@@ -139,8 +141,8 @@
                 <?php endforeach; ?>
               </select>
             </div>
-            
-             <div class="col-md-6">
+
+            <div class="col-md-6">
               <label for="statusRumah" class="form-label">Status Tempat Tinggal (Rumah TSI)</label>
               <select class="form-select" id="statusRumah" name="status_rumah" required>
                 <option value="">Pilih Status</option>
@@ -157,7 +159,7 @@
               <input type="text" class="form-control" id="noKK" name="no_kk" required />
             </div>
 
-           
+
             <div class="col-md-6">
               <label for="alamat" class="form-label">Alamat Lengkap (KK)</label>
               <input type="text" class="form-control" id="alamat" name="alamat" required />
@@ -494,6 +496,48 @@
             });
           }
         });
+      });
+    });
+  </script>
+  <script>
+    // Format: { "TSI Raya 30": "enkripsi_id", ... }
+    const alamatTerisi = <?php echo json_encode($alamat_terisi); ?>;
+  </script>
+
+  <script>
+    $(document).ready(function() {
+      $('.select2').select2();
+
+      $('#nomorRumah').on('change', function() {
+        const selected = $(this).val(); // array of selected addresses
+
+        let link = null;
+
+        // Cek satu per satu alamat yang sudah pernah diisi
+        for (let i = 0; i < selected.length; i++) {
+          const alamat = selected[i];
+          if (alamatTerisi[alamat]) {
+            link = alamatTerisi[alamat];
+            break; // hanya ambil 1 yang cocok pertama
+          }
+        }
+
+        if (link) {
+          Swal.fire({
+            title: 'Data Sudah Ada!',
+            text: 'Alamat ini sudah pernah mengisi. Apakah Anda ingin melanjutkan pengisian?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Lanjutkan Pengisian',
+            cancelButtonText: 'Batal'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = '<?= base_url("edit-pendataan-keluarga/") ?>' + link;
+            } else {
+              $('#nomorRumah').val(null).trigger('change');
+            }
+          });
+        }
       });
     });
   </script>
