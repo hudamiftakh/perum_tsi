@@ -306,6 +306,7 @@ class dashboard extends CI_Controller
                     'hubungan' => $this->input->post('hubungan')[$key],
                     'pekerjaan' => $this->input->post('pekerjaan')[$key],
                     'jenis_kelamin' => $this->input->post('jenis_kelamin')[$key],
+                    'golongan_darah' => $this->input->post('golongan_darah')[$key],
                     'tgl_lahir' => $this->input->post('tgl_lahir')[$key]
                 ]);
             }
