@@ -331,45 +331,37 @@ function generateSecretKey($length = 32)
 	return $secretKey;
 }
 
-/**
- * Enkripsi string dan buat URL-safe (ganti +, /, =)
- *
- * @param string $data Data yang mau dienkripsi
- * @return string Enkripsi yang sudah URL safe
- */
 if (!function_exists('encrypt_url')) {
     function encrypt_url($data) {
-        $CI =& get_instance();
-        $CI->load->library('encryption');
+        $key = 'rahasia2025'; // ganti dengan kunci rahasia kamu
+        $method = 'AES-128-CTR'; // algoritma enkripsi ringan
 
-        // Enkripsi data
-        $encrypted = $CI->encryption->encrypt($data);
+        $iv_length = openssl_cipher_iv_length($method);
+        $iv = random_bytes($iv_length);
 
-        // Ganti karakter supaya URL-safe
-        $url_safe = strtr($encrypted, ['+' => '-', '/' => '_', '=' => '~']);
+        $encrypted = openssl_encrypt($data, $method, $key, OPENSSL_RAW_DATA, $iv);
+        $result = base64_encode($iv . $encrypted);
 
-        return $url_safe;
+        // URL-safe base64
+        return rtrim(strtr($result, '+/', '-_'), '=');
     }
 }
 
-/**
- * Fungsi untuk mendekripsi string hasil encrypt_url
- *
- * @param string $data Enkripsi yang sudah URL safe
- * @return string|null Hasil dekripsi atau null kalau gagal
- */
 if (!function_exists('decrypt_url')) {
     function decrypt_url($data) {
-        $CI =& get_instance();
-        $CI->load->library('encryption');
+        $key = 'rahasia2025';
+        $method = 'AES-128-CTR';
 
-        // Balikin karakter ke bentuk asli
-        $url_unsafe = strtr($data, ['-' => '+', '_' => '/', '~' => '=']);
+        // Balik ke base64
+        $b64 = strtr($data, '-_', '+/');
+        $b64 .= str_repeat('=', 3 - (strlen($b64) + 3) % 4); // padding
 
-        // Dekripsi data
-        $decrypted = $CI->encryption->decrypt($url_unsafe);
+        $decoded = base64_decode($b64);
+        $iv_length = openssl_cipher_iv_length($method);
+        $iv = substr($decoded, 0, $iv_length);
+        $ciphertext = substr($decoded, $iv_length);
 
-        return $decrypted === false ? null : $decrypted;
+        return openssl_decrypt($ciphertext, $method, $key, OPENSSL_RAW_DATA, $iv);
     }
 }
 ?>

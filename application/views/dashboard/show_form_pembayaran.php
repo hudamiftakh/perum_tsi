@@ -61,6 +61,7 @@
             display: flex;
             align-items: center;
         }
+
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 40px !important;
         }
@@ -107,16 +108,28 @@
                 <form id="formBayar" method="post" action="<?php echo base_url('proses-pembayaran'); ?>"
                     enctype="multipart/form-data">
                     <div class="col-md-6">
+                        <?php
+                        // Ambil ID dari URL lalu decrypt
+                        $id = $this->uri->segment(2);
+                        $id_decrypt = decrypt_url($id);
+
+                        // Ambil data user berdasarkan id rumah
+                        $result_rumah = $this->db->where(['id_rumah' => $id_decrypt])->get("master_users")->result_array();
+
+                        // Misalnya kita ambil data user_id yang terpilih sebelumnya
+                        // Contoh: dari database atau form input sebelumnya
+                        $selected_user_id = ''; // default kosong
+
+                        // Misal ambil dari POST atau database
+                        if (isset($id_decrypt)) {
+                            $selected_user_id = $id_decrypt;
+                        }
+                        ?>
                         <label for="nomorRumah" class="form-label">Nomor Rumah</label>
-                        <select class="form-select select2" id="nomorRumah" name="user_id" style="width: 100% !important; height: 100px;"
-                            required>
+                        <select class="form-select select2" id="nomorRumah" name="user_id" style="width: 100% !important; height: 100px;" required>
                             <option value="">Pilih Nomor Rumah</option>
-                            <?php
-                            $selected_nomor_rumah = [''];
-                            $result_rumah = $this->db->get("master_users")->result_array();
-                            foreach ($result_rumah as $key => $value) : ?>
-                                <option value="<?php echo $value['id']; ?>"
-                                    <?= in_array($value['id'], $selected_nomor_rumah) ? 'selected' : '' ?>>
+                            <?php foreach ($result_rumah as $value) : ?>
+                                <option value="<?php echo $value['id']; ?>" <?= ($value['id'] == $selected_user_id) ? 'selected' : '' ?>>
                                     <?php echo $value['id']; ?> - <?php echo $value['nama'] . " - " . $value['rumah']; ?>
                                 </option>
                             <?php endforeach; ?>

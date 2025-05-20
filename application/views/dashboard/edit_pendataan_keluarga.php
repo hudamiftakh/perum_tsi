@@ -312,6 +312,7 @@
                                         <option value="Pelajar/Mahasiswa" <?= ($datanya['pekerjaan'] == 'Pelajar/Mahasiswa') ? 'selected' : ''; ?>>Pelajar/Mahasiswa</option>
                                         <option value="ASN" <?= ($datanya['pekerjaan'] == 'ASN') ? 'selected' : ''; ?>>ASN</option>
                                         <option value="TNI/Polri" <?= ($datanya['pekerjaan'] == 'TNI/Polri') ? 'selected' : ''; ?>>TNI/Polri</option>
+                                        <option value="Pegawai BUMN" <?= ($datanya['pekerjaan'] == 'Pegawai BUMN') ? 'selected' : ''; ?>>Pegawai BUMN</option>
                                         <option value="Pegawai Swasta" <?= ($datanya['pekerjaan'] == 'Pegawai Swasta') ? 'selected' : ''; ?>>Pegawai Swasta</option>
                                         <option value="Wiraswasta" <?= ($datanya['pekerjaan'] == 'Wiraswasta') ? 'selected' : ''; ?>>Wiraswasta</option>
                                         <option value="Petani" <?= ($datanya['pekerjaan'] == 'Petani') ? 'selected' : ''; ?>>Petani</option>
@@ -352,7 +353,10 @@
 
                                     </select>
                                 </div>
-
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Instansi / Perusahaan / Usaha</label>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($datanya['tempat_bekerja']); ?>" name="tempat_bekerja[]" required />
+                                </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Golongan Darah</label>
                                     <select class="form-select" name="golongan_darah[]">
@@ -525,6 +529,18 @@
 
         // Hapus anggota keluarga
         function hapusAnggota(btn) {
+            const wrapper = document.getElementById('anggotaKeluargaWrapper');
+            const cards = wrapper.querySelectorAll('.anggota-keluarga');
+
+            if (cards.length <= 1) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tidak bisa dihapus',
+                    text: 'Minimal harus ada satu anggota keluarga (Kepala Keluarga) !',
+                });
+                return;
+            }
+
             btn.closest('.anggota-keluarga').remove();
             updateNomorAnggota();
         }

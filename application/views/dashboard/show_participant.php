@@ -137,12 +137,9 @@ if ($check_data <= 0): ?>
 </div>
 <?php endif; ?>
 
-<?php 
-    $CI =& get_instance();
-    $CI->load->library('encryption');
+<?php
     $id = $this->uri->segment(3);
-    $encrypted_id = strtr($id, ['-' => '+', '_' => '/', '~' => '=']);
-    $agenda_id = $CI->encryption->decrypt($encrypted_id);
+    $agenda_id = decrypt_url($id);
     $data = $this->db->where(array('id'=>$agenda_id))->get("master_agenda")->row_array();
 ?>
 <div id="pdfArea"

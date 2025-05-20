@@ -320,7 +320,8 @@ class dashboard extends CI_Controller
                     'pekerjaan' => $this->input->post('pekerjaan')[$key],
                     'jenis_kelamin' => $this->input->post('jenis_kelamin')[$key],
                     'golongan_darah' => $this->input->post('golongan_darah')[$key],
-                    'tgl_lahir' => $this->input->post('tgl_lahir')[$key]
+                    'tgl_lahir' => $this->input->post('tgl_lahir')[$key],
+                    'tempat_bekerja' => $this->input->post('tempat_bekerja')[$key]
                 ]);
             }
         }
@@ -410,6 +411,7 @@ class dashboard extends CI_Controller
 		$jenis_kelamin_list = $this->input->post('jenis_kelamin');
 		$tgl_lahir_list = $this->input->post('tgl_lahir');
 		$golongan_darah_list = $this->input->post('golongan_darah');
+		$tempat_bekerja_list = $this->input->post('tempat_bekerja');
 
 		// Ambil semua id anggota lama untuk membandingkan
 		$anggota_lama = $this->db->get_where('master_anggota_keluarga', ['keluarga_id' => $id])->result_array();
@@ -431,6 +433,7 @@ class dashboard extends CI_Controller
 				'jenis_kelamin' => $jenis_kelamin_list[$i],
 				'golongan_darah' => $golongan_darah_list[$i],
 				'tgl_lahir' => $tgl_lahir_list[$i],
+				'tempat_bekerja' => $tempat_bekerja_list[$i],
 			];
 
 			if ($anggota_id) {
@@ -518,7 +521,7 @@ class dashboard extends CI_Controller
 		}
 
 		$rumah = $this->db->query("SELECT vb.* FROM (
-										SELECT DISTINCT b.alamat, b.nama, c.nama as koordinator,b.id_koordinator FROM master_users as a
+										SELECT DISTINCT b.id, b.alamat, b.nama, c.nama as koordinator,b.id_koordinator FROM master_users as a
 										LEFT JOIN master_rumah as b ON a.id = id_rumah
 										LEFT JOIN master_koordinator_blok as c ON b.id_koordinator = c.id
 										ORDER BY b.alamat ASC

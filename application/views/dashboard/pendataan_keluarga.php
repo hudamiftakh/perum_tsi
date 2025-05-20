@@ -291,6 +291,7 @@
             <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
             <option value="ASN">ASN</option>
             <option value="TNI/Polri">TNI/Polri</option>
+            <option value="Pegawai BUMN">Pegawai BUMN</option>
             <option value="Pegawai Swasta">Pegawai Swasta</option>
             <option value="Wiraswasta">Wiraswasta</option>
             <option value="Petani">Petani</option>
@@ -298,8 +299,6 @@
             <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
             <option value="Pensiunan">Pensiunan</option>
             <option value="Ahli IT">Ahli IT</option>
-            <option value="Programmer">Programmer</option>
-            <option value="Desainer Grafis">Desainer Grafis</option>
             <option value="Programmer">Programmer</option>
             <option value="Desainer Grafis">Desainer Grafis</option>
             <option value="Dokter">Dokter</option>
@@ -330,8 +329,11 @@
             <option value="Penulis">Penulis</option>
             <option value="Penyiar">Penyiar</option>
             <option value="Psikolog">Psikolog</option>
-
           </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nama Instansi / Perusahaan / Usaha</label>
+          <input type="text" class="form-control" name="tempat_bekerja[]" required />
         </div>
         <div class="col-md-6">
           <label class="form-label">Golongan Darah</label>

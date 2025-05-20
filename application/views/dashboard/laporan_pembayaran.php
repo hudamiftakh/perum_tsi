@@ -140,12 +140,16 @@ $this->load->library('encryption');
                         <th>Nama</th>
                         <th>Rumah</th>
                         <?php
+                        $bulan_indonesia = [
+                            1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+                            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                        ];
                         $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
                         $tahun_sekarang = date('Y');
                         $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
 
                         for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
-                            <th><?= date('M', mktime(0, 0, 0, $i, 1)) ?></th>
+                            <th><?= $bulan_indonesia[$i] ?></th>
                         <?php endfor; ?>
                         <th>Total</th>
                         <th>Keterangan</th>
@@ -170,9 +174,9 @@ $this->load->library('encryption');
 
                             <!-- Tombol Aksi -->
                             <td class="text-center">
-                                <button class="btn btn-sm btn-success">
+                                <a href="<?php echo base_url('pembayaran/'.encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
                                     <i class="bi bi-cash-coin"></i> Bayar
-                                </button>
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

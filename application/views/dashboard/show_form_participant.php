@@ -79,13 +79,8 @@
 <body>
 
     <?php 
-        $CI =& get_instance();
-        $CI->load->library('encryption');
-        $id = $this->uri->segment(2);
-        // Balikkan URL-safe ke bentuk asli
-        $encrypted_id = strtr($id, ['-' => '+', '_' => '/', '~' => '=']);
         // Dekripsi
-        $agenda_id = $CI->encryption->decrypt($encrypted_id);
+        $agenda_id = decrypt_url($id);
         $result_agenda = $this->db->where(array('id'=>$agenda_id))->get("master_agenda")->row_array();
         if(isset($_POST['simpan'])){
             $nama = $_REQUEST['nama'];

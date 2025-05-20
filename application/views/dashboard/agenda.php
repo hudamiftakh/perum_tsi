@@ -237,10 +237,7 @@ if ($check_data <= 0): ?>
                         <!-- Tombol 1 -->
                         <?php 
                         $id = $data['id'];
-                        $CI =& get_instance();
-                        $CI->load->library('encryption');
-                        $encrypted = $CI->encryption->encrypt($id);
-                        $url_safe = strtr($encrypted, ['+' => '-', '/' => '_', '=' => '~']);
+                        $url_safe = encrypt_url($id);
                         // var_dump($url_safe);
                         ?>
                         <a class="btn btn-outline-success" target="blank" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">
