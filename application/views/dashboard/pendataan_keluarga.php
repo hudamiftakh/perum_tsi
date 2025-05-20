@@ -287,6 +287,7 @@
           <label class="form-label">Pekerjaan</label>
           <select class="form-select" name="pekerjaan[]" required>
             <option value="">Pilih Pekerjaan...</option>
+            <option value="Belum Bekerja">Belum Bekerja (Balita/Anak-anak)</option>
             <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
             <option value="ASN">ASN</option>
             <option value="TNI/Polri">TNI/Polri</option>
@@ -296,7 +297,40 @@
             <option value="Nelayan">Nelayan</option>
             <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
             <option value="Pensiunan">Pensiunan</option>
-            <option value="Lainnya">Lainnya</option>
+            <option value="Ahli IT">Ahli IT</option>
+            <option value="Programmer">Programmer</option>
+            <option value="Desainer Grafis">Desainer Grafis</option>
+            <option value="Programmer">Programmer</option>
+            <option value="Desainer Grafis">Desainer Grafis</option>
+            <option value="Dokter">Dokter</option>
+            <option value="Perawat">Perawat</option>
+            <option value="Guru/Dosen">Guru/Dosen</option>
+            <option value="Pengacara">Pengacara</option>
+            <option value="Insinyur">Insinyur</option>
+            <option value="Arsitek">Arsitek</option>
+            <option value="Seniman">Seniman</option>
+            <option value="Pengusaha">Pengusaha</option>
+            <option value="Wartawan">Wartawan</option>
+            <option value="Atlet">Atlet</option>
+            <option value="Sopir">Sopir</option>
+            <option value="Montir">Montir</option>
+            <option value="Petugas Keamanan">Petugas Keamanan</option>
+            <option value="Karyawan Swasta">Karyawan Swasta</option>
+            <option value="Sales Marketing">Sales Marketing</option>
+            <option value="Tukang Bangunan">Tukang Bangunan</option>
+            <option value="Tukang Kayu">Tukang Kayu</option>
+            <option value="Tukang Las">Tukang Las</option>
+            <option value="Peternak">Peternak</option>
+            <option value="Penjahit">Penjahit</option>
+            <option value="Karyawan Bank">Karyawan Bank</option>
+            <option value="Pengusaha Kecil">Pengusaha Kecil</option>
+            <option value="Buruh">Buruh</option>
+            <option value="Pelaut">Pelaut</option>
+            <option value="Fotografer">Fotografer</option>
+            <option value="Penulis">Penulis</option>
+            <option value="Penyiar">Penyiar</option>
+            <option value="Psikolog">Psikolog</option>
+
           </select>
         </div>
         <div class="col-md-6">

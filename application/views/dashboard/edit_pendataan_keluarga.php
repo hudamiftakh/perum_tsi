@@ -308,6 +308,7 @@
                                     <label class="form-label">Pekerjaan</label>
                                     <select class="form-select" name="pekerjaan[]" required>
                                         <option value="">Pilih Pekerjaan...</option>
+                                        <option value="Belum Bekerja" <?= ($datanya['pekerjaan'] == 'Belum Bekerja') ? 'selected' : ''; ?>>Belum Bekerja (Balita/Anak-anak)</option>
                                         <option value="Pelajar/Mahasiswa" <?= ($datanya['pekerjaan'] == 'Pelajar/Mahasiswa') ? 'selected' : ''; ?>>Pelajar/Mahasiswa</option>
                                         <option value="ASN" <?= ($datanya['pekerjaan'] == 'ASN') ? 'selected' : ''; ?>>ASN</option>
                                         <option value="TNI/Polri" <?= ($datanya['pekerjaan'] == 'TNI/Polri') ? 'selected' : ''; ?>>TNI/Polri</option>
@@ -317,7 +318,38 @@
                                         <option value="Nelayan" <?= ($datanya['pekerjaan'] == 'Nelayan') ? 'selected' : ''; ?>>Nelayan</option>
                                         <option value="Ibu Rumah Tangga" <?= ($datanya['pekerjaan'] == 'Ibu Rumah Tangga') ? 'selected' : ''; ?>>Ibu Rumah Tangga</option>
                                         <option value="Pensiunan" <?= ($datanya['pekerjaan'] == 'Pensiunan') ? 'selected' : ''; ?>>Pensiunan</option>
-                                        <option value="Lainnya" <?= ($datanya['pekerjaan'] == 'Lainnya') ? 'selected' : ''; ?>>Lainnya</option>
+                                        <option value="Ahli IT" <?= ($datanya['pekerjaan'] == 'Ahli IT') ? 'selected' : ''; ?>>Ahli IT</option>
+                                        <option value="Programmer" <?= ($datanya['pekerjaan'] == 'Programmer') ? 'selected' : ''; ?>>Programmer</option>
+                                        <option value="Desainer Grafis" <?= ($datanya['pekerjaan'] == 'Desainer Grafis') ? 'selected' : ''; ?>>Desainer Grafis</option>
+                                        <option value="Dokter" <?= ($datanya['pekerjaan'] == 'Dokter') ? 'selected' : ''; ?>>Dokter</option>
+                                        <option value="Perawat" <?= ($datanya['pekerjaan'] == 'Perawat') ? 'selected' : ''; ?>>Perawat</option>
+                                        <option value="Guru/Dosen" <?= ($datanya['pekerjaan'] == 'Guru/Dosen') ? 'selected' : ''; ?>>Guru/Dosen</option>
+                                        <option value="Pengacara" <?= ($datanya['pekerjaan'] == 'Pengacara') ? 'selected' : ''; ?>>Pengacara</option>
+                                        <option value="Insinyur" <?= ($datanya['pekerjaan'] == 'Insinyur') ? 'selected' : ''; ?>>Insinyur</option>
+                                        <option value="Arsitek" <?= ($datanya['pekerjaan'] == 'Arsitek') ? 'selected' : ''; ?>>Arsitek</option>
+                                        <option value="Seniman" <?= ($datanya['pekerjaan'] == 'Seniman') ? 'selected' : ''; ?>>Seniman</option>
+                                        <option value="Pengusaha" <?= ($datanya['pekerjaan'] == 'Pengusaha') ? 'selected' : ''; ?>>Pengusaha</option>
+                                        <option value="Wartawan" <?= ($datanya['pekerjaan'] == 'Wartawan') ? 'selected' : ''; ?>>Wartawan</option>
+                                        <option value="Atlet" <?= ($datanya['pekerjaan'] == 'Atlet') ? 'selected' : ''; ?>>Atlet</option>
+                                        <option value="Sopir" <?= ($datanya['pekerjaan'] == 'Sopir') ? 'selected' : ''; ?>>Sopir</option>
+                                        <option value="Montir" <?= ($datanya['pekerjaan'] == 'Montir') ? 'selected' : ''; ?>>Montir</option>
+                                        <option value="Petugas Keamanan" <?= ($datanya['pekerjaan'] == 'Petugas Keamanan') ? 'selected' : ''; ?>>Petugas Keamanan</option>
+                                        <option value="Karyawan Swasta" <?= ($datanya['pekerjaan'] == 'Karyawan Swasta') ? 'selected' : ''; ?>>Karyawan Swasta</option>
+                                        <option value="Sales Marketing" <?= ($datanya['pekerjaan'] == 'Sales Marketing') ? 'selected' : ''; ?>>Sales Marketing</option>
+                                        <option value="Tukang Bangunan" <?= ($datanya['pekerjaan'] == 'Tukang Bangunan') ? 'selected' : ''; ?>>Tukang Bangunan</option>
+                                        <option value="Tukang Kayu" <?= ($datanya['pekerjaan'] == 'Tukang Kayu') ? 'selected' : ''; ?>>Tukang Kayu</option>
+                                        <option value="Tukang Las" <?= ($datanya['pekerjaan'] == 'Tukang Las') ? 'selected' : ''; ?>>Tukang Las</option>
+                                        <option value="Peternak" <?= ($datanya['pekerjaan'] == 'Peternak') ? 'selected' : ''; ?>>Peternak</option>
+                                        <option value="Penjahit" <?= ($datanya['pekerjaan'] == 'Penjahit') ? 'selected' : ''; ?>>Penjahit</option>
+                                        <option value="Karyawan Bank" <?= ($datanya['pekerjaan'] == 'Karyawan Bank') ? 'selected' : ''; ?>>Karyawan Bank</option>
+                                        <option value="Pengusaha Kecil" <?= ($datanya['pekerjaan'] == 'Pengusaha Kecil') ? 'selected' : ''; ?>>Pengusaha Kecil</option>
+                                        <option value="Buruh" <?= ($datanya['pekerjaan'] == 'Buruh') ? 'selected' : ''; ?>>Buruh</option>
+                                        <option value="Pelaut" <?= ($datanya['pekerjaan'] == 'Pelaut') ? 'selected' : ''; ?>>Pelaut</option>
+                                        <option value="Fotografer" <?= ($datanya['pekerjaan'] == 'Fotografer') ? 'selected' : ''; ?>>Fotografer</option>
+                                        <option value="Penulis" <?= ($datanya['pekerjaan'] == 'Penulis') ? 'selected' : ''; ?>>Penulis</option>
+                                        <option value="Penyiar" <?= ($datanya['pekerjaan'] == 'Penyiar') ? 'selected' : ''; ?>>Penyiar</option>
+                                        <option value="Psikolog" <?= ($datanya['pekerjaan'] == 'Psikolog') ? 'selected' : ''; ?>>Psikolog</option>
+
                                     </select>
                                 </div>
 
