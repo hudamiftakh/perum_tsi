@@ -179,7 +179,7 @@ class dashboard extends CI_Controller
 		$page = $this->uri->segment(3, 0);
 
 		// Main query with search condition
-		$this->db->select('*')->from('master_keluarga');
+		$this->db->select('*')->from('master_keluarga')->order_by('created_at', 'DESC');;
 
 		if (!empty($keyword)) {
 			$this->db->group_start()
