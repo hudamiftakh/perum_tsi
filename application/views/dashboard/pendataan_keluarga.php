@@ -629,6 +629,23 @@
     setInterval(updateCountdown, 1000); // Update tiap detik
   </script>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!sessionStorage.getItem('popupShown')) {
+        Swal.fire({
+          title: 'Mohon Perhatiannya!',
+          text: 'Pendataan ini digunakan paguyuban untuk pembentukan RT di perumahan TSI, mohon untuk mengisi data dengan sebenar-benarnya.',
+          icon: 'info',
+          confirmButtonText: 'Saya Mengerti',
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        });
+        // Tandai bahwa popup sudah ditampilkan
+        sessionStorage.setItem('popupShown', 'true');
+      }
+    });
+  </script>
+
 </body>
 
 </html>
