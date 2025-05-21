@@ -495,6 +495,32 @@ class dashboard extends CI_Controller
 		$this->load->view('dashboard/show_form_pembayaran');
 	}
 
+	public function cek_pembayaran()
+	{
+		$tanggal = $this->input->post('tanggal');
+		$id_rumah = $this->input->post('id_rumah'); // bisa juga dari session
+
+		$bulan = date('m', strtotime($tanggal));
+		$tahun = date('Y', strtotime($tanggal));
+
+		$data_pembayaran = $this->db->query("
+			SELECT * FROM master_pembayaran AS a
+			LEFT JOIN master_users AS b ON a.user_id = b.id
+			WHERE MONTH(a.bulan_mulai) = '$bulan'
+			AND YEAR(a.bulan_mulai) = '$tahun'
+			AND b.id_rumah = '$id_rumah'
+		")->row_array();
+
+		if ($data_pembayaran) {
+			echo json_encode([
+				'sudah_dibayar' => true,
+				'id_pembayaran' => $data_pembayaran['id'] // ID dari `master_pembayaran`
+			]);
+		} else {
+			echo json_encode(['sudah_dibayar' => false]);
+		}
+	}
+
 	public function laporan_pembayaran($tahun = null)
 	{
 		if ($tahun === null) {
@@ -556,6 +582,7 @@ class dashboard extends CI_Controller
 		$metode = $this->input->post('metode');
 		$bulan_mulai = $this->input->post('bulan_mulai'); // format yyyy-mm
 		$jumlah_bayar = $this->input->post('jumlah_bayar');
+		$tanggal_bayar = $this->input->post('tanggal_bayar');
 		$keterangan = $this->input->post('keterangan');
 
 		$lama_cicilan = $this->input->post('lama_cicilan');
@@ -617,6 +644,7 @@ class dashboard extends CI_Controller
 			'jumlah_bayar' => $jumlah_bayar,
 			'bukti' => $nama_file_bukti, // <-- ini penting
 			'keterangan' => $keterangan,
+			'tanggal_bayar' => $tanggal_bayar,
 			'created_at' => date('Y-m-d H:i:s'),
 		];
 

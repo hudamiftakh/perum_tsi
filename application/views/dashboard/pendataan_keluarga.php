@@ -101,6 +101,22 @@
       max-height: 200px;
       overflow-y: auto;
     }
+
+    .timer-display {
+      font-size: 1.25rem;
+      /* Lebih besar dari small */
+      font-weight: 600;
+      color: #0d6efd;
+      /* Bootstrap primary */
+      background-color: #e9f2ff;
+      /* Soft blue background */
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      display: inline-block;
+      text-align: center;
+      min-width: 120px;
+    }
   </style>
 </head>
 
@@ -109,13 +125,13 @@
     <div id="countdown-timer"
       class="position-fixed top-0 start-0 w-100 bg-white shadow-sm d-flex align-items-center justify-content-center gap-2 px-3 py-2"
       style="z-index: 1050; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem;">
-      <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+      <!-- <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
         style="width: 32px; height: 32px;">
         <i class="bi bi-clock-history fs-6"></i>
-      </div>
+      </div> -->
       <div class="text-center">
         <div class="fw-bold text-dark small">Berakhir pada </div>
-        <div id="timer-display" class="fw-semibold text-primary small">Loading...</div>
+        <div id="timer-display" class="fw-semibold text-danger small">Loading...</div>
       </div>
     </div>
     <div class="card shadow-lg border-0 rounded-4 overflow-hidden mt-5">
@@ -137,12 +153,9 @@
         <form id="formKeluarga" enctype="multipart/form-data">
           <h6 class="mb-3">Data Kartu Keluarga</h6>
           <div class="row g-3 mb-3">
-            <!-- <?php
-                  var_dump($alamat_terisi);
-                  ?> -->
             <!-- Nomor Rumah pakai select2 -->
             <div class="col-md-6">
-              <label for="nomorRumah" class="form-label">Nomor Rumah</label>
+              <label for="nomorRumah" class="form-label">Nomor Rumah <span class="text-danger">*</span></label>
               <select class="form-select select2" id="nomorRumah" name="nomor_rumah[]" multiple="multiple" required>
                 <option value="">Pilih Nomor Rumah</option>
                 <?php
@@ -156,7 +169,7 @@
             </div>
 
             <div class="col-md-6">
-              <label for="statusRumah" class="form-label">Status Tempat Tinggal (Rumah TSI)</label>
+              <label for="statusRumah" class="form-label">Status Tempat Tinggal (Rumah TSI) <span class="text-danger">*</span></label>
               <select class="form-select" id="statusRumah" name="status_rumah" required>
                 <option value="">Pilih Status</option>
                 <option value="Rumah Sendiri">Rumah Sendiri</option>
@@ -168,48 +181,48 @@
 
 
             <div class="col-md-6">
-              <label for="noKK" class="form-label">Nomor KK</label>
+              <label for="noKK" class="form-label">Nomor KK <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="noKK" name="no_kk" required />
             </div>
 
 
             <div class="col-md-6">
-              <label for="alamat" class="form-label">Alamat Lengkap (KK)</label>
+              <label for="alamat" class="form-label">Alamat Lengkap (KK) <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="alamat" name="alamat" required />
             </div>
 
             <div class="col-sm-6 col-md-3">
-              <label for="provinsi" class="form-label">Provinsi (KK)</label>
+              <label for="provinsi" class="form-label">Provinsi (KK) <span class="text-danger">*</span></label>
               <select class="form-select select2" id="provinsi" name="provinsi" required></select>
             </div>
             <div class="col-sm-6 col-md-3">
-              <label for="kota" class="form-label">Kota/Kabupaten (KK)</label>
+              <label for="kota" class="form-label">Kota/Kabupaten (KK) <span class="text-danger">*</span></label>
               <select class="form-select select2" id="kota" name="kota" required></select>
             </div>
             <div class="col-sm-6 col-md-3">
-              <label for="kecamatan" class="form-label">Kecamatan (KK)</label>
+              <label for="kecamatan" class="form-label">Kecamatan (KK) <span class="text-danger">*</span></label>
               <select class="form-select select2" id="kecamatan" name="kecamatan" required></select>
             </div>
             <div class="col-sm-6 col-md-3">
-              <label for="kelurahan" class="form-label">Kelurahan (KK)</label>
+              <label for="kelurahan" class="form-label">Kelurahan (KK) <span class="text-danger">*</span></label>
               <select class="form-select select2" id="kelurahan" name="kelurahan" required></select>
             </div>
 
             <!-- Upload KK di paling belakang -->
             <div class="col-md-6 mt-3">
-              <label for="fileKK" class="form-label">Upload Kartu Keluarga</label>
+              <label for="fileKK" class="form-label">Upload Kartu Keluarga <span class="text-danger">*</span></label>
               <input type="file" class="form-control" id="fileKK" name="file_kk" accept=".pdf,.jpg,.jpeg,.png" required />
             </div>
 
             <div class="col-md-6 mt-3">
-              <label for="fileKK" class="form-label">Nomor Whatsapp</label>
+              <label for="fileKK" class="form-label">Nomor Whatsapp <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="noHp" name="no_hp" required />
               <small class="form-text text-muted">Nomor ini akan digunakan untuk menerima notifikasi IPL dan informasi paguyuban melalui WhatsApp.</small>
             </div>
 
           </div>
 
-          <h6 class="mt-4 mb-3">Anggota Keluarga</h6>
+          <h6 class="mt-4 mb-3">Anggota Keluarga <span class="text-danger">*</span></h6>
           <div id="anggotaKeluargaWrapper"></div>
           <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="tambahAnggota()">+ Tambah Anggota Keluarga</button>
 
@@ -228,16 +241,16 @@
       <div class="anggota-header">Anggota Ke-<span class="nomor-anggota"></span></div>
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label">Nama Lengkap</label>
+          <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
           <input type="text" class="form-control" name="nama[]" required />
         </div>
         <div class="col-md-6">
-          <label class="form-label">NIK</label>
+          <label class="form-label">NIK <span class="text-danger">*</span></label>
           <input type="text" class="form-control" name="nik[]" required />
         </div>
 
         <div class="col-md-6">
-          <label class="form-label">Jenis Kelamin</label>
+          <label class="form-label">Jenis Kelamin <span class="text-danger">*</span></label>
           <select class="form-select" name="jenis_kelamin[]" required>
             <option value="">Pilih Jenis Kelamin...</option>
             <option value="Laki-laki">Laki-laki</option>
@@ -246,7 +259,7 @@
         </div>
 
         <div class="col-md-6">
-          <label class="form-label">Agama</label>
+          <label class="form-label">Agama <span class="text-danger">*</span></label>
           <select class="form-select" name="agama[]" required>
             <option value="">Pilih Agama...</option>
             <option value="Islam">Islam</option>
@@ -259,7 +272,7 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Status Perkawinan</label>
+          <label class="form-label">Status Perkawinan <span class="text-danger">*</span></label>
           <select class="form-select" name="status_perkawinan[]" required>
             <option value="">Pilih Status Perkawinan...</option>
             <option value="Belum Kawin">Belum Kawin</option>
@@ -269,7 +282,7 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Hubungan</label>
+          <label class="form-label">Hubungan <span class="text-danger">*</span></label>
           <select class="form-select" name="hubungan[]" required>
             <option value="">Pilih...</option>
             <option value="Kepala Keluarga">Kepala Keluarga</option>
@@ -280,11 +293,11 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Tanggal Lahir</label>
+          <label class="form-label">Tanggal Lahir <span class="text-danger">*</span></label>
           <input type="date" class="form-control" name="tgl_lahir[]" required />
         </div>
         <div class="col-md-6">
-          <label class="form-label">Pekerjaan</label>
+          <label class="form-label">Pekerjaan <span class="text-danger">*</span></label>
           <select class="form-select" name="pekerjaan[]" required>
             <option value="">Pilih Pekerjaan...</option>
             <option value="Belum Bekerja">Belum Bekerja (Balita/Anak-anak)</option>
@@ -332,11 +345,11 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Nama Instansi / Perusahaan / Usaha</label>
+          <label class="form-label">Nama Instansi / Perusahaan / Usaha <span class="text-danger">*</span></label>
           <input type="text" class="form-control" name="tempat_bekerja[]" required />
         </div>
         <div class="col-md-6">
-          <label class="form-label">Golongan Darah</label>
+          <label class="form-label">Golongan Darah <span class="text-danger">*</span></label>
           <select class="form-select" name="golongan_darah[]">
             <option value="">Pilih Golongan Darah...</option>
             <option value="A">A</option>
@@ -609,7 +622,7 @@
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
       document.getElementById("timer-display").innerHTML =
-        `${days}h ${hours}j ${minutes}m ${seconds}d`;
+        `${days} hari ${hours} jam ${minutes} menit ${seconds} detik`;
     }
 
     updateCountdown(); // Inisialisasi

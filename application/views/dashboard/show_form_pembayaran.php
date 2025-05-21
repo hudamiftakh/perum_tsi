@@ -14,6 +14,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
     <style>
         body {
             background: #f8f9fa;
@@ -160,7 +167,10 @@
                         <label for="bulan_mulai" class="form-label">Bulan</label>
                         <input type="month" name="bulan_mulai" id="bulan_mulai" class="form-control">
                     </div>
-
+                    <div class="mb-3">
+                        <label for="tanggal_bayar" class="form-label">Tanggal Pembayaran</label>
+                        <input type="text" class="form-control" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal pembayaran" required>
+                    </div>
                     <div id="opsiCicilan" class="row d-none">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Berapa Bulan Ingin Dicicil?</label>
@@ -256,6 +266,50 @@
                 placeholder: 'Pilih Nomor Rumah',
                 allowClear: true
             });
+        });
+    </script>
+
+
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        flatpickr("#tanggal_bayar", {
+            // enableTime: true,
+            dateFormat: "Y-m-d",
+            // time_24hr: true,
+            locale: "id"
+        });
+
+        document.getElementById('tanggal_bayar').addEventListener('change', function() {
+            const tanggal = this.value;
+
+            fetch('<?php echo base_url('dashboard/cek_pembayaran') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'id_rumah=<?php echo $selected_user_id; ?>&tanggal=' + encodeURIComponent(tanggal)
+                })
+                .then(response => response.json())
+                .then(data => { 
+                    if (data.sudah_dibayar) {
+                        Swal.fire({
+                            title: 'Sudah Dibayar',
+                            text: 'Pembayaran untuk bulan ini sudah dilakukan.',
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Lihat / Perbaiki',
+                            cancelButtonText: 'Tutup'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Bisa munculkan modal edit atau redirect
+                                window.location.href = 'edit_pembayaran.php?id=' + data.id_pembayaran;
+                            }
+                        });
+                    }
+                });
         });
     </script>
 </body>

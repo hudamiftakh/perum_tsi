@@ -133,7 +133,7 @@ $this->load->library('encryption');
 
 
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover align-middle text-nowrap" id="laporanTable">
+            <table class="table table-bordered align-middle text-nowrap" id="laporanTable">
                 <thead class="table-primary text-center">
                     <tr>
                         <th>No</th>
@@ -141,8 +141,18 @@ $this->load->library('encryption');
                         <th>Rumah</th>
                         <?php
                         $bulan_indonesia = [
-                            1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-                            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                            1 => 'Jan',
+                            'Feb',
+                            'Mar',
+                            'Apr',
+                            'Mei',
+                            'Jun',
+                            'Jul',
+                            'Agu',
+                            'Sep',
+                            'Okt',
+                            'Nov',
+                            'Des'
                         ];
                         $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
                         $tahun_sekarang = date('Y');
@@ -164,17 +174,29 @@ $this->load->library('encryption');
                             <td class="text-center"><?= $no++ ?></td>
                             <td><?= $data_bulanan['nama'] ?></td>
                             <td><?= $data_bulanan['alamat'] ?></td>
-
-                            <?php for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
-                                <td class="text-center">-</td>
+                            <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
+                                $data_pembayaran = $this->db->query("
+                                        SELECT * FROM master_pembayaran as a 
+                                        LEFT JOIN master_users as b ON a.user_id = b.id
+                                        WHERE MONTH(a.bulan_mulai)='" . $i . "' 
+                                        AND YEAR(a.bulan_mulai) ='" . $selected_tahun . "' 
+                                        AND b.id_rumah ='" . $data_bulanan['id'] . "'
+                                    ")->row_array();
+                                ?>
+                                <td class="text-center <?php echo $data_pembayaran ? 'bg-success-subtle text-default fw-bold' : ''; ?>">
+                                    <?php if ($data_pembayaran): ?>
+                                        <span>125.000</span> <!-- ✅ tanda centang -->
+                                    <?php else: ?>
+                                        <span>-</span>
+                                    <?php endif; ?>
+                                </td>
                             <?php endfor; ?>
 
                             <td class="text-center">Rp0</td>
                             <td>-</td>
-
                             <!-- Tombol Aksi -->
                             <td class="text-center">
-                                <a href="<?php echo base_url('pembayaran/'.encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
+                                <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
                                     <i class="bi bi-cash-coin"></i> Bayar
                                 </a>
                             </td>

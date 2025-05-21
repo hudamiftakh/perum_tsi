@@ -55,7 +55,24 @@
     }
   </style>
 </head>
+<?php
+// URL-encoded JSON string
+$data = $_REQUEST['data'];
+// Langkah 1: Ambil hanya bagian setelah `data=`
+parse_str($data, $parsed);
+// Langkah 2: Decode JSON-nya
+$jsonString = $data;
+$jsonData = json_decode($jsonString, true); // true = associative array
+?>
 
+<style>
+  .info-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    row-gap: 0.5rem;
+    column-gap: 0.5rem;
+  }
+</style>
 <body>
   <div class="container">
     <div class="row justify-content-center">
@@ -73,14 +90,13 @@
             <p class="text-muted">Terima kasih, Konfirmasi pembayaran IPL Anda telah diterima dengan baik.</p>
           </div>
           <div class="card-body">
-            <div class="bukti-info mb-4">
-              <p class="mb-2"><strong>Nama:</strong> Budi</p>
-              <p class="mb-2"><strong>Periode:</strong> Januari - Maret 2025</p>
-              <p class="mb-2"><strong>Jumlah Dibayar:</strong> Rp375.000</p>
-              <p class="mb-2"><strong>Metode:</strong> Transfer ke Bendahara</p>
-              <p class="mb-0"><strong>Tanggal:</strong> 19 Mei 2025</p>
-            </div>
-
+          <div class="bukti-info mb-4 info-grid">
+            <div><strong>Nama</strong></div><div>: Budi</div>
+            <div><strong>Periode</strong></div><div>: Januari - Maret 2025</div>
+            <div><strong>Jumlah Dibayar</strong></div><div>: Rp375.000</div>
+            <div><strong>Metode</strong></div><div>: Transfer ke Bendahara</div>
+            <div><strong>Tanggal</strong></div><div>: 19 Mei 2025</div>
+          </div>
             <div class="d-flex justify-content-between">
               <a href="<?php echo base_url('pembayaran'); ?>" class="btn btn-outline-success">Kembali ke Beranda</a>
               <button class="btn btn-primary" onclick="window.print()">Cetak Bukti</button>
