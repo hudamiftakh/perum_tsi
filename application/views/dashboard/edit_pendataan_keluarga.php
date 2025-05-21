@@ -218,6 +218,7 @@
                             <!-- Simpan nama file lama dalam input hidden -->
                             <input type="hidden" name="file_kk_existing" value="<?= $data_kk['file_kk'] ?>">
                             <?php endif; ?>
+                            <small class="form-text text-muted">Maksimal 5Mb.</small>
                         </div>
 
 
@@ -226,6 +227,7 @@
                             <label for="noHp" class="form-label">Nomor Whatsapp</label>
                             <input type="text" class="form-control" id="noHp" name="no_hp"
                                 value="<?= $data_kk['no_hp'] ?>" required />
+                                <small class="form-text text-muted">Nomor ini akan digunakan untuk menerima notifikasi IPL dan informasi paguyuban melalui WhatsApp.</small>
                         </div>
                     </div>
 
@@ -847,8 +849,8 @@
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        document.getElementById("timer-display").innerHTML =
-            `${days}h ${hours}j ${minutes}m ${seconds}d`;
+         document.getElementById("timer-display").innerHTML =
+        `${days} hari ${hours} jam ${minutes} menit ${seconds} detik`;
     }
 
     updateCountdown(); // Inisialisasi
