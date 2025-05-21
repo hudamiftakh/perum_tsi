@@ -605,7 +605,7 @@
   </script>
   <script>
     // 🕒 Atur tanggal & waktu akhir di sini
-    const countdownEndTime = new Date("2025-05-25T23:59:00").getTime();
+    const countdownEndTime = new Date("2025-05-30T23:59:00").getTime();
 
     function updateCountdown() {
       const now = new Date().getTime();
