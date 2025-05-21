@@ -258,7 +258,7 @@ class dashboard extends CI_Controller
 		$this->load->library('upload');
         $config['upload_path'] = './uploads/';
         $config['allowed_types'] = 'pdf|jpg|jpeg|png';
-        $config['max_size'] = 10120;
+        $config['max_size'] = 100120;
 
         $this->upload->initialize($config);
 
