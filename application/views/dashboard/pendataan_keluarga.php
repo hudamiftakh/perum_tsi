@@ -212,6 +212,8 @@
             <div class="col-md-6 mt-3">
               <label for="fileKK" class="form-label">Upload Kartu Keluarga <span class="text-danger">*</span></label>
               <input type="file" class="form-control" id="fileKK" name="file_kk" accept=".pdf,.jpg,.jpeg,.png" required />
+              <small class="form-text text-muted">Maksimal 5Mb</small>
+            
             </div>
 
             <div class="col-md-6 mt-3">
