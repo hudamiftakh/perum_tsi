@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
-
+<?php 
+$Auth = $this->session->userdata['username'];
+?>
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -89,16 +91,45 @@
                 <div id="timer-display" class="fw-semibold text-danger small">Loading...</div>
             </div>
         </div>
+        
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden mt-5">
             <div class="card-header text-center d-flex flex-column align-items-center justify-content-center p-4"
-                style="height: 160px; background: linear-gradient(135deg,rgb(225, 248, 227), #ffffff);">
-                <img src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>" alt="Logo TSI"
-                    style="width: 150px; margin-bottom: 15px;">
-                <h4 class="fw-bold mb-1 text-dark">PENDATAAN WARGA</h4>
-                <p class="mb-0 text-muted" style="font-size: 1.1rem;">
-                    Perumahan Taman Sukodono Indah
-                </p>
-            </div>
+            style="height: 160px; background: linear-gradient(135deg,rgb(225, 248, 227), #ffffff);">
+            <img src="<?php echo base_url('logo-tsi-removebg-preview.png'); ?>" alt="Logo TSI"
+            style="width: 150px; margin-bottom: 15px;">
+            <h4 class="fw-bold mb-1 text-dark">PENDATAAN WARGA</h4>
+            <p class="mb-0 text-muted" style="font-size: 1.1rem;">
+                Perumahan Taman Sukodono Indah
+            </p>
+        </div>
+        <?php 
+        if(!empty($Auth['username'])) {
+            $_REQUEST['verifikasi'] ='admin_ok';
+        }else{
+            $_REQUEST['verifikasi'] = $_REQUEST['verifikasi']; 
+        }
+        if(!empty($_REQUEST['verifikasi'])) :
+            $no_kk_request = $_REQUEST['no_kk'];
+            $id = decrypt_url($this->uri->segment(2));
+            $data_kk = $this->db->get_where("master_keluarga", array('id' => $id))->row_array();
+            $data_keluarga = $this->db->get_where("master_anggota_keluarga", array('keluarga_id' => $id))->result_array();
+            $selected_nomor_rumah = explode('| ', $data_kk['nomor_rumah']);
+            if ($Auth['username'] != 'admin') {
+                if ($no_kk_request != $data_kk['no_kk']) {
+                    // Jika no_kk tidak cocok dan bukan admin, tolak
+                    echo '<br>
+                        <div class="alert alert-danger" role="alert">
+                        <strong>Nomor KK tidak sesuai!</strong><br>
+                        Maaf, nomor Kartu Keluarga yang Anda masukkan tidak cocok dengan data kami. 
+                        <br>Untuk menjaga keamanan data, Anda tidak diizinkan melanjutkan proses pengeditan.
+                        <br><br>Silakan periksa kembali Nomor KK Anda atau hubungi pengurus paguyuban jika perlu bantuan. 
+                        <br><br><em>Terima kasih atas pengertiannya.</em>
+                        </div>';
+                    exit;
+
+                }
+            }
+            ?>
             <div class="card-body">
                 <?php if ($this->session->flashdata('success')): ?>
                 <div class="alert alert-success">
@@ -114,12 +145,6 @@
                 <form id="formKeluarga" enctype="multipart/form-data">
                     <h6 class="mb-3">Data Kartu Keluarga</h6>
                     <div class="row g-3 mb-3">
-                        <?php
-                        $id = decrypt_url($this->uri->segment(2));
-                        $data_kk = $this->db->get_where("master_keluarga", array('id' => $id))->row_array();
-                        $data_keluarga = $this->db->get_where("master_anggota_keluarga", array('keluarga_id' => $id))->result_array();
-                        $selected_nomor_rumah = explode('| ', $data_kk['nomor_rumah']);
-                        ?>
                         <input type="hidden" name="keluarga_id" value="<?php echo $data_kk['id']; ?>">
                         <!-- Nomor Rumah pakai select2 -->
                         <div class="col-md-6">
@@ -496,6 +521,24 @@
                 </form>
             </div>
         </div>
+        <?php else : ?>
+        <div class="card-body">
+            <form method="POST" action="">
+            <div class="mb-3">
+              <label for="no_kk" class="form-label">Verifikasi Nomor KK</label>
+              <input type="text" class="form-control" id="no_kk" name="no_kk" 
+                     maxlength="16" pattern="\d{16}" required
+                     placeholder="Masukkan 16 digit Nomor KK">
+              <div class="form-text">Pastikan nomor terdiri dari 16 digit angka. <br>Verifikasi ini untuk menjaga keamanan data masing2 individu</div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" name="verifikasi" value="Verifikasi" class="btn btn-primary">
+                Verifikasi
+              </button>
+            </div>
+          </form>
+        <?php endif; ?>
     </div>
 
     <!-- Template anggota keluarga -->
