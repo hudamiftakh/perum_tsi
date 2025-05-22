@@ -161,21 +161,12 @@ if ($check_data <= 0): ?>
 <?php endif; ?>
 
 <div class="card w-100 position-relative overflow-hidden">
-    <div class="px-4 pt-4 card-header" nowrap="">
-        <div style="float: right;">
+    <div class="px-4 pt-4 card-header " nowrap="">
+        <div style="float: right; margin-right: 13%;">
             <a href="<?php echo base_url('agenda/agenda/add'); ?>" class="btn btn-outline-primary btn-lg rounded-end"
                 style="border-radius: 3px !important;">
                 <i class="ti ti-users"></i> &nbsp Tambah Agenda
             </a>
-
-            <button id="actionGroup" type="button" class="btn btn-outline-primary btn-lg rounded-end dropdown-toggle"
-                style="border-radius: 3px !important;" data-bs-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false">
-                <i class="ti ti-list-details"></i> Action
-            </button>
-            <div class="dropdown-menu" aria-labelledby="actionGroup" style="">
-                <a class="dropdown-item" href="#" id="sendToServerButton">Delete</a>
-            </div>
         </div>
     </div>
     <div class="container mt-4">
@@ -196,7 +187,7 @@ if ($check_data <= 0): ?>
             foreach ($result as $data) :
                 $data['jumlah_hadir'] = $this->db->query("SELECT * FROM master_partisipant WHERE agenda_id='".$data['id']."'")->num_rows();
         ?>
-        <div class="table-card shadow-sm p-3 rounded-3 border mb-3">
+        <div class="table-card shadow-sm p-3 rounded-3 border mb-3" style="background-color: #dbeaff;">
             <div class="row">
                 <div class="col-md-10">
                     <h4 class="fw-bold text-success mb-3 agenda-title">
@@ -236,8 +227,7 @@ if ($check_data <= 0): ?>
                     <div class="d-flex flex-md-column flex-row flex-wrap gap-2 justify-content-md-end justify-content-center">
                         <!-- Tombol 1 -->
                         <?php 
-                        $id = $data['id'];
-                        $url_safe = encrypt_url($id);
+                        $url_safe = encrypt_url($data['id']);
                         // var_dump($url_safe);
                         ?>
                         <a class="btn btn-outline-success" target="blank" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">

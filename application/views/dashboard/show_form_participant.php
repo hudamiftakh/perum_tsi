@@ -80,6 +80,7 @@
 
     <?php 
         // Dekripsi
+        $id = $this->uri->segment(2);
         $agenda_id = decrypt_url($id);
         $result_agenda = $this->db->where(array('id'=>$agenda_id))->get("master_agenda")->row_array();
         if(isset($_POST['simpan'])){

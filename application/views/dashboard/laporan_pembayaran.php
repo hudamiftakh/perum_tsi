@@ -64,147 +64,156 @@ $this->load->library('encryption');
     </div>
 <?php endif; ?>
 
-<div class="card w-100 position-relative overflow-hidden">
-    <div class="card-body">
-        <form method="get" action="<?= base_url('warga/laporan-pembayaran'); ?>" class="mb-3">
-            <div class="row gy-2 gx-3 align-items-end">
 
-                <!-- Input Pencarian Keyword -->
-                <div class="col-12 col-md-3">
-                    <input type="text" name="keyword" class="form-control" placeholder="Cari NIK atau Nama..."
-                        value="<?= html_escape($this->input->get('keyword')); ?>">
-                </div>
-                <!-- Filter Tahun -->
-                <div class="col-6 col-md-2">
-                    <select name="tahun" class="form-select">
-                        <option value="">Pilih Tahun</option>
-                        <?php
-                        $start = 2020;
-                        $end = date('Y');
-                        $tahun_get = $this->input->get('tahun');
-                        $selected_tahun = (empty($tahun_get)) ? date('Y') : $tahun_get;
-                        for ($tahun = $end; $tahun >= $start; $tahun--):
-                        ?>
-                            <option value="<?= $tahun; ?>" <?= $selected_tahun == $tahun ? 'selected' : ''; ?>>
-                                <?= $tahun; ?>
-                            </option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
+<form method="get" action="<?= base_url('warga/laporan-pembayaran'); ?>" class="mb-3 p-3 border rounded shadow-sm" style="background-color: #f0f8ff;">
+    <div class="row gy-2 gx-3 align-items-end">
 
-                <div class="col-6 col-md-2">
-                    <select name="id_koordinator" tyle="white-space: nowrap;" class="form-select">
-                        <option value="">Koordinator Blok</option>
-                        <?php
-                        $selected_koordinator = $_REQUEST['id_koordinator'];
-                        foreach ($koordinator as $key => $value) : ?>
-                            <option value="<?php echo $value['id']; ?>"
-                                <?php echo ($value['id'] == $selected_koordinator) ? 'selected' : ''; ?>>
-                                <?php echo $value['nama']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+        <!-- Input Pencarian Keyword -->
+        <div class="col-12 col-md-3">
+            <input type="text" name="keyword" class="form-control rounded" placeholder="Cari NIK atau Nama..."
+                value="<?= html_escape($this->input->get('keyword')); ?>">
+        </div>
 
-                <!-- Tombol Cari & Reset -->
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex gap-2 flex-wrap">
-                        <button class="btn btn-success flex-grow-1 flex-md-grow-0" type="submit">
-                            <i class="fa fa-search me-1"></i> Cari
-                        </button>
-                        <?php if ($this->input->get('keyword') || $this->input->get('bulan') || $this->input->get('tahun')): ?>
-                            <a href="<?= base_url('warga/laporan-pembayaran'); ?>"
-                                class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
-                                <i class="fa fa-times me-1"></i> Reset
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
+        <!-- Filter Tahun -->
+        <div class="col-6 col-md-2">
+            <select name="tahun" class="form-select rounded">
+                <option value="">Pilih Tahun</option>
+                <?php
+                $start = 2020;
+                $end = date('Y');
+                $tahun_get = $this->input->get('tahun');
+                $selected_tahun = (empty($tahun_get)) ? date('Y') : $tahun_get;
+                for ($tahun = $end; $tahun >= $start; $tahun--):
+                ?>
+                    <option value="<?= $tahun; ?>" <?= $selected_tahun == $tahun ? 'selected' : ''; ?>>
+                        <?= $tahun; ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
+        </div>
 
-                <!-- Tombol Tambah -->
-                <div class="col-12 col-md-auto">
-                    <a href="<?= base_url('pembayaran'); ?>" class="btn btn-success w-100">
-                        <i class="fa fa-plus-circle me-1"></i> Tambah Pembayaran
+        <!-- Filter Koordinator -->
+        <div class="col-6 col-md-2">
+            <select name="id_koordinator" class="form-select rounded">
+                <option value="">Koordinator Blok</option>
+                <?php
+                $selected_koordinator = $_REQUEST['id_koordinator'];
+                foreach ($koordinator as $key => $value) : ?>
+                    <option value="<?php echo $value['id']; ?>" <?php echo ($value['id'] == $selected_koordinator) ? 'selected' : ''; ?>>
+                        <?php echo $value['nama']; ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <!-- Tombol Cari & Reset -->
+        <div class="col-12 col-md-auto">
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-success rounded flex-grow-1 flex-md-grow-0" type="submit">
+                    <i class="fa fa-search me-1"></i> Cari
+                </button>
+                <?php if ($this->input->get('keyword') || $this->input->get('bulan') || $this->input->get('tahun')): ?>
+                    <a href="<?= base_url('warga/laporan-pembayaran'); ?>" class="btn btn-outline-danger rounded flex-grow-1 flex-md-grow-0">
+                        <i class="fa fa-times me-1"></i> Reset
                     </a>
-                </div>
-
+                <?php endif; ?>
             </div>
-        </form>
+        </div>
 
-
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle text-nowrap" id="laporanTable">
-                <thead class="table-primary text-center">
-                    <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>Rumah</th>
-                        <?php
-                        $bulan_indonesia = [
-                            1 => 'Jan',
-                            'Feb',
-                            'Mar',
-                            'Apr',
-                            'Mei',
-                            'Jun',
-                            'Jul',
-                            'Agu',
-                            'Sep',
-                            'Okt',
-                            'Nov',
-                            'Des'
-                        ];
-                        $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
-                        $tahun_sekarang = date('Y');
-                        $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
-
-                        for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
-                            <th><?= $bulan_indonesia[$i] ?></th>
-                        <?php endfor; ?>
-                        <th>Total</th>
-                        <th>Keterangan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <?php $no = 1;
-                    foreach ($rumah as $key => $data_bulanan): ?>
-                        <tr>
-                            <td class="text-center"><?= $no++ ?></td>
-                            <td><?= $data_bulanan['nama'] ?></td>
-                            <td><?= $data_bulanan['alamat'] ?></td>
-                            <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
-                                $data_pembayaran = $this->db->query("
-                                        SELECT * FROM master_pembayaran as a 
-                                        LEFT JOIN master_users as b ON a.user_id = b.id
-                                        WHERE MONTH(a.bulan_mulai)='" . $i . "' 
-                                        AND YEAR(a.bulan_mulai) ='" . $selected_tahun . "' 
-                                        AND b.id_rumah ='" . $data_bulanan['id'] . "'
-                                    ")->row_array();
-                                ?>
-                                <td class="text-center <?php echo $data_pembayaran ? 'bg-success-subtle text-default fw-bold' : ''; ?>">
-                                    <?php if ($data_pembayaran): ?>
-                                        <span>125.000</span> <!-- ✅ tanda centang -->
-                                    <?php else: ?>
-                                        <span>-</span>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endfor; ?>
-
-                            <td class="text-center">Rp0</td>
-                            <td>-</td>
-                            <!-- Tombol Aksi -->
-                            <td class="text-center">
-                                <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
-                                    <i class="bi bi-cash-coin"></i> Bayar
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <!-- Tombol Tambah -->
+        <div class="col-12 col-md-auto">
+            <a href="<?= base_url('pembayaran'); ?>" class="btn btn-success rounded w-100">
+                <i class="fa fa-plus-circle me-1"></i> Tambah Pembayaran
+            </a>
+        </div>
+        
+         <!-- Tombol Download -->
+        <div class="col-12 col-md-auto">
+            <div class="btn-group w-100" role="group">
+                <a href="#" class="btn btn-outline-success">
+                    <i class="fa fa-file-excel-o me-1"></i> Excel
+                </a>
+                <a href="#" class="btn btn-outline-danger">
+                    <i class="fa fa-file-pdf-o me-1"></i> PDF
+                </a>
+            </div>
         </div>
 
     </div>
+</form>
+
+
+<div class="table-responsive">
+    <table class="table table-bordered align-middle text-nowrap" id="laporanTable">
+        <thead class="table-primary text-center">
+            <tr>
+                <th>No</th>
+                <th>Nama</th>
+                <th>Rumah</th>
+                <?php
+                $bulan_indonesia = [
+                    1 => 'Jan',
+                    'Feb',
+                    'Mar',
+                    'Apr',
+                    'Mei',
+                    'Jun',
+                    'Jul',
+                    'Agu',
+                    'Sep',
+                    'Okt',
+                    'Nov',
+                    'Des'
+                ];
+                $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
+                $tahun_sekarang = date('Y');
+                $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
+
+                for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
+                    <th><?= $bulan_indonesia[$i] ?></th>
+                <?php endfor; ?>
+                <th>Total</th>
+                <th>Keterangan</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <?php $no = 1;
+            foreach ($rumah as $key => $data_bulanan): ?>
+                <tr>
+                    <td class="text-center"><?= $no++ ?></td>
+                    <td><?= $data_bulanan['nama'] ?></td>
+                    <td><?= $data_bulanan['alamat'] ?></td>
+                    <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
+                        $data_pembayaran = $this->db->query("
+                                SELECT * FROM master_pembayaran as a 
+                                LEFT JOIN master_users as b ON a.user_id = b.id
+                                WHERE MONTH(a.bulan_mulai)='" . $i . "' 
+                                AND YEAR(a.bulan_mulai) ='" . $selected_tahun . "' 
+                                AND b.id_rumah ='" . $data_bulanan['id'] . "'
+                            ")->row_array();
+                    ?>
+                        <td class="text-center <?php echo $data_pembayaran ? 'bg-success-subtle text-default fw-bold' : 'bg-danger-subtle text-white'; ?>">
+                            <?php if ($data_pembayaran): ?>
+                                <span>125.000</span> <!-- ✅ tanda centang -->
+                            <?php else: ?>
+                                <span>❌</span> <!-- atau bisa ganti jadi: <span>Belum Bayar</span> -->
+                            <?php endif; ?>
+                        </td>
+
+                    <?php endfor; ?>
+
+                    <td class="text-center">Rp0</td>
+                    <td>-</td>
+                    <!-- Tombol Aksi -->
+                    <td class="text-center">
+                        <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
+                            <i class="bi bi-cash-coin"></i> Bayar
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>

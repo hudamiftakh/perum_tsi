@@ -18,88 +18,14 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
 
     <style>
         body {
             background-color: #d4edda;
-        }
-
-        .card {
-            border-radius: 1rem;
-        }
-
-        .remove-member-btn {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-        }
-
-        .form-label {
-            font-weight: 500;
-        }
-
-        .anggota-header {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #0d6efd;
-            margin-bottom: 1rem;
-        }
-
-        @media (max-width: 576px) {
-            .form-label {
-                font-size: 0.9rem;
-            }
-
-            .form-control,
-            .form-select {
-                font-size: 0.9rem;
-            }
-
-            .remove-member-btn {
-                right: 5px;
-                top: 5px;
-                font-size: 0.75rem;
-                padding: 2px 6px;
-            }
-
-            .anggota-header {
-                font-size: 1rem;
-            }
-        }
-
-        /* Select2 full width fix */
-        .select2-container {
-            width: 100% !important;
-        }
-
-        .select2-container .select2-selection--single {
-            height: 40px !important;
-            /* sesuaikan dengan kebutuhan */
-            display: flex;
-            align-items: center;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            padding-left: 8px;
-            /* agar teks tidak mentok kiri */
-            line-height: normal !important;
-            /* reset default line-height */
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 40px !important;
-        }
-
-        .select2-container .select2-selection--multiple {
-            min-height: 40px !important;
-        }
-
-        .select2-results__options {
-            max-height: 200px;
-            overflow-y: auto;
         }
 
         .timer-display {
@@ -192,6 +118,10 @@
                 </div>
             </div>
             <div class="card-body" style="padding-top: 1rem;">
+                <?php
+                $sudah = 0;
+                $belum = 0;
+                ?>
 
                 <!-- Container pencarian + daftar rumah -->
                 <div style="height: 65vh; display: flex; flex-direction: column;">
@@ -217,7 +147,13 @@
                                 ON CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')
                             LEFT JOIN master_koordinator_blok as ma ON mr.id_koordinator = ma.id;
                         ")->result_array();
+
                         foreach ($result as $key => $data) :
+                            if ($data['status_pengisian'] == 'sudah') {
+                                $sudah++;
+                            } else {
+                                $belum++;
+                            }
                         ?>
                             <div class="card card-custom mb-3">
                                 <div class="card-body d-flex justify-content-between align-items-center">
@@ -256,13 +192,58 @@
                         <?php endforeach; ?>
                     </div>
                 </div>
-                <br>
+                <!-- <br>
                 <div id="resultCount" class="mb-3 text-muted">Menampilkan semua data</div>
+                <div class="mb-4 text-center">
+                    <canvas id="pieChart" style="width: 100%; max-width: 100px; height: 100px;"></canvas>
+                </div> -->
 
             </div>
         </div>
 
     </div>
+
+    <script>
+        const ctx = document.getElementById('pieChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Sudah Mengisi', 'Belum Mengisi'],
+                datasets: [{
+                    data: [<?php echo $sudah; ?>, <?php echo $belum; ?>],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderColor: ['#fff', '#fff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        padding: 8
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = <?php echo $sudah + $belum; ?>;
+                                const value = context.raw;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
     <script>
         // Search filter sederhana + jumlah hasil
         const searchInput = document.getElementById('searchInput');

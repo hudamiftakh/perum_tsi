@@ -110,8 +110,8 @@ $this->load->library('encryption');
     </div>
 <?php endif; ?>
 
-<div class="card w-100 position-relative overflow-hidden">
-    <div class="card-body p-4">
+<!-- <div class="card w-100 position-relative overflow-hidden">
+    <div class="card-body p-4"> -->
         <!-- Form pencarian -->
         <form method="get" action="<?= base_url('warga/data-warga'); ?>" class="mb-3">
             <div class="row gy-2 gx-3 align-items-center">
@@ -401,5 +401,5 @@ $this->load->library('encryption');
             </div>
         <?php endforeach; ?>
 
-    </div>
-</div>
+    <!-- </div>
+</div> -->

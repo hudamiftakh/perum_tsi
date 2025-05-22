@@ -63,6 +63,8 @@ parse_str($data, $parsed);
 // Langkah 2: Decode JSON-nya
 $jsonString = $data;
 $jsonData = json_decode($jsonString, true); // true = associative array
+
+var_dump($jsonData);
 ?>
 
 <style>

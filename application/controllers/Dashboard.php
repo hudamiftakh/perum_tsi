@@ -610,7 +610,7 @@ class dashboard extends CI_Controller
 		if ($pembayaran_via === 'transfer') {
 			$config['upload_path']   = './uploads/bukti/';
 			$config['allowed_types'] = 'jpg|jpeg|png|pdf';
-			$config['max_size']      = 2048; // 2MB
+			$config['max_size']      = 50048; // 2MB
 			$config['encrypt_name']  = TRUE;
 
 			$this->load->library('upload', $config);

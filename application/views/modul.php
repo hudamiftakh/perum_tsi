@@ -32,95 +32,95 @@
     <script src="<?php echo base_url(); ?>dist/js/datatable/datatable-basic.init.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
     <style type="text/css">
-    .nav-icon-hover {
-        display: none;
-    }
+        .nav-icon-hover {
+            display: none;
+        }
 
-    #main-wrapper[data-layout=vertical] .app-header.fixed-header .navbar {
-        background: #008d4c !important;
-        padding: 0 0px !important;
-        border-radius: 0px !important;
-        box-shadow: none !important;
-        margin-top: 0px !important;
-    }
+        #main-wrapper[data-layout=vertical] .app-header.fixed-header .navbar {
+            background: #008d4c !important;
+            padding: 0 0px !important;
+            border-radius: 0px !important;
+            box-shadow: none !important;
+            margin-top: 0px !important;
+        }
 
-    input[type="checkbox"] {
-        width: 23px;
-        height: 23px;
-    }
+        input[type="checkbox"] {
+            width: 23px;
+            height: 23px;
+        }
 
-    /* .custom-control-input:focus~.custom-control-indicator {
+        /* .custom-control-input:focus~.custom-control-indicator {
       -webkit-box-shadow: 0 0 0 1px #fff, 0 0 0 3px #0275d8;
       box-shadow: 0 0 0 1px #fff, 0 0 0 3px #0275d8;
     } */
 
-    /* Styling checkbox border */
-    .custom-checkbox .form-check-input {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #adb5bd;
-        border-radius: 4px;
-    }
-
-    /* Styling checked state */
-    .custom-checkbox .form-check-input:checked {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    table.fixedHeader-floating {
-        position: fixed !important;
-        background-color: white;
-    }
-
-    table.fixedHeader-floating.no-footer {
-        border-bottom-width: 0;
-    }
-
-    table.fixedHeader-locked {
-        position: absolute !important;
-        background-color: white;
-    }
-
-    @media print {
-        table.fixedHeader-floating {
-            display: none;
+        /* Styling checkbox border */
+        .custom-checkbox .form-check-input {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #adb5bd;
+            border-radius: 4px;
         }
-    }
 
-    .nowrap {
-        white-space: nowrap;
-    }
+        /* Styling checked state */
+        .custom-checkbox .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
 
-    .card2 {
-        position: relative !important;
-        display: flex !important;
-        flex-direction: column !important;
-        min-width: 0 !important;
-        word-wrap: break-word !important;
-        background-color: #fff !important;
-        background-clip: border-box !important;
-        border: 1px solid rgba(0, 0, 0, .2) !important;
-        border-radius: 0.25rem;
-        color: black;
-    }
+        table.fixedHeader-floating {
+            position: fixed !important;
+            background-color: white;
+        }
 
-    .card-body2 {
-        flex: 1 1 auto;
-        padding: 1rem 1rem;
-    }
+        table.fixedHeader-floating.no-footer {
+            border-bottom-width: 0;
+        }
 
-    .card-header2 {
-        padding: 0.5rem 1rem;
-        margin-bottom: 0;
-        background-color: rgba(0, 0, 0, .03);
-        border-bottom: 1px solid rgba(0, 0, 0, .125);
-    }
+        table.fixedHeader-locked {
+            position: absolute !important;
+            background-color: white;
+        }
 
-    .img-fluid {
-        max-width: 1000px !important;
-        height: auto;
-    }
+        @media print {
+            table.fixedHeader-floating {
+                display: none;
+            }
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        .card2 {
+            position: relative !important;
+            display: flex !important;
+            flex-direction: column !important;
+            min-width: 0 !important;
+            word-wrap: break-word !important;
+            background-color: #fff !important;
+            background-clip: border-box !important;
+            border: 1px solid rgba(0, 0, 0, .2) !important;
+            border-radius: 0.25rem;
+            color: black;
+        }
+
+        .card-body2 {
+            flex: 1 1 auto;
+            padding: 1rem 1rem;
+        }
+
+        .card-header2 {
+            padding: 0.5rem 1rem;
+            margin-bottom: 0;
+            background-color: rgba(0, 0, 0, .03);
+            border-bottom: 1px solid rgba(0, 0, 0, .125);
+        }
+
+        .img-fluid {
+            max-width: 1000px !important;
+            height: auto;
+        }
     </style>
 </head>
 
@@ -244,9 +244,11 @@
                     </div>
                 </nav>
             </header>
-            <div class="container-fluid mw-87">
+            <div class="container-fluid" style="max-width: 87%; max-width: none !important;"
+                class="container-fluid mw-100 mw-md-87">
                 <?php $this->load->view($halaman, array('result' => $result, 'start' => $start)); ?>
             </div>
+
             <script src="<?php echo base_url(); ?>dist/libs/simplebar/dist/simplebar.min.js"></script>
             <script src="<?php echo base_url(); ?>dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
             <script src="<?php echo base_url(); ?>dist/js/app.min.js"></script>
