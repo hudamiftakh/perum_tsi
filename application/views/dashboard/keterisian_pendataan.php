@@ -204,19 +204,19 @@
                     <div id="houseList" style="overflow-y: auto; flex-grow: 1; margin-top: 1rem;">
                         <?php
                         $result = $this->db->query("
-                    SELECT 
-                        mr.*,
-                        CASE 
-                            WHEN mk.nomor_rumah IS NOT NULL THEN 'sudah'
-                            ELSE 'belum'
-                        END AS status_pengisian,
-                        ma.nama as koordinator,
-                        mk.id as id_keluarga
-                    FROM master_rumah mr
-                    LEFT JOIN master_keluarga mk 
-                        ON CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')
-                    LEFT JOIN master_koordinator_blok as ma ON mr.id_koordinator = ma.id;
-                ")->result_array();
+                            SELECT 
+                                mr.*,
+                                CASE 
+                                    WHEN mk.nomor_rumah IS NOT NULL THEN 'sudah'
+                                    ELSE 'belum'
+                                END AS status_pengisian,
+                                ma.nama as koordinator,
+                                mk.id as id_keluarga
+                            FROM master_rumah mr
+                            LEFT JOIN master_keluarga mk 
+                                ON CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')
+                            LEFT JOIN master_koordinator_blok as ma ON mr.id_koordinator = ma.id;
+                        ")->result_array();
                         foreach ($result as $key => $data) :
                         ?>
                             <div class="card card-custom mb-3">
@@ -256,26 +256,40 @@
                         <?php endforeach; ?>
                     </div>
                 </div>
+                <br>
+                <div id="resultCount" class="mb-3 text-muted">Menampilkan semua data</div>
 
             </div>
         </div>
 
     </div>
     <script>
-        // Search filter sederhana
+        // Search filter sederhana + jumlah hasil
         const searchInput = document.getElementById('searchInput');
         const houseList = document.getElementById('houseList');
+        const resultCount = document.getElementById('resultCount'); // Tambahkan elemen ini di HTML
 
         searchInput.addEventListener('input', () => {
             const filter = searchInput.value.toLowerCase();
             const cards = houseList.getElementsByClassName('card');
 
+            let visibleCount = 0;
+
             Array.from(cards).forEach(card => {
                 const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(filter) ? '' : 'none';
+                const isVisible = text.includes(filter);
+                card.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
             });
+
+            if (filter === '') {
+                resultCount.textContent = 'Menampilkan semua data';
+            } else {
+                resultCount.textContent = `Menampilkan ${visibleCount} hasil pencarian`;
+            }
         });
     </script>
+
     <script>
         // 🕒 Atur tanggal & waktu akhir di sini
         const countdownEndTime = new Date("2025-05-30T23:59:00").getTime();
