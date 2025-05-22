@@ -192,9 +192,9 @@
                         <?php endforeach; ?>
                     </div>
                 </div>
-                <!-- <br>
+                <br>
                 <div id="resultCount" class="mb-3 text-muted">Menampilkan semua data</div>
-                <div class="mb-4 text-center">
+                <!-- <div class="mb-4 text-center">
                     <canvas id="pieChart" style="width: 100%; max-width: 100px; height: 100px;"></canvas>
                 </div> -->
 
