@@ -495,6 +495,11 @@ class dashboard extends CI_Controller
 		$this->load->view('dashboard/show_form_pembayaran');
 	}
 
+	public function keterisian_pendataan()
+	{
+		$this->load->view('dashboard/keterisian_pendataan');
+	}
+
 	public function cek_pembayaran()
 	{
 		$tanggal = $this->input->post('tanggal');
