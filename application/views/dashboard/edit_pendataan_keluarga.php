@@ -74,6 +74,41 @@ $Auth = $this->session->userdata['username'];
     .select2-container {
         width: 100% !important;
     }
+
+     /* Select2 full width fix */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container .select2-selection--single {
+        height: 40px !important;
+        /* sesuaikan dengan kebutuhan */
+        display: flex;
+        align-items: center;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        padding-left: 8px;
+        /* agar teks tidak mentok kiri */
+        line-height: normal !important;
+        /* reset default line-height */
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+
+    .select2-container .select2-selection--multiple {
+        min-height: 40px !important;
+    }
+
+    .select2-results__options {
+        max-height: 200px;
+        overflow-y: auto;
+    }
     </style>
 </head>
 
