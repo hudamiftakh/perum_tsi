@@ -262,10 +262,40 @@ class dashboard extends CI_Controller
 
         $this->upload->initialize($config);
 
-        if (!$this->upload->do_upload('file_kk')) {
-            echo json_encode(['status' => 'error', 'message' => $this->upload->display_errors()]);
-            return;
-        }
+		if ($_FILES['file_kk']['name']) {
+			// Jika ada file yang diupload
+			if (!$this->upload->do_upload('file_kk')) {
+				echo json_encode(['status' => 'error', 'message' => $this->upload->display_errors()]);
+				return;
+			}
+
+			$file_data = $this->upload->data();
+			$ext = $file_data['file_ext'];
+			$no_kk = $this->input->post('no_kk');
+
+			// Rename file
+			$new_file_name = $no_kk . $ext;
+			$new_file_path = $file_data['file_path'] . $new_file_name;
+			rename($file_data['full_path'], $new_file_path);
+
+			// Resize jika gambar
+			$allowed_image_ext = ['.jpg', '.jpeg', '.png'];
+			if (in_array(strtolower($ext), $allowed_image_ext)) {
+				$config_resize['image_library'] = 'gd2';
+				$config_resize['source_image'] = $new_file_path;
+				$config_resize['maintain_ratio'] = TRUE;
+				$config_resize['width'] = 800;
+				$config_resize['height'] = 800;
+
+				$this->load->library('image_lib', $config_resize);
+				$this->image_lib->resize();
+			}
+
+			$file_kk = $new_file_name;
+		} else {
+			// Jika tidak ada file diupload
+			$file_kk = null;
+		}
 
         $file_data = $this->upload->data();
 		$ext = $file_data['file_ext']; // ekstensi file, contoh ".jpg"

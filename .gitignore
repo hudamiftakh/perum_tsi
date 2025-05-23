@@ -4,3 +4,5 @@ application/config/database.php
 application/sessions/
 .htaccess
 /uploads/
+/vendor/
+composer.lock

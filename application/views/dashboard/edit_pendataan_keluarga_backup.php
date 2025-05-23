@@ -115,14 +115,14 @@ $Auth = $this->session->userdata['username'];
             $data_keluarga = $this->db->get_where("master_anggota_keluarga", array('keluarga_id' => $id))->result_array();
             $selected_nomor_rumah = explode('| ', $data_kk['nomor_rumah']);
             if ($Auth['username'] != 'admin') {
-                if ($no_kk_request != $data_kk['no_hp']) {
+                if ($no_kk_request != $data_kk['no_kk']) {
                     // Jika no_kk tidak cocok dan bukan admin, tolak
                     echo '<br>
                         <div class="alert alert-danger" role="alert">
-                        <strong>Nomor HP tidak sesuai!</strong><br>
-                        Maaf, nomor HP yang Anda masukkan tidak cocok dengan data kami. 
+                        <strong>Nomor KK tidak sesuai!</strong><br>
+                        Maaf, nomor Kartu Keluarga yang Anda masukkan tidak cocok dengan data kami. 
                         <br>Untuk menjaga keamanan data, Anda tidak diizinkan melanjutkan proses pengeditan.
-                        <br><br>Silakan periksa kembali Nomor HP Anda atau hubungi pengurus paguyuban jika perlu bantuan. 
+                        <br><br>Silakan periksa kembali Nomor KK Anda atau hubungi pengurus paguyuban jika perlu bantuan. 
                         <br><br><em>Terima kasih atas pengertiannya.</em>
                         </div>';
                     exit;
@@ -164,11 +164,11 @@ $Auth = $this->session->userdata['username'];
                             </select>
                         </div>
 
-                        <!-- <div class="col-md-6">
+                        <div class="col-md-6">
                             <label for="noKK" class="form-label">Nomor KK</label>
                             <input type="text" class="form-control" id="noKK" value="<?php echo $data_kk['no_kk']; ?>"
                                 name="no_kk" required />
-                        </div> -->
+                        </div>
                         <!-- Status Tempat Tinggal -->
                         <div class="col-md-6">
                             <label for="statusRumah" class="form-label">Status Tempat Tinggal (Rumah TSI)</label>
@@ -230,7 +230,7 @@ $Auth = $this->session->userdata['username'];
                         </div>
 
                         <!-- Upload KK -->
-                        <!-- <div class="col-md-6 mt-3">
+                        <div class="col-md-6 mt-3">
                             <label for="fileKK" class="form-label">Upload Kartu Keluarga</label>
                             <input type="file" class="form-control" id="fileKK" name="file_kk"
                                 accept=".pdf,.jpg,.jpeg,.png" />
@@ -239,12 +239,12 @@ $Auth = $this->session->userdata['username'];
                             <small class="text-muted">
                                 File saat ini:
                                 <a href="<?= base_url('uploads/' . $data_kk['file_kk']) ?>" target="_blank">Lihat</a>
-                            </small> -->
+                            </small>
                             <!-- Simpan nama file lama dalam input hidden -->
-                            <!-- <input type="hidden" name="file_kk_existing" value="<?= $data_kk['file_kk'] ?>"> -->
+                            <input type="hidden" name="file_kk_existing" value="<?= $data_kk['file_kk'] ?>">
                             <?php endif; ?>
-                            <!-- <small class="form-text text-muted">Maksimal 5Mb.</small> -->
-                        <!-- </div> -->
+                            <small class="form-text text-muted">Maksimal 5Mb.</small>
+                        </div>
 
 
                         <!-- Nomor Whatsapp -->
@@ -256,6 +256,265 @@ $Auth = $this->session->userdata['username'];
                         </div>
                     </div>
 
+                    <h6 class="mt-4 mb-3">Anggota Keluarga</h6>
+                    <?php
+                    $no = 1;
+                    $data_keluarga = $this->db->get_where("master_anggota_keluarga", array('keluarga_id' => $id))->result_array();
+                    $jumlah_rows = $this->db->get_where("master_anggota_keluarga", array('keluarga_id' => $id))->num_rows();
+                    foreach ($data_keluarga as $datanya) :
+                    ?>
+                    <div class="card border rounded p-3 mt-3 position-relative anggota-keluarga">
+                        <a type="submit"
+                            href="<?php echo base_url('dashboard/hapus_anggota_keluarga?id=' . $datanya['id'] . "&id_keluarga=" . $datanya['keluarga_id']); ?>"
+                            onclick="return confirm('Apakah anda yakin');"
+                            class="btn btn-sm btn-danger remove-member-btn">X</a>
+                        <div class="anggota-header">Anggota Ke-<span><?= $no; ?></span></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="hidden" name="anggota_id[]" value="<?php echo $datanya['id']; ?>">
+                                <input type="hidden" name="keluarga_id" value="<?php echo $datanya['keluarga_id']; ?>">
+                                <label class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control"
+                                    value="<?= htmlspecialchars($datanya['nama']); ?>" name="nama[]" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">NIK</label>
+                                <input type="text" class="form-control"
+                                    value="<?= htmlspecialchars($datanya['nik']); ?>" name="nik[]" required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Jenis Kelamin</label>
+                                <select class="form-select" name="jenis_kelamin[]" required>
+                                    <option value="">Pilih Jenis Kelamin...</option>
+                                    <option value="Laki-laki"
+                                        <?= ($datanya['jenis_kelamin'] == 'Laki-laki') ? 'selected' : ''; ?>>Laki-laki
+                                    </option>
+                                    <option value="Perempuan"
+                                        <?= ($datanya['jenis_kelamin'] == 'Perempuan') ? 'selected' : ''; ?>>Perempuan
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Agama</label>
+                                <select class="form-select" name="agama[]" required>
+                                    <option value="">Pilih Agama...</option>
+                                    <option value="Islam" <?= ($datanya['agama'] == 'Islam') ? 'selected' : ''; ?>>Islam
+                                    </option>
+                                    <option value="Kristen Protestan"
+                                        <?= ($datanya['agama'] == 'Kristen Protestan') ? 'selected' : ''; ?>>Kristen
+                                        Protestan</option>
+                                    <option value="Katolik" <?= ($datanya['agama'] == 'Katolik') ? 'selected' : ''; ?>>
+                                        Katolik</option>
+                                    <option value="Hindu" <?= ($datanya['agama'] == 'Hindu') ? 'selected' : ''; ?>>Hindu
+                                    </option>
+                                    <option value="Buddha" <?= ($datanya['agama'] == 'Buddha') ? 'selected' : ''; ?>>
+                                        Buddha</option>
+                                    <option value="Konghucu"
+                                        <?= ($datanya['agama'] == 'Konghucu') ? 'selected' : ''; ?>>Konghucu</option>
+                                    <option value="Lainnya" <?= ($datanya['agama'] == 'Lainnya') ? 'selected' : ''; ?>>
+                                        Lainnya</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Status Perkawinan</label>
+                                <select class="form-select" name="status_perkawinan[]" required>
+                                    <option value="">Pilih Status Perkawinan...</option>
+                                    <option value="Belum Kawin"
+                                        <?= ($datanya['status_perkawinan'] == 'Belum Kawin') ? 'selected' : ''; ?>>Belum
+                                        Kawin</option>
+                                    <option value="Kawin"
+                                        <?= ($datanya['status_perkawinan'] == 'Kawin') ? 'selected' : ''; ?>>Kawin
+                                    </option>
+                                    <option value="Cerai Hidup"
+                                        <?= ($datanya['status_perkawinan'] == 'Cerai Hidup') ? 'selected' : ''; ?>>Cerai
+                                        Hidup</option>
+                                    <option value="Cerai Mati"
+                                        <?= ($datanya['status_perkawinan'] == 'Cerai Mati') ? 'selected' : ''; ?>>Cerai
+                                        Mati</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Hubungan</label>
+                                <select class="form-select" name="hubungan[]" required>
+                                    <option value="">Pilih...</option>
+                                    <option value="Kepala Keluarga"
+                                        <?= ($datanya['hubungan'] == 'Kepala Keluarga') ? 'selected' : ''; ?>>Kepala
+                                        Keluarga</option>
+                                    <option value="Istri" <?= ($datanya['hubungan'] == 'Istri') ? 'selected' : ''; ?>>
+                                        Istri</option>
+                                    <option value="Anak" <?= ($datanya['hubungan'] == 'Anak') ? 'selected' : ''; ?>>Anak
+                                    </option>
+                                    <option value="Orang Tua"
+                                        <?= ($datanya['hubungan'] == 'Orang Tua') ? 'selected' : ''; ?>>Orang Tua
+                                    </option>
+                                    <option value="Lainnya"
+                                        <?= ($datanya['hubungan'] == 'Lainnya') ? 'selected' : ''; ?>>Lainnya</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Lahir</label>
+                                <input type="date" class="form-control"
+                                    value="<?= htmlspecialchars($datanya['tgl_lahir']); ?>" name="tgl_lahir[]"
+                                    required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Pekerjaan</label>
+                                <select class="form-select" name="pekerjaan[]" required>
+                                    <option value="">Pilih Pekerjaan...</option>
+                                    <option value="Belum Bekerja"
+                                        <?= ($datanya['pekerjaan'] == 'Belum Bekerja') ? 'selected' : ''; ?>>Belum
+                                        Bekerja (Balita/Anak-anak)</option>
+                                    <option value="Pelajar/Mahasiswa"
+                                        <?= ($datanya['pekerjaan'] == 'Pelajar/Mahasiswa') ? 'selected' : ''; ?>>
+                                        Pelajar/Mahasiswa</option>
+                                    <option value="ASN" <?= ($datanya['pekerjaan'] == 'ASN') ? 'selected' : ''; ?>>ASN
+                                    </option>
+                                    <option value="TNI/Polri"
+                                        <?= ($datanya['pekerjaan'] == 'TNI/Polri') ? 'selected' : ''; ?>>TNI/Polri
+                                    </option>
+                                    <option value="Pegawai BUMN"
+                                        <?= ($datanya['pekerjaan'] == 'Pegawai BUMN') ? 'selected' : ''; ?>>Pegawai BUMN
+                                    </option>
+                                    <option value="Pegawai Swasta"
+                                        <?= ($datanya['pekerjaan'] == 'Pegawai Swasta') ? 'selected' : ''; ?>>Pegawai
+                                        Swasta</option>
+                                    <option value="Wiraswasta"
+                                        <?= ($datanya['pekerjaan'] == 'Wiraswasta') ? 'selected' : ''; ?>>Wiraswasta
+                                    </option>
+                                    <option value="Petani"
+                                        <?= ($datanya['pekerjaan'] == 'Petani') ? 'selected' : ''; ?>>Petani</option>
+                                    <option value="Nelayan"
+                                        <?= ($datanya['pekerjaan'] == 'Nelayan') ? 'selected' : ''; ?>>Nelayan</option>
+                                    <option value="Ibu Rumah Tangga"
+                                        <?= ($datanya['pekerjaan'] == 'Ibu Rumah Tangga') ? 'selected' : ''; ?>>Ibu
+                                        Rumah Tangga</option>
+                                    <option value="Pensiunan"
+                                        <?= ($datanya['pekerjaan'] == 'Pensiunan') ? 'selected' : ''; ?>>Pensiunan
+                                    </option>
+                                    <option value="Ahli IT"
+                                        <?= ($datanya['pekerjaan'] == 'Ahli IT') ? 'selected' : ''; ?>>Ahli IT</option>
+                                    <option value="Programmer"
+                                        <?= ($datanya['pekerjaan'] == 'Programmer') ? 'selected' : ''; ?>>Programmer
+                                    </option>
+                                    <option value="Desainer Grafis"
+                                        <?= ($datanya['pekerjaan'] == 'Desainer Grafis') ? 'selected' : ''; ?>>Desainer
+                                        Grafis</option>
+                                    <option value="Dokter"
+                                        <?= ($datanya['pekerjaan'] == 'Dokter') ? 'selected' : ''; ?>>Dokter</option>
+                                    <option value="Perawat"
+                                        <?= ($datanya['pekerjaan'] == 'Perawat') ? 'selected' : ''; ?>>Perawat</option>
+                                    <option value="Guru/Dosen"
+                                        <?= ($datanya['pekerjaan'] == 'Guru/Dosen') ? 'selected' : ''; ?>>Guru/Dosen
+                                    </option>
+                                    <option value="Pengacara"
+                                        <?= ($datanya['pekerjaan'] == 'Pengacara') ? 'selected' : ''; ?>>Pengacara
+                                    </option>
+                                    <option value="Insinyur"
+                                        <?= ($datanya['pekerjaan'] == 'Insinyur') ? 'selected' : ''; ?>>Insinyur
+                                    </option>
+                                    <option value="Arsitek"
+                                        <?= ($datanya['pekerjaan'] == 'Arsitek') ? 'selected' : ''; ?>>Arsitek</option>
+                                    <option value="Seniman"
+                                        <?= ($datanya['pekerjaan'] == 'Seniman') ? 'selected' : ''; ?>>Seniman</option>
+                                    <option value="Pengusaha"
+                                        <?= ($datanya['pekerjaan'] == 'Pengusaha') ? 'selected' : ''; ?>>Pengusaha
+                                    </option>
+                                    <option value="Wartawan"
+                                        <?= ($datanya['pekerjaan'] == 'Wartawan') ? 'selected' : ''; ?>>Wartawan
+                                    </option>
+                                    <option value="Atlet" <?= ($datanya['pekerjaan'] == 'Atlet') ? 'selected' : ''; ?>>
+                                        Atlet</option>
+                                    <option value="Sopir" <?= ($datanya['pekerjaan'] == 'Sopir') ? 'selected' : ''; ?>>
+                                        Sopir</option>
+                                    <option value="Montir"
+                                        <?= ($datanya['pekerjaan'] == 'Montir') ? 'selected' : ''; ?>>Montir</option>
+                                    <option value="Petugas Keamanan"
+                                        <?= ($datanya['pekerjaan'] == 'Petugas Keamanan') ? 'selected' : ''; ?>>Petugas
+                                        Keamanan</option>
+                                    <option value="Karyawan Swasta"
+                                        <?= ($datanya['pekerjaan'] == 'Karyawan Swasta') ? 'selected' : ''; ?>>Karyawan
+                                        Swasta</option>
+                                    <option value="Sales Marketing"
+                                        <?= ($datanya['pekerjaan'] == 'Sales Marketing') ? 'selected' : ''; ?>>Sales
+                                        Marketing</option>
+                                    <option value="Tukang Bangunan"
+                                        <?= ($datanya['pekerjaan'] == 'Tukang Bangunan') ? 'selected' : ''; ?>>Tukang
+                                        Bangunan</option>
+                                    <option value="Tukang Kayu"
+                                        <?= ($datanya['pekerjaan'] == 'Tukang Kayu') ? 'selected' : ''; ?>>Tukang Kayu
+                                    </option>
+                                    <option value="Tukang Las"
+                                        <?= ($datanya['pekerjaan'] == 'Tukang Las') ? 'selected' : ''; ?>>Tukang Las
+                                    </option>
+                                    <option value="Peternak"
+                                        <?= ($datanya['pekerjaan'] == 'Peternak') ? 'selected' : ''; ?>>Peternak
+                                    </option>
+                                    <option value="Penjahit"
+                                        <?= ($datanya['pekerjaan'] == 'Penjahit') ? 'selected' : ''; ?>>Penjahit
+                                    </option>
+                                    <option value="Karyawan Bank"
+                                        <?= ($datanya['pekerjaan'] == 'Karyawan Bank') ? 'selected' : ''; ?>>Karyawan
+                                        Bank</option>
+                                    <option value="Pengusaha Kecil"
+                                        <?= ($datanya['pekerjaan'] == 'Pengusaha Kecil') ? 'selected' : ''; ?>>Pengusaha
+                                        Kecil</option>
+                                    <option value="Buruh" <?= ($datanya['pekerjaan'] == 'Buruh') ? 'selected' : ''; ?>>
+                                        Buruh</option>
+                                    <option value="Pelaut"
+                                        <?= ($datanya['pekerjaan'] == 'Pelaut') ? 'selected' : ''; ?>>Pelaut</option>
+                                    <option value="Fotografer"
+                                        <?= ($datanya['pekerjaan'] == 'Fotografer') ? 'selected' : ''; ?>>Fotografer
+                                    </option>
+                                    <option value="Penulis"
+                                        <?= ($datanya['pekerjaan'] == 'Penulis') ? 'selected' : ''; ?>>Penulis</option>
+                                    <option value="Penyiar"
+                                        <?= ($datanya['pekerjaan'] == 'Penyiar') ? 'selected' : ''; ?>>Penyiar</option>
+                                    <option value="Psikolog"
+                                        <?= ($datanya['pekerjaan'] == 'Psikolog') ? 'selected' : ''; ?>>Psikolog
+                                    </option>
+
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nama Instansi / Perusahaan / Usaha</label>
+                                <input type="text" class="form-control"
+                                    value="<?= htmlspecialchars($datanya['tempat_bekerja']); ?>" name="tempat_bekerja[]"
+                                    required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Golongan Darah</label>
+                                <select class="form-select" name="golongan_darah[]">
+                                    <option value="">Pilih Golongan Darah...</option>
+                                    <option value="A" <?= ($datanya['golongan_darah'] == 'A') ? 'selected' : ''; ?>>A
+                                    </option>
+                                    <option value="B" <?= ($datanya['golongan_darah'] == 'B') ? 'selected' : ''; ?>>B
+                                    </option>
+                                    <option value="AB" <?= ($datanya['golongan_darah'] == 'AB') ? 'selected' : ''; ?>>AB
+                                    </option>
+                                    <option value="O" <?= ($datanya['golongan_darah'] == 'O') ? 'selected' : ''; ?>>O
+                                    </option>
+                                    <option value="Tidak Tahu"
+                                        <?= ($datanya['golongan_darah'] == 'Tidak Tahu') ? 'selected' : ''; ?>>Tidak
+                                        Tahu</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
+                        $no++;
+                    endforeach;
+                    ?>
+
+                    <div id="anggotaKeluargaWrapper"></div>
+                    <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="tambahAnggota()">+ Tambah
+                        Anggota Keluarga</button>
+
                     <div class="text-end mt-4">
                         <button type="submit" class="btn btn-success w-100">Simpan Data</button>
                     </div>
@@ -266,10 +525,11 @@ $Auth = $this->session->userdata['username'];
         <div class="card-body">
             <form method="POST" action="">
             <div class="mb-3">
-              <label for="no_kk" class="form-label">Verifikasi Nomor Whatsapp</label>
-              <input type="number" class="form-control" id="no_kk" name="no_kk"required
-                     placeholder="Masukkan Nomor Wahtsapp">
-              <!-- <div class="form-text"><br>Verifikasi ini untuk menjaga keamanan data masing2 individu</div> -->
+              <label for="no_kk" class="form-label">Verifikasi Nomor KK</label>
+              <input type="text" class="form-control" id="no_kk" name="no_kk" 
+                     maxlength="16" pattern="\d{16}" required
+                     placeholder="Masukkan 16 digit Nomor KK">
+              <div class="form-text">Pastikan nomor terdiri dari 16 digit angka. <br>Verifikasi ini untuk menjaga keamanan data masing2 individu</div>
             </div>
 
             <div class="d-grid">

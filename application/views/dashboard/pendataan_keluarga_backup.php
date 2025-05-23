@@ -208,10 +208,10 @@
                         </div>
 
 
-                        <!-- <div class="col-md-6">
-                            <label for="noKK" class="form-label">Nomor KK <span class="text-danger">*</span></label> -->
-                            <input type="hidden" class="form-control" id="noKK" name="no_kk" required />
-                        <!-- </div> -->
+                        <div class="col-md-6">
+                            <label for="noKK" class="form-label">Nomor KK <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="noKK" name="no_kk" required />
+                        </div>
 
 
                         <div class="col-md-6">
@@ -242,14 +242,14 @@
                         </div>
 
                         <!-- Upload KK di paling belakang -->
-                        <!-- <div class="col-md-6 mt-3">
+                        <div class="col-md-6 mt-3">
                             <label for="fileKK" class="form-label">Upload Kartu Keluarga <span
                                     class="text-danger">*</span></label>
                             <input type="file" class="form-control" id="fileKK" name="file_kk"
                                 accept=".pdf,.jpg,.jpeg,.png" required />
                             <small class="form-text text-muted">Maksimal 5Mb</small>
 
-                        </div> -->
+                        </div>
 
                         <div class="col-md-6 mt-3">
                             <label for="fileKK" class="form-label">Nomor Whatsapp <span
@@ -261,10 +261,10 @@
 
                     </div>
 
-                    <!-- <h6 class="mt-4 mb-3">Anggota Keluarga <span class="text-danger">*</span></h6>
-                    <div id="anggotaKeluargaWrapper"></div> -->
-                    <!-- <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="tambahAnggota()">+ Tambah
-                        Anggota Keluarga</button> -->
+                    <h6 class="mt-4 mb-3">Anggota Keluarga <span class="text-danger">*</span></h6>
+                    <div id="anggotaKeluargaWrapper"></div>
+                    <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="tambahAnggota()">+ Tambah
+                        Anggota Keluarga</button>
                     <div class="text-end mt-1">
                         <button type="submit" class="btn btn-success w-100">Simpan Data</button>
                     </div>
@@ -278,7 +278,7 @@
     </div>
 
     <!-- Template anggota keluarga -->
-    <!-- <template id="templateAnggota">
+    <template id="templateAnggota">
         <div class="card border rounded p-3 mt-3 position-relative anggota-keluarga">
             <button type="button" class="btn btn-sm btn-danger remove-member-btn"
                 onclick="hapusAnggota(this)">X</button>
@@ -406,7 +406,7 @@
                 </div>
             </div>
         </div>
-    </template> -->
+    </template>
 
     <!-- jQuery (required by Select2) -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
