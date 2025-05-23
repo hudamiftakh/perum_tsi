@@ -273,7 +273,7 @@ $Auth = $this->session->userdata['username'];
             </div>
 
             <div class="d-grid">
-              <button type="submit" name="verifikasi" value="Verifikasi" class="btn btn-primary">
+              <button type="submit" name="verifikasi" value="Verifikasi" class="btn btn-success">
                 Verifikasi
               </button>
             </div>
