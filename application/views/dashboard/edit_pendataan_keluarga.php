@@ -317,7 +317,7 @@ $Auth = $this->session->userdata['username'];
     </div>
 
     <!-- Template anggota keluarga -->
-    <template id="templateAnggota">
+    <!-- <template id="templateAnggota">
         <div class="card border rounded p-3 mt-3 position-relative anggota-keluarga">
             <button type="button" class="btn btn-sm btn-danger remove-member-btn"
                 onclick="hapusAnggota(this)">X</button>
@@ -408,7 +408,7 @@ $Auth = $this->session->userdata['username'];
                 </div>
             </div>
         </div>
-    </template>
+    </template> -->
 
     <!-- jQuery (required by Select2) -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
