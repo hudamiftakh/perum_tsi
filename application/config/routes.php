@@ -72,6 +72,7 @@ $route['keterisian'] = 'dashboard/keterisian_pendataan';
 // Pembayaran
 $route['pembayaran'] = 'dashboard/show_form_pembayaran';
 $route['pembayaran/(:any)'] = 'dashboard/show_form_pembayaran';
+$route['pembayaran/(:any)/(:any)'] = 'dashboard/show_form_pembayaran';
 $route['proses-pembayaran'] = 'dashboard/save_pembayaran';
 $route['pembayaran-sukses'] = 'dashboard/pembayaran_sukses';
 $route['warga/laporan-pembayaran'] = 'dashboard/laporan_pembayaran';

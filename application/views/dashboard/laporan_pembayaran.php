@@ -126,8 +126,8 @@ $this->load->library('encryption');
                 <i class="fa fa-plus-circle me-1"></i> Tambah Pembayaran
             </a>
         </div>
-        
-         <!-- Tombol Download -->
+
+        <!-- Tombol Download -->
         <div class="col-12 col-md-auto">
             <div class="btn-group w-100" role="group">
                 <a href="#" class="btn btn-outline-success">
@@ -141,41 +141,44 @@ $this->load->library('encryption');
 
     </div>
 </form>
+<style>
+    /* Default: sempit untuk mobile */
+    th.shrink,
+    td.shrink {
+        width: 1px !important;
+        white-space: nowrap;
+    }
 
+    /* Desktop: biarkan browser atur lebar */
+    @media (min-width: 768px) {
 
-<div class="table-responsive">
+        th.shrink,
+        td.shrink {
+            width: auto !important;
+            white-space: normal;
+        }
+    }
+</style>
+
+<!-- Tambahkan wrapper agar tabel bisa di-scroll di HP -->
+<div class="table-responsive mb-4">
     <table class="table table-bordered align-middle text-nowrap" id="laporanTable">
         <thead class="table-primary text-center">
             <tr>
-                <th>No</th>
-                <th>Nama</th>
-                <th>Rumah</th>
+                <th class="shrink text-center">No</th>
+                <th class="shrink">Rumah</th>
                 <?php
-                $bulan_indonesia = [
-                    1 => 'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'Mei',
-                    'Jun',
-                    'Jul',
-                    'Agu',
-                    'Sep',
-                    'Okt',
-                    'Nov',
-                    'Des'
-                ];
+                $bulan_indonesia = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                 $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
                 $tahun_sekarang = date('Y');
                 $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
 
                 for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
-                    <th><?= $bulan_indonesia[$i] ?></th>
+                    <th class="shrink text-center"><?= $bulan_indonesia[$i] ?></th>
                 <?php endfor; ?>
-                <th>Total</th>
-                <th>Keterangan</th>
                 <th>Aksi</th>
             </tr>
+
         </thead>
 
         <tbody>
@@ -183,31 +186,36 @@ $this->load->library('encryption');
             foreach ($rumah as $key => $data_bulanan): ?>
                 <tr>
                     <td class="text-center"><?= $no++ ?></td>
-                    <td><?= $data_bulanan['nama'] ?></td>
-                    <td><?= $data_bulanan['alamat'] ?></td>
+                    <td style="width: 1px;" class="td-narrow">
+                        <i class="bi bi-geo-alt-fill text-danger"></i>
+                        <?php echo $data_bulanan['alamat'] ?> <br>
+                        <i class="bi bi-person-fill text-primary"></i>
+                        <?php echo $data_bulanan['nama'] ?>
+                    </td>
+
                     <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
                         $data_pembayaran = $this->db->query("
-                                SELECT * FROM master_pembayaran as a 
-                                LEFT JOIN master_users as b ON a.user_id = b.id
-                                WHERE MONTH(a.bulan_mulai)='" . $i . "' 
-                                AND YEAR(a.bulan_mulai) ='" . $selected_tahun . "' 
-                                AND b.id_rumah ='" . $data_bulanan['id'] . "'
-                            ")->row_array();
+                            SELECT * FROM master_pembayaran as a 
+                            LEFT JOIN master_users as b ON a.user_id = b.id
+                            WHERE MONTH(a.bulan_mulai)='$i'
+                            AND YEAR(a.bulan_mulai)='$tahun_terpilih'
+                            AND b.id_rumah='" . $data_bulanan['id'] . "'
+                        ")->row_array();
                     ?>
-                        <td class="text-center <?php echo $data_pembayaran ? 'bg-success-subtle text-default fw-bold' : 'bg-danger-subtle text-white'; ?>">
+                        <td class="text-center <?= $data_pembayaran ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'; ?>">
                             <?php if ($data_pembayaran): ?>
-                                <span>125.000</span> <!-- ✅ tanda centang -->
+                                <div class="d-flex flex-column align-items-center">
+                                    <strong>Rp125.000</strong>
+                                </div>
                             <?php else: ?>
-                                <span>❌</span> <!-- atau bisa ganti jadi: <span>Belum Bayar</span> -->
+                                <div class="d-flex flex-column align-items-center">
+                                    <span>❌ Belum</span>
+                                </div>
                             <?php endif; ?>
                         </td>
-
                     <?php endfor; ?>
 
-                    <td class="text-center">Rp0</td>
-                    <td>-</td>
-                    <!-- Tombol Aksi -->
-                    <td class="text-center">
+                    <td class="text-center fw-bold">
                         <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
                             <i class="bi bi-cash-coin"></i> Bayar
                         </a>

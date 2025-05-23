@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        
+
     <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
@@ -118,6 +118,7 @@
                         <?php
                         // Ambil ID dari URL lalu decrypt
                         $id = $this->uri->segment(2);
+                        $id_pembayaran = @$this->uri->segment(3);
                         $id_decrypt = decrypt_url($id);
 
                         // Ambil data user berdasarkan id rumah
@@ -142,13 +143,19 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-
+                    <?php
+                    $id_pembayaran_decrypt = decrypt_url($id_pembayaran);
+                    if (!empty($id_pembayaran_decrypt)) {
+                        $data_update = $this->db->get_where("master_pembayaran", array('id' => $id_pembayaran_decrypt))->row_array();
+                        echo '<input type="text" value="' . $id_pembayaran_decrypt . '" name="id_pembayaran">';
+                    }
+                    ?>
                     <div class="mb-3">
                         <br>
                         <label class="form-label">Jenis Pembayaran</label>
                         <select class="form-select" name="metode" id="metode" onchange="tampilkanOpsi()" required>
                             <option value="">Pilih metode pembayaran...</option>
-                            <option value="1_bulan">Bayar 1 Bulan</option>
+                            <option value="1_bulan" <?php echo (@$data_update['metode'] == '1_bulan') ? "selected" : ""; ?>>Bayar 1 Bulan</option>
                             <!-- <option value="2_bulan">Rapel 2 Bulan</option>
                             <option value="3_bulan">Rapel 3 Bulan</option>
                             <option value="4_bulan">Rapel 4 Bulan</option>
@@ -162,14 +169,20 @@
                             <option value="cicilan">Cicilan Beberapa Bulan</option> -->
                         </select>
                     </div>
-
-                    <div id="opsiBulan" class="mb-3 d-none">
-                        <label for="bulan_mulai" class="form-label">Bulan</label>
-                        <input type="month" name="bulan_mulai" id="bulan_mulai" class="form-control">
-                    </div>
+                    <?php if (!empty($data_update['bulan_mulai'])) :  ?>
+                        <div class="mb-3">
+                            <label for="bulan_mulai" class="form-label">Bulan</label>
+                            <input type="month" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
+                        </div>
+                    <?php else : ?>
+                        <div id="opsiBulan" class="mb-3 d-none">
+                            <label for="bulan_mulai" class="form-label">Bulan</label>
+                            <input type="month" name="bulan_mulai" id="bulan_mulai" class="form-control">
+                        </div>
+                    <?php endif; ?>
                     <div class="mb-3">
                         <label for="tanggal_bayar" class="form-label">Tanggal Pembayaran</label>
-                        <input type="text" class="form-control" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal pembayaran" required>
+                        <input type="text" class="form-control" value="<?php echo $data_update['tanggal_bayar']; ?>" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal pembayaran" required>
                     </div>
                     <div id="opsiCicilan" class="row d-none">
                         <div class="col-md-6 mb-3">
@@ -188,31 +201,53 @@
 
                     <div class="mb-3">
                         <label for="total_bayar" class="form-label">Jumlah yang Dibayar Hari Ini</label>
-                        <input type="number" class="form-control" name="jumlah_bayar" value="125000" id="jumlah_bayar"
+                        <input type="number" class="form-control" name="jumlah_bayar" value="<?php echo (!empty($data_update['jumlah_bayar'])) ? $data_update['jumlah_bayar'] : "125000"; ?>" id="jumlah_bayar"
                             required>
                     </div>
 
                     <div class="mb-3">
                         <label for="pembayaran_via" class="form-label">Metode Pembayaran</label>
-                        <select class="form-select" name="pembayaran_via" id="pembayaran_via"
-                            onchange="cekMetodeBayar()" required>
+                        <select class="form-select" name="pembayaran_via" id="pembayaran_via" onchange="cekMetodeBayar()" required>
                             <option value="">Pilih cara membayar...</option>
-                            <option value="koordinator">Ke Koordinator Blok</option>
-                            <option value="transfer">Transfer ke Bendahara</option>
+                            <option value="koordinator" <?= ($data_update['pembayaran_via'] == 'koordinator') ? 'selected' : '' ?>>Ke Koordinator Blok</option>
+                            <option value="transfer" <?= ($data_update['pembayaran_via'] == 'transfer') ? 'selected' : '' ?>>Transfer ke Bendahara</option>
                         </select>
                     </div>
 
-                    <div class="mb-3 d-none" id="buktiTransfer">
-                        <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
-                        <input type="file" class="form-control" name="bukti" id="bukti"
-                            accept="image/*,application/pdf">
-                        <div class="info-small">Format: JPG, PNG, atau PDF</div>
-                    </div>
+                    <?php if (!empty($data_update['bukti'])): ?>
+                        <div class="mb-3 d-none" id="buktiTransfer">
+
+                            <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
+                            <input type="file" class="form-control" name="bukti" id="bukti"
+                                accept="image/*,application/pdf">
+                            <div class="info-small">Format: JPG, PNG, atau PDF</div>
+                            <label class="form-label">Bukti Sebelumnya:</label><br>
+                            <?php
+                            $ext = pathinfo($data_update['bukti'], PATHINFO_EXTENSION);
+                            $file_url = base_url('uploads/bukti/' . $data_update['bukti']); // sesuaikan path
+                            if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png'])): ?>
+                                <img src="<?= $file_url ?>" alt="Bukti" class="img-fluid rounded" style="max-height: 200px;">
+                            <?php elseif (strtolower($ext) === 'pdf'): ?>
+                                <a href="<?= $file_url ?>" target="_blank" class="btn btn-outline-secondary btn-sm">Lihat Bukti PDF</a>
+                            <?php endif; ?>
+
+                            <!-- Simpan nama file lama dalam input hidden -->
+                            <input type="hidden" name="file_kk_existing" value="<?= $data_update['bukti'] ?>">
+
+                        </div>
+                    <?php else : ?>
+                        <div class="mb-3 d-none" id="buktiTransfer">
+                            <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
+                            <input type="file" class="form-control" name="bukti" id="bukti"
+                                accept="image/*,application/pdf">
+                            <div class="info-small">Format: JPG, PNG, atau PDF</div>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="mb-3">
                         <label for="keterangan" class="form-label">Keterangan (opsional)</label>
                         <textarea name="keterangan" class="form-control" rows="2"
-                            placeholder="Contoh: Pembayaran bulan Januari hingga Maret"></textarea>
+                            placeholder="Contoh: Pembayaran bulan Januari hingga Maret"><?= $data_update['keterangan'] ?></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">Bayar Sekarang</button>
@@ -222,6 +257,24 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const metodeSelect = document.getElementById("pembayaran_via");
+            const buktiTransfer = document.getElementById("buktiTransfer");
+
+            if (metodeSelect && buktiTransfer) {
+                metodeSelect.addEventListener("change", cekMetodeBayar);
+                cekMetodeBayar(); // langsung cek saat load
+            }
+
+            function cekMetodeBayar() {
+                if (metodeSelect.value === "transfer") {
+                    buktiTransfer.classList.remove("d-none");
+                } else {
+                    buktiTransfer.classList.add("d-none");
+                }
+            }
+        });
+
         function tampilkanOpsi() {
             const metode = document.getElementById("metode").value;
             const opsiBulan = document.getElementById("opsiBulan");
@@ -250,16 +303,16 @@
             infoPeriode.innerHTML = infoText;
         }
 
-        function cekMetodeBayar() {
-            const metode = document.getElementById("pembayaran_via").value;
-            const buktiField = document.getElementById("buktiTransfer");
+        // function cekMetodeBayar() {
+        //     const metode = document.getElementById("pembayaran_via").value;
+        //     const buktiField = document.getElementById("buktiTransfer");
 
-            if (metode === "transfer") {
-                buktiField.classList.remove("d-none");
-            } else {
-                buktiField.classList.add("d-none");
-            }
-        }
+        //     if (metode === "transfer") {
+        //         buktiField.classList.remove("d-none");
+        //     } else {
+        //         buktiField.classList.add("d-none");
+        //     }
+        // }
         $(document).ready(function() {
             $('.select2').select2({
                 width: '100%',
@@ -274,6 +327,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
     <script>
         flatpickr("#tanggal_bayar", {
             // enableTime: true,
@@ -282,34 +337,46 @@
             locale: "id"
         });
 
-        document.getElementById('tanggal_bayar').addEventListener('change', function() {
-            const tanggal = this.value;
+        document.addEventListener('DOMContentLoaded', function() {
+            const bulanInput = document.getElementById('bulan_mulai');
+            if (bulanInput) {
+                bulanInput.addEventListener('change', function() {
+                    const tanggal = this.value; // format: YYYY-MM
+                    const [tahun, bulan] = tanggal.split('-');
 
-            fetch('<?php echo base_url('dashboard/cek_pembayaran') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'id_rumah=<?php echo $selected_user_id; ?>&tanggal=' + encodeURIComponent(tanggal)
-                })
-                .then(response => response.json())
-                .then(data => { 
-                    if (data.sudah_dibayar) {
-                        Swal.fire({
-                            title: 'Sudah Dibayar',
-                            text: 'Pembayaran untuk bulan ini sudah dilakukan.',
-                            icon: 'info',
-                            showCancelButton: true,
-                            confirmButtonText: 'Lihat / Perbaiki',
-                            cancelButtonText: 'Tutup'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Bisa munculkan modal edit atau redirect
-                                window.location.href = 'edit_pembayaran.php?id=' + data.id_pembayaran;
+                    const namaBulan = [
+                        '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                    ];
+
+                    fetch('http://localhost/perum_tsi/dashboard/cek_pembayaran', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'id_rumah=1&tanggal=' + encodeURIComponent(tanggal)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.sudah_dibayar) {
+                                Swal.fire({
+                                    title: 'Sudah Dibayar',
+                                    text: `Pembayaran untuk bulan ${namaBulan[parseInt(bulan)]} ${tahun} sudah dilakukan.`,
+                                    icon: 'info',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Lihat / Perbaiki',
+                                    cancelButtonText: 'Tutup'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = 'http://localhost/perum_tsi/pembayaran/YkHE_seYhh-jJPiiMgZr5_g/' + data.id_pembayaran;
+                                    }
+                                });
                             }
                         });
-                    }
                 });
+            } else {
+                console.warn('Element #bulan_mulai tidak ditemukan');
+            }
         });
     </script>
 </body>

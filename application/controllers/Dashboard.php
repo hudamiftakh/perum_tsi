@@ -509,7 +509,7 @@ class dashboard extends CI_Controller
 		$tahun = date('Y', strtotime($tanggal));
 
 		$data_pembayaran = $this->db->query("
-			SELECT * FROM master_pembayaran AS a
+			SELECT a.id as id_pembayaran FROM master_pembayaran AS a
 			LEFT JOIN master_users AS b ON a.user_id = b.id
 			WHERE MONTH(a.bulan_mulai) = '$bulan'
 			AND YEAR(a.bulan_mulai) = '$tahun'
@@ -519,7 +519,7 @@ class dashboard extends CI_Controller
 		if ($data_pembayaran) {
 			echo json_encode([
 				'sudah_dibayar' => true,
-				'id_pembayaran' => $data_pembayaran['id'] // ID dari `master_pembayaran`
+				'id_pembayaran' => encrypt_url($data_pembayaran['id_pembayaran']) // ID dari `master_pembayaran`
 			]);
 		} else {
 			echo json_encode(['sudah_dibayar' => false]);
@@ -604,7 +604,8 @@ class dashboard extends CI_Controller
 		$pembayaran_via = $this->input->post('pembayaran_via');
 
 		// Inisialisasi variabel untuk bukti
-		$nama_file_bukti = null;
+		 $bukti_lama = $this->input->post('file_kk_existing');
+    	$nama_file_bukti = $bukti_lama;
 
 		// Jika via transfer, lakukan upload
 		if ($pembayaran_via === 'transfer') {
@@ -685,20 +686,20 @@ class dashboard extends CI_Controller
 				$bulanCount = 12;
 			}
 
-			if ($bulan_mulai) {
-				$nominal_per_bulan = 125000;
-				$startDate = new DateTime($bulan_mulai . '-01');
-				for ($i = 0; $i < $bulanCount; $i++) {
-					$bulan = $startDate->format('Y-m-01');
+			// if ($bulan_mulai) {
+			// 	$nominal_per_bulan = 125000;
+			// 	$startDate = new DateTime($bulan_mulai . '-01');
+			// 	for ($i = 0; $i < $bulanCount; $i++) {
+			// 		$bulan = $startDate->format('Y-m-01');
 
-					$this->db->insert('master_detail_pembayaran_bulanan', [
-						'pembayaran_id' => $pembayaran_id,
-						'bulan'         => $bulan,
-						'nominal'       => $nominal_per_bulan
-					]);
-					$startDate->modify('+1 month');
-				}
-			}
+			// 		$this->db->insert('master_detail_pembayaran_bulanan', [
+			// 			'pembayaran_id' => $pembayaran_id,
+			// 			'bulan'         => $bulan,
+			// 			'nominal'       => $nominal_per_bulan
+			// 		]);
+			// 		$startDate->modify('+1 month');
+			// 	}
+			// }
 		}
 
 		$this->session->set_flashdata('success', 'Pembayaran berhasil disimpan');
