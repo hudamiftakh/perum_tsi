@@ -87,6 +87,27 @@
                 </li>
             </ul>
         </li>
+        <li class="sidebar-item">
+            <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('kas'))) ? 'active' : ''; ?>"
+                href="javascript:void(0)" aria-expanded="false">
+                <span class="d-flex">
+                    <i class="ti ti-calendar-event"></i>
+                </span>
+                <span class="hide-menu">Keuangan</span>
+            </a>
+            <ul aria-expanded="false"
+                class="collapse first-level <?php echo (in_array($menu, array('kas'))) ? 'in' : ''; ?>">
+                <li class="sidebar-item">
+                    <a href="<?php echo base_url('kas/pengeluaran') ?>"
+                        class="sidebar-link <?php echo (in_array($submenu, array('pengeluaran', 'contact-group'))) ? 'active' : ''; ?>">
+                        <div class="round-16 d-flex align-items-center justify-content-center">
+                            <i class="ti ti-circle"></i>
+                        </div>
+                        <span class="hide-menu">Pengeluaran</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
         <?php endif; ?>
         <li class="sidebar-item">
             <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>logout" aria-expanded="false">

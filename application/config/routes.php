@@ -77,6 +77,8 @@ $route['proses-pembayaran'] = 'dashboard/save_pembayaran';
 $route['pembayaran-sukses'] = 'dashboard/pembayaran_sukses';
 $route['warga/laporan-pembayaran'] = 'dashboard/laporan_pembayaran';
 $route['warga/verifikasi-pembayaran'] = 'dashboard/verifikasi_pembayaran';
+// kas
+$route['edit-pengeluaran/(:any)'] = 'kas/form/$1';
 $route['404_override'] = '';
 $route['cli/migrate'] = 'migration/index';
 $route['translate_uri_dashes'] = FALSE;
