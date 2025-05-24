@@ -233,7 +233,7 @@ $this->load->library('encryption');
                         <table class="table-striped">
                             <?php foreach ($anggota_keluarga as $dt_anggota): ?>
                                 <tr>
-                                    <td><?php echo $value['nik']; ?></td>
+                                    <td><?php echo $dt_anggota['nik']; ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </table>
