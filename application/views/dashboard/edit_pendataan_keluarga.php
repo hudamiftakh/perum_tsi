@@ -391,10 +391,10 @@ $Auth = $this->session->userdata['username'];
             }
 
             // API wilayah Indonesia
-            const selectedProvinsi = "<?= $data_kk['provinsi'] ?>";
-            const selectedKota = "<?= $data_kk['kota'] ?>";
-            const selectedKecamatan = "<?= $data_kk['kecamatan'] ?>";
-            const selectedKelurahan = "<?= $data_kk['kelurahan'] ?>";
+            const selectedProvinsi = "<?= $data_kk['provinsi'] ?>".toUpperCase();
+            const selectedKota = "<?= $data_kk['kota'] ?>".toUpperCase();
+            const selectedKecamatan = "<?= $data_kk['kecamatan'] ?>".toUpperCase();
+            const selectedKelurahan = "<?= $data_kk['kelurahan'] ?>".toUpperCase();
 
             const provinsi = $('#provinsi');
             const kota = $('#kota');
@@ -407,14 +407,15 @@ $Auth = $this->session->userdata['username'];
                 .then(data => {
                     provinsi.empty().append('<option value="">Pilih Provinsi</option>');
                     data.forEach(p => {
-                        const selected = (p.nama === selectedProvinsi) ? 'selected' : '';
-                        provinsi.append(`<option value="${p.id}" ${selected}>${p.nama}</option>`);
+                        const nama = p.nama.toUpperCase();
+                        const selected = (nama === selectedProvinsi) ? 'selected' : '';
+                        provinsi.append(`<option value="${nama}" data-id="${p.id}" ${selected}>${nama}</option>`);
                     });
 
                     // Cari ID Provinsi yang dipilih sebelumnya
-                    const prov = data.find(p => p.nama === selectedProvinsi);
+                    const prov = data.find(p => p.nama.toUpperCase() === selectedProvinsi);
                     if (prov) {
-                        loadKota(prov.id); // Lanjut ke Kota
+                        loadKota(prov.id);
                     }
                 });
 
@@ -424,13 +425,14 @@ $Auth = $this->session->userdata['username'];
                     .then(data => {
                         kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
                         data.forEach(k => {
-                            const selected = (k.nama === selectedKota) ? 'selected' : '';
-                            kota.append(`<option value="${k.nama}" ${selected}>${k.nama}</option>`);
+                            const nama = k.nama.toUpperCase();
+                            const selected = (nama === selectedKota) ? 'selected' : '';
+                            kota.append(`<option value="${nama}" data-id="${k.id}" ${selected}>${nama}</option>`);
                         });
 
-                        const kab = data.find(k => k.nama === selectedKota);
+                        const kab = data.find(k => k.nama.toUpperCase() === selectedKota);
                         if (kab) {
-                            loadKecamatan(kab.id); // Lanjut ke Kecamatan
+                            loadKecamatan(kab.id);
                         }
                     });
             }
@@ -441,14 +443,14 @@ $Auth = $this->session->userdata['username'];
                     .then(data => {
                         kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
                         data.forEach(kec => {
-                            const namaFormatted = toTitleCase(kec.nama);
-                            const selected = (namaFormatted === toTitleCase(selectedKecamatan)) ? 'selected' : '';
-                            kecamatan.append(`<option value="${namaFormatted.toUpperCase()}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
+                            const nama = kec.nama.toUpperCase();
+                            const selected = (nama === selectedKecamatan) ? 'selected' : '';
+                            kecamatan.append(`<option value="${nama}" data-id="${kec.id}" ${selected}>${nama}</option>`);
                         });
 
-                        const kec = data.find(k => toTitleCase(k.nama) === toTitleCase(selectedKecamatan));
+                        const kec = data.find(k => k.nama.toUpperCase() === selectedKecamatan);
                         if (kec) {
-                            loadKelurahan(kec.id); // Lanjut ke Kelurahan
+                            loadKelurahan(kec.id);
                         }
                     });
             }
@@ -459,18 +461,23 @@ $Auth = $this->session->userdata['username'];
                     .then(data => {
                         kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
                         data.forEach(kel => {
-                            const namaFormatted = toTitleCase(kel.nama);
-                            const selected = (namaFormatted === toTitleCase(selectedKelurahan)) ? 'selected' : '';
-                            kelurahan.append(`<option value="${namaFormatted.toUpperCase()}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
+                            const nama = kel.nama.toUpperCase();
+                            const selected = (nama === selectedKelurahan) ? 'selected' : '';
+                            kelurahan.append(`<option value="${nama}" data-id="${kel.id}" ${selected}>${nama}</option>`);
                         });
+
+                        // Tambahkan manual kelurahan PEPE jika kecamatan ID 3515130
+                        if (kecId == 3515130) {
+                            const namaManual = "PEPE";
+                            const selected = (namaManual === selectedKelurahan) ? 'selected' : '';
+                            kelurahan.append(`<option value="${namaManual}" data-id="manual-pepelegi" ${selected}>${namaManual}</option>`);
+                        }
                     });
             }
 
-
-
             // Events
             provinsi.on('change', function() {
-                const id = $(this).val();
+                const id = provinsi.find(':selected').data('id');
                 kota.empty().append('<option>Loading...</option>');
                 kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
                 kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
@@ -478,23 +485,17 @@ $Auth = $this->session->userdata['username'];
             });
 
             kota.on('change', function() {
-                const id = $(this).val();
+                const id = kota.find(':selected').data('id');
                 kecamatan.empty().append('<option>Loading...</option>');
                 kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
                 if (id) loadKecamatan(id);
             });
 
             kecamatan.on('change', function() {
-                const id = $(this).val();
+                const id = kecamatan.find(':selected').data('id');
                 kelurahan.empty().append('<option>Loading...</option>');
                 if (id) loadKelurahan(id);
             });
-
-            function toTitleCase(str) {
-                return str.toLowerCase().replace(/\b\w/g, function(char) {
-                    return char.toUpperCase();
-                });
-            }
         </script>
 
         <script>

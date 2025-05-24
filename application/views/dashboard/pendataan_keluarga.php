@@ -491,13 +491,13 @@
             .then(data => {
                 provinsi.empty().append('<option value="">Pilih Provinsi</option>');
                 data.forEach(p => {
-                    provinsi.append(`<option value="${p.id}">${p.nama}</option>`);
+                    provinsi.append(`<option value="${p.nama.toUpperCase()}" data-id="${p.id}">${p.nama.toUpperCase()}</option>`);
                 });
             });
 
         // On Provinsi Change → Load Kota/Kabupaten
         provinsi.on('change', function() {
-            const provId = this.value;
+            const provId = provinsi.find(':selected').data('id');
             kota.empty().append('<option>Loading...</option>');
             kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
             kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
@@ -507,14 +507,14 @@
                 .then(data => {
                     kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
                     data.forEach(k => {
-                        kota.append(`<option value="${k.nama}">${k.nama}</option>`);
+                        kota.append(`<option value="${k.nama.toUpperCase()}" data-id="${k.id}">${k.nama.toUpperCase()}</option>`);
                     });
                 });
         });
 
-        // On Kota Change → Load Kecamatan (UPPERCASE)
+        // On Kota Change → Load Kecamatan
         kota.on('change', function() {
-            const kotaId = this.value;
+            const kotaId = kota.find(':selected').data('id');
             kecamatan.empty().append('<option>Loading...</option>');
             kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
 
@@ -523,14 +523,14 @@
                 .then(data => {
                     kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
                     data.forEach(kec => {
-                        kecamatan.append(`<option value="${kec.nama.toUpperCase()}">${kec.nama.toUpperCase()}</option>`);
+                        kecamatan.append(`<option value="${kec.nama.toUpperCase()}" data-id="${kec.id}">${kec.nama.toUpperCase()}</option>`);
                     });
                 });
         });
 
-        // On Kecamatan Change → Load Kelurahan (UPPERCASE + Tambahan Manual)
+        // On Kecamatan Change → Load Kelurahan (plus tambahan PEPE manual)
         kecamatan.on('change', function() {
-            const kecId = this.value;
+            const kecId = kecamatan.find(':selected').data('id');
             kelurahan.empty().append('<option>Loading...</option>');
 
             fetch(`https://ibnux.github.io/data-indonesia/kelurahan/${kecId}.json`)
@@ -538,15 +538,16 @@
                 .then(data => {
                     kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
                     data.forEach(kel => {
-                        kelurahan.append(`<option value="${kel.nama.toUpperCase()}">${kel.nama.toUpperCase()}</option>`);
+                        kelurahan.append(`<option value="${kel.nama.toUpperCase()}" data-id="${kel.id}">${kel.nama.toUpperCase()}</option>`);
                     });
 
                     // Tambahkan manual kelurahan PEPE jika kecamatan ID 3515130
                     if (kecId == 3515130) {
-                        kelurahan.append(`<option value="manual-pepelegi">PEPE</option>`);
+                        kelurahan.append('<option value="PEPE" data-id="manual-pepelegi">PEPE</option>');
                     }
                 });
         });
+
 
         // Load 1 anggota keluarga default
         window.onload = tambahAnggota;
