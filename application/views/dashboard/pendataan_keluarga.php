@@ -20,131 +20,131 @@
 
 
     <style>
-    body {
-        background-color: #d4edda;
-    }
-
-    .card {
-        border-radius: 1rem;
-    }
-
-    .remove-member-btn {
-        position: absolute;
-        right: 10px;
-        top: 10px;
-    }
-
-    .form-label {
-        font-weight: 500;
-    }
-
-    .anggota-header {
-        font-size: 1.1rem;
-        font-weight: bold;
-        color: #0d6efd;
-        margin-bottom: 1rem;
-    }
-
-    @media (max-width: 576px) {
-        .form-label {
-            font-size: 0.9rem;
+        body {
+            background-color: #d4edda;
         }
 
-        .form-control,
-        .form-select {
-            font-size: 0.9rem;
+        .card {
+            border-radius: 1rem;
         }
 
         .remove-member-btn {
-            right: 5px;
-            top: 5px;
-            font-size: 0.75rem;
-            padding: 2px 6px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+
+        .form-label {
+            font-weight: 500;
         }
 
         .anggota-header {
-            font-size: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #0d6efd;
+            margin-bottom: 1rem;
         }
-    }
 
-    /* Select2 full width fix */
-    .select2-container {
-        width: 100% !important;
-    }
+        @media (max-width: 576px) {
+            .form-label {
+                font-size: 0.9rem;
+            }
 
-    .select2-container .select2-selection--single {
-        height: 40px !important;
-        /* sesuaikan dengan kebutuhan */
-        display: flex;
-        align-items: center;
-    }
+            .form-control,
+            .form-select {
+                font-size: 0.9rem;
+            }
 
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        padding-left: 8px;
-        /* agar teks tidak mentok kiri */
-        line-height: normal !important;
-        /* reset default line-height */
-        flex: 1;
-        display: flex;
-        align-items: center;
-    }
+            .remove-member-btn {
+                right: 5px;
+                top: 5px;
+                font-size: 0.75rem;
+                padding: 2px 6px;
+            }
 
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 40px !important;
-    }
+            .anggota-header {
+                font-size: 1rem;
+            }
+        }
 
-    .select2-container .select2-selection--multiple {
-        min-height: 40px !important;
-    }
+        /* Select2 full width fix */
+        .select2-container {
+            width: 100% !important;
+        }
 
-    .select2-results__options {
-        max-height: 200px;
-        overflow-y: auto;
-    }
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            /* sesuaikan dengan kebutuhan */
+            display: flex;
+            align-items: center;
+        }
 
-    .timer-display {
-        font-size: 1.25rem;
-        /* Lebih besar dari small */
-        font-weight: 600;
-        color: #0d6efd;
-        /* Bootstrap primary */
-        background-color: #e9f2ff;
-        /* Soft blue background */
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        display: inline-block;
-        text-align: center;
-        min-width: 120px;
-    }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding-left: 8px;
+            /* agar teks tidak mentok kiri */
+            line-height: normal !important;
+            /* reset default line-height */
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
 
-    .floating-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: #5C913B;
-        /* Hijau natural sesuai tema */
-        color: white;
-        font-size: 14px;
-        padding: 10px 14px;
-        opacity: 0.95;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: bold;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-        z-index: 1000;
-        transition: background-color 0.3s ease;
-    }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+        }
 
-    .floating-button:hover {
-        background-color: #4A7C2C;
-        /* Warna hover lebih gelap */
-    }
+        .select2-container .select2-selection--multiple {
+            min-height: 40px !important;
+        }
 
-    form {
-        padding-bottom: 35px;
-        /* atau cukup besar agar tombol simpan tidak tertutup */
-    }
+        .select2-results__options {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .timer-display {
+            font-size: 1.25rem;
+            /* Lebih besar dari small */
+            font-weight: 600;
+            color: #0d6efd;
+            /* Bootstrap primary */
+            background-color: #e9f2ff;
+            /* Soft blue background */
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            display: inline-block;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .floating-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #5C913B;
+            /* Hijau natural sesuai tema */
+            color: white;
+            font-size: 14px;
+            padding: 10px 14px;
+            opacity: 0.95;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+
+        .floating-button:hover {
+            background-color: #4A7C2C;
+            /* Warna hover lebih gelap */
+        }
+
+        form {
+            padding-bottom: 35px;
+            /* atau cukup besar agar tombol simpan tidak tertutup */
+        }
     </style>
 </head>
 
@@ -189,8 +189,8 @@
                                 $result_rumah = $this->db->get("master_rumah")->result_array();
                                 foreach ($result_rumah as $key => $value) :
                                 ?>
-                                <option value="<?php echo $value['alamat']; ?>"><?php echo $value['alamat']; ?> -
-                                    <?php echo $value['nama']; ?></option>
+                                    <option value="<?php echo $value['alamat']; ?>"><?php echo $value['alamat']; ?> -
+                                        <?php echo $value['nama']; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -210,7 +210,7 @@
 
                         <!-- <div class="col-md-6">
                             <label for="noKK" class="form-label">Nomor KK <span class="text-danger">*</span></label> -->
-                            <input type="hidden" class="form-control" id="noKK" name="no_kk" required />
+                        <input type="hidden" class="form-control" id="noKK" name="no_kk" required />
                         <!-- </div> -->
 
 
@@ -416,282 +416,292 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-    // Init Select2 for nomor rumah
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: 'Pilih Nomor Rumah',
-            allowClear: true
-        });
-
-        $('#provinsi').select2({
-            placeholder: 'Pilih Provinsi',
-            allowClear: true
-        });
-
-        $('#kota').select2({
-            placeholder: 'Pilih Kota/Kabupaten',
-            allowClear: true
-        });
-
-        $('#kecamatan').select2({
-            placeholder: 'Pilih Kecamatan',
-            allowClear: true
-        });
-
-        $('#kelurahan').select2({
-            placeholder: 'Pilih Kelurahan',
-            allowClear: true
-        });
-    });
-
-    // Tambah anggota keluarga
-    function tambahAnggota() {
-        const wrapper = document.getElementById('anggotaKeluargaWrapper');
-        const template = document.getElementById('templateAnggota').content.cloneNode(true);
-        const count = wrapper.children.length + 1;
-        template.querySelector('.nomor-anggota').textContent = count;
-        wrapper.appendChild(template);
-        updateNomorAnggota();
-    }
-
-    // Hapus anggota keluarga
-    function hapusAnggota(btn) {
-        const wrapper = document.getElementById('anggotaKeluargaWrapper');
-        const cards = wrapper.querySelectorAll('.anggota-keluarga');
-
-        if (cards.length <= 1) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Tidak bisa dihapus',
-                text: 'Minimal harus ada satu anggota keluarga (Kepala Keluarga) !',
+        // Init Select2 for nomor rumah
+        $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: 'Pilih Nomor Rumah',
+                allowClear: true
             });
-            return;
+
+            $('#provinsi').select2({
+                placeholder: 'Pilih Provinsi',
+                allowClear: true
+            });
+
+            $('#kota').select2({
+                placeholder: 'Pilih Kota/Kabupaten',
+                allowClear: true
+            });
+
+            $('#kecamatan').select2({
+                placeholder: 'Pilih Kecamatan',
+                allowClear: true
+            });
+
+            $('#kelurahan').select2({
+                placeholder: 'Pilih Kelurahan',
+                allowClear: true
+            });
+        });
+
+        // Tambah anggota keluarga
+        function tambahAnggota() {
+            const wrapper = document.getElementById('anggotaKeluargaWrapper');
+            const template = document.getElementById('templateAnggota').content.cloneNode(true);
+            const count = wrapper.children.length + 1;
+            template.querySelector('.nomor-anggota').textContent = count;
+            wrapper.appendChild(template);
+            updateNomorAnggota();
         }
 
-        btn.closest('.anggota-keluarga').remove();
-        updateNomorAnggota();
-    }
+        // Hapus anggota keluarga
+        function hapusAnggota(btn) {
+            const wrapper = document.getElementById('anggotaKeluargaWrapper');
+            const cards = wrapper.querySelectorAll('.anggota-keluarga');
 
-    // Update nomor anggota
-    function updateNomorAnggota() {
-        const cards = document.querySelectorAll('.anggota-keluarga');
-        cards.forEach((card, index) => {
-            card.querySelector('.nomor-anggota').textContent = index + 1;
+            if (cards.length <= 1) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tidak bisa dihapus',
+                    text: 'Minimal harus ada satu anggota keluarga (Kepala Keluarga) !',
+                });
+                return;
+            }
+
+            btn.closest('.anggota-keluarga').remove();
+            updateNomorAnggota();
+        }
+
+        // Update nomor anggota
+        function updateNomorAnggota() {
+            const cards = document.querySelectorAll('.anggota-keluarga');
+            cards.forEach((card, index) => {
+                card.querySelector('.nomor-anggota').textContent = index + 1;
+            });
+        }
+
+        // API wilayah Indonesia
+        const provinsi = $('#provinsi');
+        const kota = $('#kota');
+        const kecamatan = $('#kecamatan');
+        const kelurahan = $('#kelurahan');
+
+        fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
+            .then(res => res.json())
+            .then(data => {
+                provinsi.empty().append('<option value="">Pilih Provinsi</option>');
+                data.forEach(p => {
+                    provinsi.append(`<option value="${p.name}" data-id="${p.id}">${p.name}</option>`);
+                });
+            });
+
+        // On Provinsi Change → Load Kota
+        provinsi.on('change', function() {
+            kota.empty().append('<option>Loading...</option>');
+            kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
+            kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+
+            const provinsiId = $('#provinsi option:selected').data('id');
+
+            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinsiId}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
+                    data.forEach(k => {
+                        kota.append(`<option value="${k.name}" data-id="${k.id}">${k.name}</option>`);
+                    });
+                });
         });
-    }
 
-    // API wilayah Indonesia
-    const provinsi = $('#provinsi');
-    const kota = $('#kota');
-    const kecamatan = $('#kecamatan');
-    const kelurahan = $('#kelurahan');
+        // On Kota Change → Load Kecamatan
+        kota.on('change', function() {
+            kecamatan.empty().append('<option>Loading...</option>');
+            kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
 
-    fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
-        .then(res => res.json())
-        .then(data => {
-            provinsi.empty().append('<option value="">Pilih Provinsi</option>');
-            data.forEach(p => {
-                provinsi.append(`<option value="${p.name}" data-id="${p.id}">${p.name}</option>`);
-            });
+            const kotaId = $('#kota option:selected').data('id');
+
+            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${kotaId}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
+                    data.forEach(kec => {
+                        kecamatan.append(
+                            `<option value="${kec.name}" data-id="${kec.id}">${kec.name}</option>`);
+                    });
+                });
         });
 
-    // On Provinsi Change → Load Kota
-    provinsi.on('change', function() {
-        kota.empty().append('<option>Loading...</option>');
-        kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
-        kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+        // On Kecamatan Change → Load Kelurahan
+        kecamatan.on('change', function() {
+            kelurahan.empty().append('<option>Loading...</option>');
 
-        const provinsiId = $('#provinsi option:selected').data('id');
+            const kecamatanId = $('#kecamatan option:selected').data('id');
 
-        fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinsiId}.json`)
-            .then(res => res.json())
-            .then(data => {
-                kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
-                data.forEach(k => {
-                    kota.append(`<option value="${k.name}" data-id="${k.id}">${k.name}</option>`);
+            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${kecamatanId}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
+
+                    data.forEach(kel => {
+                        kelurahan.append(
+                            `<option value="${kel.name}" data-id="${kel.id}">${kel.name}</option>`
+                        );
+                    });
+
+                    // Tambahkan PEPELEGI jika kecamatan ID adalah 3515130
+                    if (kecamatanId == 3515130) {
+                        kelurahan.append(
+                            `<option value="Pepelegi" data-id="manual-pepelegi">PEPE</option>`
+                        );
+                    }
                 });
-            });
-    });
-
-    // On Kota Change → Load Kecamatan
-    kota.on('change', function() {
-        kecamatan.empty().append('<option>Loading...</option>');
-        kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
-
-        const kotaId = $('#kota option:selected').data('id');
-
-        fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${kotaId}.json`)
-            .then(res => res.json())
-            .then(data => {
-                kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
-                data.forEach(kec => {
-                    kecamatan.append(
-                        `<option value="${kec.name}" data-id="${kec.id}">${kec.name}</option>`);
-                });
-            });
-    });
-
-    // On Kecamatan Change → Load Kelurahan
-    kecamatan.on('change', function() {
-        kelurahan.empty().append('<option>Loading...</option>');
-
-        const kecamatanId = $('#kecamatan option:selected').data('id');
-
-        fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${kecamatanId}.json`)
-            .then(res => res.json())
-            .then(data => {
-                kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
-                data.forEach(kel => {
-                    kelurahan.append(
-                        `<option value="${kel.name}" data-id="${kel.id}">${kel.name}</option>`);
-                });
-            });
-    });
+        });
 
 
-    // Load 1 anggota keluarga default
-    window.onload = tambahAnggota;
+
+        // Load 1 anggota keluarga default
+        window.onload = tambahAnggota;
     </script>
 
     <script>
-    $(document).ready(function() {
-        $('#formKeluarga').on('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
+        $(document).ready(function() {
+            $('#formKeluarga').on('submit', function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
 
-            $.ajax({
-                url: '<?php echo base_url('dashboard/save_pendataan_keluarga'); ?>',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                dataType: 'json',
-                beforeSend: function() {
-                    Swal.fire({
-                        title: 'Mengirim data...',
-                        text: 'Mohon tunggu sebentar...',
-                        icon: 'info',
-                        showConfirmButton: false,
-                        allowOutsideClick: false
-                    });
-                },
-                success: function(response) {
-                    Swal.close();
-                    if (response.status === 'success') {
+                $.ajax({
+                    url: '<?php echo base_url('dashboard/save_pendataan_keluarga'); ?>',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    dataType: 'json',
+                    beforeSend: function() {
                         Swal.fire({
-                            title: 'Sukses!',
-                            text: response.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            location.reload();
+                            title: 'Mengirim data...',
+                            text: 'Mohon tunggu sebentar...',
+                            icon: 'info',
+                            showConfirmButton: false,
+                            allowOutsideClick: false
                         });
-                    } else {
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                title: 'Sukses!',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.close();
                         Swal.fire({
                             title: 'Error!',
-                            text: response.message,
+                            text: 'Terjadi kesalahan: ' + error,
                             icon: 'error',
                             confirmButtonText: 'OK'
                         });
                     }
-                },
-                error: function(xhr, status, error) {
-                    Swal.close();
+                });
+            });
+        });
+    </script>
+    <script>
+        // Format: { "TSI Raya 30": "enkripsi_id", ... }
+        const alamatTerisi = <?php echo json_encode($alamat_terisi); ?>;
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2();
+
+            $('#nomorRumah').on('change', function() {
+                const selected = $(this).val(); // array of selected addresses
+
+                let link = null;
+
+                // Cek satu per satu alamat yang sudah pernah diisi
+                for (let i = 0; i < selected.length; i++) {
+                    const alamat = selected[i];
+                    if (alamatTerisi[alamat]) {
+                        link = alamatTerisi[alamat];
+                        break; // hanya ambil 1 yang cocok pertama
+                    }
+                }
+
+                if (link) {
                     Swal.fire({
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan: ' + error,
-                        icon: 'error',
-                        confirmButtonText: 'OK'
+                        title: 'Data Sudah Ada!',
+                        text: 'Alamat ini sudah pernah mengisi. Apakah Anda ingin melanjutkan pengisian?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Lanjutkan Pengisian',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '<?= base_url("edit-pendataan-keluarga/") ?>' +
+                                link;
+                        } else {
+                            $('#nomorRumah').val(null).trigger('change');
+                        }
                     });
                 }
             });
         });
-    });
     </script>
     <script>
-    // Format: { "TSI Raya 30": "enkripsi_id", ... }
-    const alamatTerisi = <?php echo json_encode($alamat_terisi); ?>;
-    </script>
+        // 🕒 Atur tanggal & waktu akhir di sini
+        const countdownEndTime = new Date("2025-05-30T23:59:00").getTime();
 
-    <script>
-    $(document).ready(function() {
-        $('.select2').select2();
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = countdownEndTime - now;
 
-        $('#nomorRumah').on('change', function() {
-            const selected = $(this).val(); // array of selected addresses
-
-            let link = null;
-
-            // Cek satu per satu alamat yang sudah pernah diisi
-            for (let i = 0; i < selected.length; i++) {
-                const alamat = selected[i];
-                if (alamatTerisi[alamat]) {
-                    link = alamatTerisi[alamat];
-                    break; // hanya ambil 1 yang cocok pertama
-                }
+            if (distance <= 0) {
+                document.getElementById("timer-display").innerHTML = "Waktu Habis!";
+                return;
             }
 
-            if (link) {
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("timer-display").innerHTML =
+                `${days} hari ${hours} jam ${minutes} menit ${seconds} detik`;
+        }
+
+        updateCountdown(); // Inisialisasi
+        setInterval(updateCountdown, 1000); // Update tiap detik
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!sessionStorage.getItem('popupShown')) {
                 Swal.fire({
-                    title: 'Data Sudah Ada!',
-                    text: 'Alamat ini sudah pernah mengisi. Apakah Anda ingin melanjutkan pengisian?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Lanjutkan Pengisian',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '<?= base_url("edit-pendataan-keluarga/") ?>' +
-                            link;
-                    } else {
-                        $('#nomorRumah').val(null).trigger('change');
-                    }
+                    title: 'Mohon Perhatiannya!',
+                    text: 'Pendataan ini digunakan paguyuban untuk pembentukan RT di perumahan TSI, mohon untuk mengisi data dengan sebenar-benarnya.',
+                    icon: 'info',
+                    confirmButtonText: 'Saya Mengerti',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
                 });
+                // Tandai bahwa popup sudah ditampilkan
+                sessionStorage.setItem('popupShown', 'true');
             }
         });
-    });
-    </script>
-    <script>
-    // 🕒 Atur tanggal & waktu akhir di sini
-    const countdownEndTime = new Date("2025-05-30T23:59:00").getTime();
-
-    function updateCountdown() {
-        const now = new Date().getTime();
-        const distance = countdownEndTime - now;
-
-        if (distance <= 0) {
-            document.getElementById("timer-display").innerHTML = "Waktu Habis!";
-            return;
-        }
-
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        document.getElementById("timer-display").innerHTML =
-            `${days} hari ${hours} jam ${minutes} menit ${seconds} detik`;
-    }
-
-    updateCountdown(); // Inisialisasi
-    setInterval(updateCountdown, 1000); // Update tiap detik
-    </script>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (!sessionStorage.getItem('popupShown')) {
-            Swal.fire({
-                title: 'Mohon Perhatiannya!',
-                text: 'Pendataan ini digunakan paguyuban untuk pembentukan RT di perumahan TSI, mohon untuk mengisi data dengan sebenar-benarnya.',
-                icon: 'info',
-                confirmButtonText: 'Saya Mengerti',
-                allowOutsideClick: false,
-                allowEscapeKey: false
-            });
-            // Tandai bahwa popup sudah ditampilkan
-            sessionStorage.setItem('popupShown', 'true');
-        }
-    });
     </script>
 
 </body>
