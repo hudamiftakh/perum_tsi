@@ -402,113 +402,99 @@ $Auth = $this->session->userdata['username'];
             const kelurahan = $('#kelurahan');
 
             // Load Provinsi
-            fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
+            fetch("https://ibnux.github.io/data-indonesia/provinsi.json")
                 .then(res => res.json())
                 .then(data => {
                     provinsi.empty().append('<option value="">Pilih Provinsi</option>');
-                    let provId = '';
                     data.forEach(p => {
-                        const selected = (p.name === selectedProvinsi) ? 'selected' : '';
-                        if (selected) provId = p.id;
-                        provinsi.append(
-                            `<option value="${p.name}" data-id="${p.id}" ${selected}>${p.name}</option>`);
+                        const selected = (p.nama === selectedProvinsi) ? 'selected' : '';
+                        provinsi.append(`<option value="${p.id}" ${selected}>${p.nama}</option>`);
                     });
 
-                    provinsi.trigger('change'); // Untuk Select2
-
-                    if (provId) loadKota(provId);
+                    // Cari ID Provinsi yang dipilih sebelumnya
+                    const prov = data.find(p => p.nama === selectedProvinsi);
+                    if (prov) {
+                        loadKota(prov.id); // Lanjut ke Kota
+                    }
                 });
 
-            // Load Kota berdasarkan provinsi terpilih
-            function loadKota(provinsiId) {
-                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinsiId}.json`)
+            function loadKota(provId) {
+                fetch(`https://ibnux.github.io/data-indonesia/kabupaten/${provId}.json`)
                     .then(res => res.json())
                     .then(data => {
                         kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
-                        let kotaId = '';
                         data.forEach(k => {
-                            const selected = (k.name === selectedKota) ? 'selected' : '';
-                            if (selected) kotaId = k.id;
-                            kota.append(
-                                `<option value="${k.name}" data-id="${k.id}" ${selected}>${k.name}</option>`);
+                            const selected = (k.nama === selectedKota) ? 'selected' : '';
+                            kota.append(`<option value="${k.id}" ${selected}>${k.nama}</option>`);
                         });
 
-                        kota.trigger('change');
-
-                        if (kotaId) loadKecamatan(kotaId);
+                        const kab = data.find(k => k.nama === selectedKota);
+                        if (kab) {
+                            loadKecamatan(kab.id); // Lanjut ke Kecamatan
+                        }
                     });
             }
 
-            // Load Kecamatan berdasarkan kota terpilih
-            function loadKecamatan(kotaId) {
-                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${kotaId}.json`)
+            function loadKecamatan(kabId) {
+                fetch(`https://ibnux.github.io/data-indonesia/kecamatan/${kabId}.json`)
                     .then(res => res.json())
                     .then(data => {
                         kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
-                        let kecId = '';
                         data.forEach(kec => {
-                            const selected = (kec.name === selectedKecamatan) ? 'selected' : '';
-                            if (selected) kecId = kec.id;
-                            kecamatan.append(
-                                `<option value="${kec.name}" data-id="${kec.id}" ${selected}>${kec.name}</option>`
-                            );
+                            const namaFormatted = toTitleCase(kec.nama);
+                            const selected = (namaFormatted === toTitleCase(selectedKecamatan)) ? 'selected' : '';
+                            kecamatan.append(`<option value="${kec.id}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
                         });
 
-                        kecamatan.trigger('change');
-
-                        if (kecId) loadKelurahan(kecId);
+                        const kec = data.find(k => toTitleCase(k.nama) === toTitleCase(selectedKecamatan));
+                        if (kec) {
+                            loadKelurahan(kec.id); // Lanjut ke Kelurahan
+                        }
                     });
             }
 
-            // Load Kelurahan berdasarkan kecamatan terpilih
-            function loadKelurahan(kecamatanId) {
-                fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${kecamatanId}.json`)
+            function loadKelurahan(kecId) {
+                fetch(`https://ibnux.github.io/data-indonesia/kelurahan/${kecId}.json`)
                     .then(res => res.json())
                     .then(data => {
                         kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
-
                         data.forEach(kel => {
-                            const selected = (kel.name === selectedKelurahan) ? 'selected' : '';
-                            kelurahan.append(
-                                `<option value="${kel.name}" data-id="${kel.id}" ${selected}>${kel.name}</option>`
-                            );
+                            const namaFormatted = toTitleCase(kel.nama);
+                            const selected = (namaFormatted === toTitleCase(selectedKelurahan)) ? 'selected' : '';
+                            kelurahan.append(`<option value="${kel.id}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
                         });
-
-                        // Tambahkan kelurahan PEPE jika kecamatan ID adalah 3515130
-                        if (kecamatanId == 3515130) {
-                            const selected = (selectedKelurahan === 'PEPE') ? 'selected' : '';
-                            kelurahan.append(
-                                `<option value="PEPE" data-id="manual-pepe" ${selected}>PEPE</option>`
-                            );
-                        }
-
-                        kelurahan.trigger('change');
                     });
             }
 
-            // Event: Provinsi berubah manual
+
+
+            // Events
             provinsi.on('change', function() {
-                const provinsiId = $('#provinsi option:selected').data('id');
+                const id = $(this).val();
                 kota.empty().append('<option>Loading...</option>');
                 kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
                 kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
-                if (provinsiId) loadKota(provinsiId);
+                if (id) loadKota(id);
             });
 
-            // Event: Kota berubah manual
             kota.on('change', function() {
-                const kotaId = $('#kota option:selected').data('id');
+                const id = $(this).val();
                 kecamatan.empty().append('<option>Loading...</option>');
                 kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
-                if (kotaId) loadKecamatan(kotaId);
+                if (id) loadKecamatan(id);
             });
 
-            // Event: Kecamatan berubah manual
             kecamatan.on('change', function() {
-                const kecamatanId = $('#kecamatan option:selected').data('id');
+                const id = $(this).val();
                 kelurahan.empty().append('<option>Loading...</option>');
-                if (kecamatanId) loadKelurahan(kecamatanId);
+                if (id) loadKelurahan(id);
             });
+
+            function toTitleCase(str) {
+                return str.toLowerCase().replace(/\b\w/g, function(char) {
+                    return char.toUpperCase();
+                });
+            }
         </script>
 
         <script>

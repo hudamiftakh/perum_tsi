@@ -480,84 +480,73 @@
             });
         }
 
-        // API wilayah Indonesia
         const provinsi = $('#provinsi');
         const kota = $('#kota');
         const kecamatan = $('#kecamatan');
         const kelurahan = $('#kelurahan');
 
-        fetch("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json")
+        // Load Provinsi
+        fetch('https://ibnux.github.io/data-indonesia/provinsi.json')
             .then(res => res.json())
             .then(data => {
                 provinsi.empty().append('<option value="">Pilih Provinsi</option>');
                 data.forEach(p => {
-                    provinsi.append(`<option value="${p.name}" data-id="${p.id}">${p.name}</option>`);
+                    provinsi.append(`<option value="${p.id}">${p.nama}</option>`);
                 });
             });
 
-        // On Provinsi Change → Load Kota
+        // On Provinsi Change → Load Kota/Kabupaten
         provinsi.on('change', function() {
+            const provId = this.value;
             kota.empty().append('<option>Loading...</option>');
             kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
             kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
 
-            const provinsiId = $('#provinsi option:selected').data('id');
-
-            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinsiId}.json`)
+            fetch(`https://ibnux.github.io/data-indonesia/kabupaten/${provId}.json`)
                 .then(res => res.json())
                 .then(data => {
                     kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
                     data.forEach(k => {
-                        kota.append(`<option value="${k.name}" data-id="${k.id}">${k.name}</option>`);
+                        kota.append(`<option value="${k.id}">${k.nama}</option>`);
                     });
                 });
         });
 
-        // On Kota Change → Load Kecamatan
+        // On Kota Change → Load Kecamatan (UPPERCASE)
         kota.on('change', function() {
+            const kotaId = this.value;
             kecamatan.empty().append('<option>Loading...</option>');
             kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
 
-            const kotaId = $('#kota option:selected').data('id');
-
-            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${kotaId}.json`)
+            fetch(`https://ibnux.github.io/data-indonesia/kecamatan/${kotaId}.json`)
                 .then(res => res.json())
                 .then(data => {
                     kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
                     data.forEach(kec => {
-                        kecamatan.append(
-                            `<option value="${kec.name}" data-id="${kec.id}">${kec.name}</option>`);
+                        kecamatan.append(`<option value="${kec.id}">${kec.nama.toUpperCase()}</option>`);
                     });
                 });
         });
 
-        // On Kecamatan Change → Load Kelurahan
+        // On Kecamatan Change → Load Kelurahan (UPPERCASE + Tambahan Manual)
         kecamatan.on('change', function() {
+            const kecId = this.value;
             kelurahan.empty().append('<option>Loading...</option>');
 
-            const kecamatanId = $('#kecamatan option:selected').data('id');
-
-            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${kecamatanId}.json`)
+            fetch(`https://ibnux.github.io/data-indonesia/kelurahan/${kecId}.json`)
                 .then(res => res.json())
                 .then(data => {
                     kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
-
                     data.forEach(kel => {
-                        kelurahan.append(
-                            `<option value="${kel.name}" data-id="${kel.id}">${kel.name}</option>`
-                        );
+                        kelurahan.append(`<option value="${kel.id}">${kel.nama.toUpperCase()}</option>`);
                     });
 
-                    // Tambahkan PEPELEGI jika kecamatan ID adalah 3515130
-                    if (kecamatanId == 3515130) {
-                        kelurahan.append(
-                            `<option value="Pepelegi" data-id="manual-pepelegi">PEPE</option>`
-                        );
+                    // Tambahkan manual kelurahan PEPE jika kecamatan ID 3515130
+                    if (kecId == 3515130) {
+                        kelurahan.append(`<option value="manual-pepelegi">PEPE</option>`);
                     }
                 });
         });
-
-
 
         // Load 1 anggota keluarga default
         window.onload = tambahAnggota;
