@@ -223,8 +223,8 @@ $this->load->library('encryption');
 
                             <!-- Icon WhatsApp dengan nomor HP -->
                             <?php if (!empty($value['no_hp'])): ?>
-                                <a href="https://wa.me/<?= preg_replace('/\D/', '', $value['no_hp']) ?>" target="_blank" class="text-success d-flex align-items-center gap-1" title="Chat WhatsApp" rel="noopener">
-                                    <i class="bi bi-whatsapp fs-5"></i> <span><?= htmlspecialchars($value['no_hp']) ?></span>
+                                <a href="https://wa.me/<?= preg_replace('/\D/', '', hp($value['no_hp'])) ?>" target="_blank" class="text-success d-flex align-items-center gap-1" title="Chat WhatsApp" rel="noopener">
+                                    <i class="bi bi-whatsapp fs-5"></i> <span><?= htmlspecialchars(hp($value['no_hp'])) ?></span>
                                 </a>
                             <?php endif; ?>
                         </div>
