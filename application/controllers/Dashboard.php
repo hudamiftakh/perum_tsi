@@ -179,15 +179,29 @@ class dashboard extends CI_Controller
 		$page = $this->uri->segment(3, 0);
 
 		// Main query with search condition
-		$this->db->select('*')->from('master_keluarga')->order_by('created_at', 'DESC');;
+		// $this->db->select('*')->from('master_keluarga')->order_by('created_at', 'DESC');
+		$subquery = $this->db->select('keluarga_id')
+				->from('master_anggota_keluarga')
+				->group_start()
+					->like('nik', $keyword)
+					->or_like('nama', $keyword)
+				->group_end()
+				->get_compiled_select();
 
-		if (!empty($keyword)) {
-			$this->db->group_start()
-				->like('no_kk', $keyword)
-				->or_like('alamat', $keyword)
-				->or_where("id IN (SELECT keluarga_id FROM master_anggota_keluarga WHERE nik LIKE '%" . $this->db->escape_like_str($keyword) . "%' OR nama LIKE '%" . $this->db->escape_like_str($keyword) . "%')", NULL, FALSE)
+			$this->db->select('mk.*, mr.nama as nama_pemilik')
+				->from('master_keluarga mk')
+				->join('master_rumah mr', "CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')", 'left')
+				->order_by('mk.created_at', 'DESC');
+
+			if (!empty($keyword)) {
+				$this->db->group_start()
+					->like('mk.no_kk', $keyword)
+					->or_like('mk.alamat', $keyword)
+					->or_like('mr.alamat', $keyword)
+					->or_like('mr.nama', $keyword)
+					->or_where("mk.id IN ($subquery)", NULL, FALSE)
 				->group_end();
-		}
+			}
 
 		// Clone the query for counting
 		$db_clone = clone $this->db;
