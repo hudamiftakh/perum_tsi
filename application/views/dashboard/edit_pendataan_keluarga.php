@@ -425,7 +425,7 @@ $Auth = $this->session->userdata['username'];
                         kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
                         data.forEach(k => {
                             const selected = (k.nama === selectedKota) ? 'selected' : '';
-                            kota.append(`<option value="${k.id}" ${selected}>${k.nama}</option>`);
+                            kota.append(`<option value="${k.nama}" ${selected}>${k.nama}</option>`);
                         });
 
                         const kab = data.find(k => k.nama === selectedKota);
@@ -443,7 +443,7 @@ $Auth = $this->session->userdata['username'];
                         data.forEach(kec => {
                             const namaFormatted = toTitleCase(kec.nama);
                             const selected = (namaFormatted === toTitleCase(selectedKecamatan)) ? 'selected' : '';
-                            kecamatan.append(`<option value="${kec.id}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
+                            kecamatan.append(`<option value="${namaFormatted.toUpperCase()}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
                         });
 
                         const kec = data.find(k => toTitleCase(k.nama) === toTitleCase(selectedKecamatan));
@@ -461,7 +461,7 @@ $Auth = $this->session->userdata['username'];
                         data.forEach(kel => {
                             const namaFormatted = toTitleCase(kel.nama);
                             const selected = (namaFormatted === toTitleCase(selectedKelurahan)) ? 'selected' : '';
-                            kelurahan.append(`<option value="${kel.id}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
+                            kelurahan.append(`<option value="${namaFormatted.toUpperCase()}" ${selected}>${namaFormatted.toUpperCase()}</option>`);
                         });
                     });
             }

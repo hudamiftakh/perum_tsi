@@ -507,7 +507,7 @@
                 .then(data => {
                     kota.empty().append('<option value="">Pilih Kota/Kabupaten</option>');
                     data.forEach(k => {
-                        kota.append(`<option value="${k.id}">${k.nama}</option>`);
+                        kota.append(`<option value="${k.nama}">${k.nama}</option>`);
                     });
                 });
         });
@@ -523,7 +523,7 @@
                 .then(data => {
                     kecamatan.empty().append('<option value="">Pilih Kecamatan</option>');
                     data.forEach(kec => {
-                        kecamatan.append(`<option value="${kec.id}">${kec.nama.toUpperCase()}</option>`);
+                        kecamatan.append(`<option value="${kec.nama.toUpperCase()}">${kec.nama.toUpperCase()}</option>`);
                     });
                 });
         });
@@ -538,7 +538,7 @@
                 .then(data => {
                     kelurahan.empty().append('<option value="">Pilih Kelurahan</option>');
                     data.forEach(kel => {
-                        kelurahan.append(`<option value="${kel.id}">${kel.nama.toUpperCase()}</option>`);
+                        kelurahan.append(`<option value="${kel.nama.toUpperCase()}">${kel.nama.toUpperCase()}</option>`);
                     });
 
                     // Tambahkan manual kelurahan PEPE jika kecamatan ID 3515130
