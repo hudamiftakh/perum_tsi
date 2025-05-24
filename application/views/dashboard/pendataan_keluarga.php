@@ -635,15 +635,17 @@
                         title: 'Data Sudah Ada!',
                         text: 'Alamat ini sudah pernah mengisi. Apakah Anda ingin melanjutkan pengisian?',
                         icon: 'warning',
-                        showCancelButton: true,
+                        showCancelButton: false,
                         confirmButtonText: 'Lanjutkan Pengisian',
-                        cancelButtonText: 'Batal'
+                        cancelButtonText: 'Batal',
+                        allowOutsideClick: false, // Supaya tidak bisa ditutup dengan klik di luar
+                        allowEscapeKey: false // Supaya tidak bisa ditutup dengan tombol ESC
                     }).then((result) => {
                         if (result.isConfirmed) {
                             window.location.href = '<?= base_url("edit-pendataan-keluarga/") ?>' +
                                 link;
                         } else {
-                            $('#nomorRumah').val(null).trigger('change');
+                            // $('#nomorRumah').val(null).trigger('change');
                         }
                     });
                 }
