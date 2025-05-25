@@ -128,7 +128,7 @@ $this->load->library('encryption');
         </div>
 
         <!-- Tombol Download -->
-        <div class="col-12 col-md-auto">
+        <!-- <div class="col-12 col-md-auto">
             <div class="btn-group w-100" role="group">
                 <a href="#" class="btn btn-outline-success">
                     <i class="fa fa-file-excel-o me-1"></i> Excel
@@ -137,7 +137,7 @@ $this->load->library('encryption');
                     <i class="fa fa-file-pdf-o me-1"></i> PDF
                 </a>
             </div>
-        </div>
+        </div> -->
 
     </div>
 </form>

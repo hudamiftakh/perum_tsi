@@ -67,7 +67,9 @@ $route['warga/data-warga'] = 'dashboard/warga';
 $route['warga/data-warga/(:any)'] = 'dashboard/warga/$1';
 // Pendataan
 $route['pendataan-keluarga'] = 'dashboard/pendataan_keluarga';
+$route['pendataan-keluarga-koordinator'] = 'dashboard/pendataan_keluarga_koordinator';
 $route['edit-pendataan-keluarga/(:any)'] = 'dashboard/edit_pendataan_keluarga/$1';
+$route['edit-pendataan-keluarga-koordinator/(:any)'] = 'dashboard/edit_pendataan_keluarga_koordinator/$1';
 $route['keterisian'] = 'dashboard/keterisian_pendataan';
 // Pembayaran
 $route['pembayaran'] = 'dashboard/show_form_pembayaran';

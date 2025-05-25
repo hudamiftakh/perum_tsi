@@ -118,11 +118,24 @@ $this->load->library('encryption');
 
         <!-- Tombol Tambah -->
         <div class="col-12 col-md-auto">
-            <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-success w-100">
-                <i class="fa fa-plus-circle me-1"></i> Tambah Pendataan
-            </a>
+            <div class="dropdown w-100">
+                <button class="btn btn-success dropdown-toggle w-100 d-flex align-items-center justify-content-center gap-2" type="button" id="dropdownTambahPendataan" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-plus-circle text-white"></i> <span>Tambah Pendataan</span>
+                </button>
+                <ul class="dropdown-menu w-100" aria-labelledby="dropdownTambahPendataan">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="<?= base_url('pendataan-keluarga'); ?>">
+                            <i class="fa fa-users text-primary"></i> <span>Warga</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="<?= base_url('pendataan-keluarga-koordinator'); ?>">
+                            <i class="fa fa-user text-warning"></i> <span>Koordinator</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-
         <!-- Input Pencarian -->
         <div class="col-12 col-md">
             <div class="input-group">
@@ -318,18 +331,33 @@ $this->load->library('encryption');
                     <td style="vertical-align: middle;" nowrap="">
                         <form method="post" action="<?= base_url('warga/data-warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');" class="d-inline">
                             <input type="hidden" name="id" value="<?= $value['id']; ?>">
-
                             <div class="btn-group" role="group" aria-label="Aksi">
-                                <!-- Tombol Edit -->
-                                <a href="<?= base_url('edit-pendataan-keluarga/' . encrypt_url($value['id'])); ?>" class="btn  btn-outline-success" title="Edit">
+                                <!-- Tombol Edit Data -->
+                                <a href="<?= base_url('edit-pendataan-keluarga/' . encrypt_url($value['id'])); ?>"
+                                    class="btn btn-outline-success btn-sm"
+                                    data-bs-toggle="tooltip"
+                                    title="Edit Data">
                                     <i class="fa fa-pencil"></i>
                                 </a>
 
+                                <!-- Tombol Edit Koordinator -->
+                                <a href="<?= base_url('edit-pendataan-keluarga-koordinator/' . encrypt_url($value['id'])); ?>"
+                                    class="btn btn-outline-primary btn-sm"
+                                    data-bs-toggle="tooltip"
+                                    title="Edit Koordinator">
+                                    <i class="fa fa-users"></i>
+                                </a>
+
                                 <!-- Tombol Hapus -->
-                                <button type="submit" name="hapus" class="btn  btn-outline-danger" title="Hapus">
+                                <button type="submit"
+                                    name="hapus"
+                                    class="btn btn-outline-danger btn-sm"
+                                    data-bs-toggle="tooltip"
+                                    title="Hapus Data">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>
+
                         </form>
 
                     </td>
@@ -338,6 +366,23 @@ $this->load->library('encryption');
         </tbody>
     </table>
 </div>
+<script>
+    // Aktifkan tooltip Bootstrap (kalau belum)
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+</script>
+<style>
+    .btn-group .btn {
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-group .btn:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+    }
+</style>
+
 <!-- Tampilkan Pagination -->
 <div class="row mt-4 align-items-center">
     <!-- Keterangan Jumlah Data -->
