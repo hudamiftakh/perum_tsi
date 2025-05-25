@@ -63,8 +63,13 @@ parse_str($data, $parsed);
 // Langkah 2: Decode JSON-nya
 $jsonString = $data;
 $jsonData = json_decode($jsonString, true); // true = associative array
+$user_id = $jsonData['user_id'];
+$dataUser = $this->db->get_where("master_users", array('id' => $user_id))->row_array();
+$masterPembayaran = $this->db->get_where("master_pembayaran", array('id' => $jsonData['pembayaran_id']))->row_array();
 
-var_dump($jsonData);
+// // var_dump($dataUser);
+// var_dump($masterPembayaran);
+// var_dump($jsonData);
 ?>
 
 <style>
@@ -75,6 +80,29 @@ var_dump($jsonData);
     column-gap: 0.5rem;
   }
 </style>
+<style>
+  .info-grid {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    /* label : isi */
+    gap: 8px;
+    align-items: start;
+  }
+
+  @media (max-width: 576px) {
+
+    /* HP / layar kecil */
+    .info-grid {
+      grid-template-columns: 1fr;
+      /* jadi 1 kolom */
+    }
+
+    .info-grid div {
+      margin-bottom: 4px;
+    }
+  }
+</style>
+
 <body>
   <div class="container">
     <div class="row justify-content-center">
@@ -88,26 +116,31 @@ var_dump($jsonData);
                   d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 11.03a.75.75 0 0 0 1.08 0l4.992-4.992a.75.75 0 1 0-1.08-1.04L7.5 9.477 5.523 7.5a.75.75 0 0 0-1.06 1.06l2.507 2.47z" />
               </svg>
             </div>
-            <h3 class="fw-bold text-success">Konfirmasi Pembayaran Berhasil!</h3>
-            <p class="text-muted">Terima kasih, Konfirmasi pembayaran IPL Anda telah diterima dengan baik.</p>
+            <h3 class="fw-bold text-success">Pembayaran Berhasil!</h3>
+            <p class="text-muted">Terima kasih</p>
           </div>
           <div class="card-body">
-          <div class="bukti-info mb-4 info-grid">
-            <div><strong>Nama</strong></div><div>: Budi</div>
-            <div><strong>Periode</strong></div><div>: Januari - Maret 2025</div>
-            <div><strong>Jumlah Dibayar</strong></div><div>: Rp375.000</div>
-            <div><strong>Metode</strong></div><div>: Transfer ke Bendahara</div>
-            <div><strong>Tanggal</strong></div><div>: 19 Mei 2025</div>
-          </div>
+            <div class="bukti-info mb-4 info-grid">
+              <div><strong>Nama</strong></div>
+              <div>: <?php echo (empty($dataUser['nama'])) ?  $dataUser['rumah'] : $dataUser['nama']; ?>
+              </div>
+              <div><strong>Periode</strong></div>
+              <div>: <?php echo formatBulanTahun($jsonData['bulan_mulai']); ?></div>
+              <div><strong>Jumlah Dibayar</strong></div>
+              <div>: Rp. <?php echo number_format($jsonData['jumlah_bayar']); ?></div>
+              <div><strong>Metode</strong></div>
+              <div>: <?php echo $masterPembayaran['pembayaran_via']; ?></div>
+              <div><strong>Tanggal</strong></div>
+              <div>: <?php echo format_tanggal_jam($jsonData['created_at']); ?></di v>
+              </div>
+            </div>
             <div class="d-flex justify-content-between">
-              <a href="<?php echo base_url('pembayaran'); ?>" class="btn btn-outline-success">Kembali ke Beranda</a>
-              <button class="btn btn-primary" onclick="window.print()">Cetak Bukti</button>
+              <a href="<?php echo base_url('warga/laporan-pembayaran'); ?>" class="btn btn-outline-success">Kembali ke Beranda</a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 </body>
 
 </html>

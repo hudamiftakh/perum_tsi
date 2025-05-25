@@ -650,6 +650,7 @@ class dashboard extends CI_Controller
 	public function save_pembayaran()
 	{
 		// Ambil data dari POST
+		$id = $this->input->post('id_pembayaran');
 		$user_id = $this->input->post('user_id');
 		$metode = $this->input->post('metode');
 		$bulan_mulai = $this->input->post('bulan_mulai'); // format yyyy-mm
@@ -671,7 +672,7 @@ class dashboard extends CI_Controller
 		$pembayaran_via = $this->input->post('pembayaran_via');
 
 		// Inisialisasi variabel untuk bukti
-		 $bukti_lama = $this->input->post('file_kk_existing');
+		$bukti_lama = $this->input->post('file_kk_existing');
     	$nama_file_bukti = $bukti_lama;
 
 		// Jika via transfer, lakukan upload
@@ -722,52 +723,58 @@ class dashboard extends CI_Controller
 		];
 
 		// Insert ke tabel pembayaran
-		$this->db->insert('master_pembayaran', $data_pembayaran);
-		$pembayaran_id = $this->db->insert_id();
-
-		if (!$pembayaran_id) {
-			$this->session->set_flashdata('error', 'Gagal menyimpan pembayaran');
-			redirect('pembayaran');
-			return;
+		if(!empty($id)) {
+			$this->db->where(array('id'=>$id))->update('master_pembayaran', $data_pembayaran);
+			$data_pembayaran['pembayaran_id'] = $id; 
+		}else{
+			$this->db->insert('master_pembayaran', $data_pembayaran);
+			$data_pembayaran['pembayaran_id'] = $this->db->insert_id(); 
+			// $pembayaran_id = $this->db->insert_id();
 		}
 
-		if ($metode === 'cicilan') {
-			if (!$lama_cicilan || !$total_cicilan) {
-				$this->session->set_flashdata('error', 'Data cicilan wajib diisi');
-				redirect('pembayaran');
-				return;
-			}
+		// if (!$pembayaran_id) {
+		// 	$this->session->set_flashdata('error', 'Gagal menyimpan pembayaran');
+		// 	redirect('pembayaran');
+		// 	return;
+		// }
 
-			$data_cicilan = [
-				'pembayaran_id' => $pembayaran_id,
-				'lama_cicilan' => intval($lama_cicilan),
-				'total_cicilan' => intval($total_cicilan)
-			];
-			$this->db->insert('master_detail_cicilan', $data_cicilan);
-		} else {
-			// Hitung jumlah bulan bayar dari metode
-			$bulanCount = 1;
-			if (strpos($metode, '_bulan') !== false) {
-				$bulanCount = intval(explode('_', $metode)[0]);
-			} elseif ($metode === '7_tahun') {
-				$bulanCount = 12;
-			}
+		// if ($metode === 'cicilan') {
+		// 	if (!$lama_cicilan || !$total_cicilan) {
+		// 		$this->session->set_flashdata('error', 'Data cicilan wajib diisi');
+		// 		redirect('pembayaran');
+		// 		return;
+		// 	}
 
-			// if ($bulan_mulai) {
-			// 	$nominal_per_bulan = 125000;
-			// 	$startDate = new DateTime($bulan_mulai . '-01');
-			// 	for ($i = 0; $i < $bulanCount; $i++) {
-			// 		$bulan = $startDate->format('Y-m-01');
+		// 	$data_cicilan = [
+		// 		'pembayaran_id' => $pembayaran_id,
+		// 		'lama_cicilan' => intval($lama_cicilan),
+		// 		'total_cicilan' => intval($total_cicilan)
+		// 	];
+		// 	$this->db->insert('master_detail_cicilan', $data_cicilan);
+		// } else {
+		// 	// Hitung jumlah bulan bayar dari metode
+		// 	$bulanCount = 1;
+		// 	if (strpos($metode, '_bulan') !== false) {
+		// 		$bulanCount = intval(explode('_', $metode)[0]);
+		// 	} elseif ($metode === '7_tahun') {
+		// 		$bulanCount = 12;
+		// 	}
 
-			// 		$this->db->insert('master_detail_pembayaran_bulanan', [
-			// 			'pembayaran_id' => $pembayaran_id,
-			// 			'bulan'         => $bulan,
-			// 			'nominal'       => $nominal_per_bulan
-			// 		]);
-			// 		$startDate->modify('+1 month');
-			// 	}
-			// }
-		}
+		// 	// if ($bulan_mulai) {
+		// 	// 	$nominal_per_bulan = 125000;
+		// 	// 	$startDate = new DateTime($bulan_mulai . '-01');
+		// 	// 	for ($i = 0; $i < $bulanCount; $i++) {
+		// 	// 		$bulan = $startDate->format('Y-m-01');
+
+		// 	// 		$this->db->insert('master_detail_pembayaran_bulanan', [
+		// 	// 			'pembayaran_id' => $pembayaran_id,
+		// 	// 			'bulan'         => $bulan,
+		// 	// 			'nominal'       => $nominal_per_bulan
+		// 	// 		]);
+		// 	// 		$startDate->modify('+1 month');
+		// 	// 	}
+		// 	// }
+		// }
 
 		$this->session->set_flashdata('success', 'Pembayaran berhasil disimpan');
 		redirect('pembayaran-sukses?data=' . urlencode(json_encode($data_pembayaran)));

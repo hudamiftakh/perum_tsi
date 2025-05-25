@@ -123,7 +123,6 @@
 
                         // Ambil data user berdasarkan id rumah
                         $result_rumah = $this->db->where(['id_rumah' => $id_decrypt])->get("master_users")->result_array();
-
                         // Misalnya kita ambil data user_id yang terpilih sebelumnya
                         // Contoh: dari database atau form input sebelumnya
                         $selected_user_id = ''; // default kosong
@@ -147,7 +146,7 @@
                     $id_pembayaran_decrypt = decrypt_url($id_pembayaran);
                     if (!empty($id_pembayaran_decrypt)) {
                         $data_update = $this->db->get_where("master_pembayaran", array('id' => $id_pembayaran_decrypt))->row_array();
-                        echo '<input type="text" value="' . $id_pembayaran_decrypt . '" name="id_pembayaran">';
+                        echo '<input type="hidden" value="' . $id_pembayaran_decrypt . '" name="id_pembayaran">';
                     }
                     ?>
                     <div class="mb-3">
@@ -172,12 +171,13 @@
                     <?php if (!empty($data_update['bulan_mulai'])) :  ?>
                         <div class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan</label>
-                            <input type="month" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
+                            <input type="month" placeholder="Bulan Pembayaran" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
                         </div>
                     <?php else : ?>
-                        <div id="opsiBulan" class="mb-3 d-none">
+                        <div id="opsiBulan" class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan</label>
-                            <input type="month" name="bulan_mulai" id="bulan_mulai" class="form-control">
+                            <input type="text"  placeholder="Bulan Pembayaran" name="bulan_mulai" id="bulan_mulai" class="form-control">
+                            <p id="statusText"></p>
                         </div>
                     <?php endif; ?>
                     <div class="mb-3">
@@ -275,33 +275,33 @@
             }
         });
 
-        function tampilkanOpsi() {
-            const metode = document.getElementById("metode").value;
-            const opsiBulan = document.getElementById("opsiBulan");
-            const opsiCicilan = document.getElementById("opsiCicilan");
-            const infoPeriode = document.getElementById("infoPeriode");
+        // function tampilkanOpsi() {
+        //     const metode = document.getElementById("metode").value;
+        //     const opsiBulan = document.getElementById("opsiBulan");
+        //     const opsiCicilan = document.getElementById("opsiCicilan");
+        //     const infoPeriode = document.getElementById("infoPeriode");
 
-            opsiBulan.classList.remove("d-none");
-            infoPeriode.classList.remove("d-none");
-            opsiCicilan.classList.add("d-none");
+        //     opsiBulan.classList.remove("d-none");
+        //     infoPeriode.classList.remove("d-none");
+        //     opsiCicilan.classList.add("d-none");
 
-            let infoText = "";
+        //     let infoText = "";
 
-            if (metode === "cicilan") {
-                opsiCicilan.classList.remove("d-none");
-                infoText = "Anda memilih cicilan. Silakan tentukan mulai bulan dan total nominal yang ingin dicicil.";
-            } else if (metode.includes("_bulan")) {
-                let bulanCount = metode.split("_")[0];
-                infoText = `Akan membayar ${bulanCount} bulan iuran berturut-turut dari bulan yang dipilih.`;
-            } else if (metode === "7_tahun") {
-                infoText = "Akan membayar 12 bulan iuran sekaligus mulai dari bulan yang dipilih.";
-            } else {
-                opsiBulan.classList.add("d-none");
-                infoPeriode.classList.add("d-none");
-            }
+        //     if (metode === "cicilan") {
+        //         opsiCicilan.classList.remove("d-none");
+        //         infoText = "Anda memilih cicilan. Silakan tentukan mulai bulan dan total nominal yang ingin dicicil.";
+        //     } else if (metode.includes("_bulan")) {
+        //         let bulanCount = metode.split("_")[0];
+        //         infoText = `Akan membayar ${bulanCount} bulan iuran berturut-turut dari bulan yang dipilih.`;
+        //     } else if (metode === "7_tahun") {
+        //         infoText = "Akan membayar 12 bulan iuran sekaligus mulai dari bulan yang dipilih.";
+        //     } else {
+        //         opsiBulan.classList.add("d-none");
+        //         infoPeriode.classList.add("d-none");
+        //     }
 
-            infoPeriode.innerHTML = infoText;
-        }
+        //     infoPeriode.innerHTML = infoText;
+        // }
 
         // function cekMetodeBayar() {
         //     const metode = document.getElementById("pembayaran_via").value;
@@ -325,10 +325,44 @@
 
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
     <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bulanStatus = {
+                '2025-01': 'paid',
+                '2025-02': 'unpaid',
+                '2025-03': 'paid'
+            };
+
+            flatpickr("#bulan_mulai", {
+                dateFormat: "Y-m",
+                plugins: [
+                    new monthSelectPlugin({
+                        shorthand: true, // tampilkan nama bulan singkat
+                        dateFormat: "Y-m", // format
+                        altFormat: "F Y"
+                    })
+                ],
+                onReady: function(selectedDates, dateStr, instance) {
+                    // highlight setiap bulan sesuai status
+                    const days = instance.daysContainer.querySelectorAll('.flatpickr-day');
+                    days.forEach(day => {
+                        const monthYear = instance.currentYear + '-' + String(instance.currentMonth + 1).padStart(2, '0');
+                        if (bulanStatus[monthYear] === 'paid') {
+                            day.classList.add('paid');
+                        } else if (bulanStatus[monthYear] === 'unpaid') {
+                            day.classList.add('unpaid');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
     <script>
         flatpickr("#tanggal_bayar", {
             // enableTime: true,
@@ -354,7 +388,7 @@
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: 'id_rumah=1&tanggal=' + encodeURIComponent(tanggal)
+                            body: 'id_rumah=<?php echo decrypt_url($id); ?>&tanggal=' + encodeURIComponent(tanggal)
                         })
                         .then(response => response.json())
                         .then(data => {

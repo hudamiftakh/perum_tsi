@@ -363,5 +363,30 @@ if (!function_exists('decrypt_url')) {
 
         return openssl_decrypt($ciphertext, $method, $key, OPENSSL_RAW_DATA, $iv);
     }
+
+	function formatBulanTahun($tanggal)
+	{
+		$bulanIndo = [
+			'Januari',
+			'Februari',
+			'Maret',
+			'April',
+			'Mei',
+			'Juni',
+			'Juli',
+			'Agustus',
+			'September',
+			'Oktober',
+			'November',
+			'Desember'
+		];
+
+		$timestamp = strtotime($tanggal);
+		$bulan = $bulanIndo[date('n', $timestamp) - 1];
+		$tahun = date('Y', $timestamp);
+
+		return $bulan . ' ' . $tahun;
+	}
 }
+
 ?>

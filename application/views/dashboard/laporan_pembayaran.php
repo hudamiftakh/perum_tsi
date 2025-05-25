@@ -70,13 +70,13 @@ $this->load->library('encryption');
 
         <!-- Input Pencarian Keyword -->
         <div class="col-12 col-md-3">
-            <input type="text" name="keyword" class="form-control rounded" placeholder="Cari NIK atau Nama..."
+            <input type="text" name="keyword" class="form-control rounded" placeholder="Cari NIK atau Nama..." style="background-color: white; color: black;"
                 value="<?= html_escape($this->input->get('keyword')); ?>">
         </div>
 
         <!-- Filter Tahun -->
         <div class="col-6 col-md-2">
-            <select name="tahun" class="form-select rounded">
+            <select name="tahun" class="form-select rounded" style="background-color: white; color: black;">
                 <option value="">Pilih Tahun</option>
                 <?php
                 $start = 2020;
@@ -94,7 +94,7 @@ $this->load->library('encryption');
 
         <!-- Filter Koordinator -->
         <div class="col-6 col-md-2">
-            <select name="id_koordinator" class="form-select rounded">
+            <select name="id_koordinator" class="form-select rounded" style="background-color: white; color: black;">
                 <option value="">Koordinator Blok</option>
                 <?php
                 $selected_koordinator = $_REQUEST['id_koordinator'];
@@ -216,7 +216,7 @@ $this->load->library('encryption');
                     <?php endfor; ?>
 
                     <td class="text-center fw-bold">
-                        <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-sm btn-success">
+                        <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-success">
                             <i class="bi bi-cash-coin"></i> Bayar
                         </a>
                     </td>

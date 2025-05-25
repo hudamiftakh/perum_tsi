@@ -113,7 +113,7 @@ $this->load->library('encryption');
 <!-- <div class="card w-100 position-relative overflow-hidden">
     <div class="card-body p-4"> -->
 <!-- Form pencarian -->
-<form method="get" action="<?= base_url('warga/data-warga'); ?>" class="mb-3">
+<form method="get" action="<?= base_url('warga/data-warga'); ?>" class="mb-3 p-3 border rounded shadow-sm" style="background-color: #f0f8ff;">
     <div class="row gy-2 gx-3 align-items-center">
 
         <!-- Tombol Tambah -->
@@ -139,7 +139,7 @@ $this->load->library('encryption');
         <!-- Input Pencarian -->
         <div class="col-12 col-md">
             <div class="input-group">
-                <input type="text" name="keyword" class="form-control" placeholder="Cari No NIK atau Nama..."
+                <input type="text" name="keyword" class="form-control" style="background-color: white;" placeholder="Cari No NIK atau Nama..."
                     value="<?= html_escape($this->input->get('keyword')); ?>">
                 <button class="btn btn-success" type="submit">
                     <i class="fa fa-search me-1"></i> Cari
@@ -334,7 +334,7 @@ $this->load->library('encryption');
                             <div class="btn-group" role="group" aria-label="Aksi">
                                 <!-- Tombol Edit Data -->
                                 <a href="<?= base_url('edit-pendataan-keluarga/' . encrypt_url($value['id'])); ?>"
-                                    class="btn btn-outline-success btn-sm"
+                                    class="btn btn-outline-success"
                                     data-bs-toggle="tooltip"
                                     title="Edit Data">
                                     <i class="fa fa-pencil"></i>
@@ -342,7 +342,7 @@ $this->load->library('encryption');
 
                                 <!-- Tombol Edit Koordinator -->
                                 <a href="<?= base_url('edit-pendataan-keluarga-koordinator/' . encrypt_url($value['id'])); ?>"
-                                    class="btn btn-outline-primary btn-sm"
+                                    class="btn btn-outline-primary"
                                     data-bs-toggle="tooltip"
                                     title="Edit Koordinator">
                                     <i class="fa fa-users"></i>
@@ -351,7 +351,7 @@ $this->load->library('encryption');
                                 <!-- Tombol Hapus -->
                                 <button type="submit"
                                     name="hapus"
-                                    class="btn btn-outline-danger btn-sm"
+                                    class="btn btn-outline-danger"
                                     data-bs-toggle="tooltip"
                                     title="Hapus Data">
                                     <i class="fa fa-trash"></i>
