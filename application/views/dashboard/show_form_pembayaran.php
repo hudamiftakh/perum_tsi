@@ -380,7 +380,7 @@
                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                     ];
 
-                    fetch('http://localhost/perum_tsi/dashboard/cek_pembayaran', {
+                    fetch('<?php echo base_url(); ?>dashboard/cek_pembayaran', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -399,7 +399,7 @@
                                     cancelButtonText: 'Tutup'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        window.location.href = 'http://localhost/perum_tsi/pembayaran/YkHE_seYhh-jJPiiMgZr5_g/' + data.id_pembayaran;
+                                        window.location.href = '<?php echo base_url(); ?>pembayaran/YkHE_seYhh-jJPiiMgZr5_g/' + data.id_pembayaran;
                                     }
                                 });
                             }
