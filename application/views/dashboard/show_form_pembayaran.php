@@ -210,7 +210,7 @@
                         <select class="form-select" name="pembayaran_via" id="pembayaran_via" onchange="cekMetodeBayar()" required>
                             <option value="">Pilih cara membayar...</option>
                             <option value="koordinator" <?= ($data_update['pembayaran_via'] == 'koordinator') ? 'selected' : '' ?>>Ke Koordinator Blok</option>
-                            <option value="transfer" <?= ($data_update['pembayaran_via'] == 'transfer') ? 'selected' : '' ?>>Transfer ke Bendahara</option>
+                            <option value="transfer" <?= ($data_update['pembayaran_via'] == 'transfer') ? 'selected' : '' ?>>Transfer ke Bendahara (BCA 8221586107 / Dhani Kispananto) </option>
                         </select>
                     </div>
 

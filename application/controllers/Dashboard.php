@@ -677,35 +677,41 @@ class dashboard extends CI_Controller
 
 		// Jika via transfer, lakukan upload
 		if ($pembayaran_via === 'transfer') {
-			$config['upload_path']   = './uploads/bukti/';
-			$config['allowed_types'] = 'jpg|jpeg|png|pdf';
-			$config['max_size']      = 50048; // 2MB
-			$config['encrypt_name']  = TRUE;
+			// Cek apakah ada file yang diupload
+			if (!empty($_FILES['bukti']['name'])) {
+				$config['upload_path']   = './uploads/bukti/';
+				$config['allowed_types'] = 'jpg|jpeg|png|pdf';
+				$config['max_size']      = 50048; // 50MB (ganti sesuai kebutuhan)
+				$config['encrypt_name']  = TRUE;
 
-			$this->load->library('upload', $config);
+				$this->load->library('upload', $config);
 
-			if (!$this->upload->do_upload('bukti')) {
-				$this->session->set_flashdata('error', 'Upload bukti gagal: ' . $this->upload->display_errors('', ''));
-				redirect('pembayaran');
-				return;
-			} else {
-				$upload_data = $this->upload->data();
-				$nama_file_bukti = $upload_data['file_name'];
+				if (!$this->upload->do_upload('bukti')) {
+					$this->session->set_flashdata('error', 'Upload bukti gagal: ' . $this->upload->display_errors('', ''));
+					redirect('pembayaran');
+					return;
+				} else {
+					$upload_data = $this->upload->data();
+					$nama_file_bukti = $upload_data['file_name'];
 
-				// Kompres jika gambar
-				if (in_array(strtolower($upload_data['file_ext']), ['.jpg', '.jpeg', '.png'])) {
-					$config['image_library'] = 'gd2';
-					$config['source_image'] = $upload_data['full_path'];
-					$config['quality'] = '70%'; // Kompres kualitas 70%
-					$config['maintain_ratio'] = TRUE;
+					// Kompres jika gambar
+					if (in_array(strtolower($upload_data['file_ext']), ['.jpg', '.jpeg', '.png'])) {
+						$config['image_library'] = 'gd2';
+						$config['source_image'] = $upload_data['full_path'];
+						$config['quality'] = '70%'; // Kompres kualitas 70%
+						$config['maintain_ratio'] = TRUE;
 
-					$this->load->library('image_lib', $config);
+						$this->load->library('image_lib', $config);
 
-					if (!$this->image_lib->resize()) {
-						$this->session->set_flashdata('error', 'Gagal kompres gambar: ' . $this->image_lib->display_errors('', ''));
-						redirect('pembayaran');
-						return;
+						if (!$this->image_lib->resize()) {
+							$this->session->set_flashdata('error', 'Gagal kompres gambar: ' . $this->image_lib->display_errors('', ''));
+							redirect('pembayaran');
+							return;
+						}
 					}
+
+					// Simpan nama file ke dalam data update
+					$data['bukti_transfer'] = $nama_file_bukti;
 				}
 			}
 		}

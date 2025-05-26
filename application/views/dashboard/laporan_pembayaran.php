@@ -2,31 +2,6 @@
 $Auth = $this->session->userdata['username'];
 $this->load->library('encryption');
 ?>
-
-<div class="card w-100 bg-info-subtle shadow-none position-relative overflow-hidden mb-4">
-    <div class="card-body px-4 py-3">
-        <div class="row align-items-center">
-            <div class="col-9">
-                <h4 class="fw-semibold mb-8">Laporan Pembayaran</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a class="text-muted text-decoration-none" href="./">Dashboard</a>
-                        </li>
-                        <li class="breadcrumb-item" aria-current="page">Laporan</li>
-                        <li class="breadcrumb-item" aria-current="page">Laporan Pembayaran</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="col-3">
-                <div class="text-center mb-n5">
-                    <img src="<?php echo base_url(); ?>dist/images/backgrounds/welcome-bg.svg" alt=""
-                        class="img-fluid mb-n4" />
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 <style>
     table {
         border-radius: 15px;
@@ -63,14 +38,73 @@ $this->load->library('encryption');
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 <?php endif; ?>
+<h5 class="mb-4 fw-semibold text-center">Ringkasan Pembayaran Warga</h5>
 
+<div class="row">
+    <!-- Total Pembayaran Koordinator -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card border border-secondary shadow rounded-4 bg-light">
+            <div class="card-body d-flex align-items-start">
+                <i class="bi bi-person-badge-fill text-primary display-6 me-3"></i>
+                <div>
+                    <h6 class="mb-1">Total Koordinator</h6>
+                    <h5 class="fw-bold text-primary">Rp 2.500.000</h5>
+                    <small class="text-muted">Akumulasi sampai bulan ini</small>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Total Pembayaran Transfer -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card border border-success shadow rounded-4 bg-light">
+            <div class="card-body d-flex align-items-start">
+                <i class="bi bi-bank2 text-success display-6 me-3"></i>
+                <div>
+                    <h6 class="mb-1">Total Transfer</h6>
+                    <h5 class="fw-bold text-success">Rp 1.750.000</h5>
+                    <small class="text-muted">Akumulasi sampai bulan ini</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pembayaran Koordinator Bulan Ini -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card border border-warning shadow rounded-4 bg-light">
+            <div class="card-body d-flex align-items-start">
+                <i class="bi bi-calendar-check text-warning display-6 me-3"></i>
+                <div>
+                    <h6 class="mb-1">Koordinator Bulan Ini</h6>
+                    <h5 class="fw-bold text-warning">Rp 750.000</h5>
+                    <small class="text-muted">Periode bulan berjalan</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pembayaran Transfer Bulan Ini -->
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card border border-danger shadow rounded-4 bg-light">
+            <div class="card-body d-flex align-items-start">
+                <i class="bi bi-cash-coin text-danger display-6 me-3"></i>
+                <div>
+                    <h6 class="mb-1">Transfer Bulan Ini</h6>
+                    <h5 class="fw-bold text-danger">Rp 600.000</h5>
+                    <small class="text-muted">Periode bulan berjalan</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 <form method="get" action="<?= base_url('warga/laporan-pembayaran'); ?>" class="mb-3 p-3 border rounded shadow-sm" style="background-color: #f0f8ff;">
     <div class="row gy-2 gx-3 align-items-end">
 
-        <!-- Input Pencarian Keyword -->
+        <!-- Input Pencarian -->
         <div class="col-12 col-md-3">
-            <input type="text" name="keyword" class="form-control rounded" placeholder="Cari NIK atau Nama..." style="background-color: white; color: black;"
+            <input type="text" name="keyword" class="form-control rounded" placeholder="Cari NIK atau Nama..."
+                style="background-color: white; color: black;"
                 value="<?= html_escape($this->input->get('keyword')); ?>">
         </div>
 
@@ -82,9 +116,8 @@ $this->load->library('encryption');
                 $start = 2020;
                 $end = date('Y');
                 $tahun_get = $this->input->get('tahun');
-                $selected_tahun = (empty($tahun_get)) ? date('Y') : $tahun_get;
-                for ($tahun = $end; $tahun >= $start; $tahun--):
-                ?>
+                $selected_tahun = empty($tahun_get) ? date('Y') : $tahun_get;
+                for ($tahun = $end; $tahun >= $start; $tahun--): ?>
                     <option value="<?= $tahun; ?>" <?= $selected_tahun == $tahun ? 'selected' : ''; ?>>
                         <?= $tahun; ?>
                     </option>
@@ -97,50 +130,63 @@ $this->load->library('encryption');
             <select name="id_koordinator" class="form-select rounded" style="background-color: white; color: black;">
                 <option value="">Koordinator Blok</option>
                 <?php
-                $selected_koordinator = $_REQUEST['id_koordinator'];
-                foreach ($koordinator as $key => $value) : ?>
-                    <option value="<?php echo $value['id']; ?>" <?php echo ($value['id'] == $selected_koordinator) ? 'selected' : ''; ?>>
-                        <?php echo $value['nama']; ?>
+                $selected_koordinator = $_REQUEST['id_koordinator'] ?? '';
+                foreach ($koordinator as $value): ?>
+                    <option value="<?= $value['id']; ?>" <?= $value['id'] == $selected_koordinator ? 'selected' : ''; ?>>
+                        <?= $value['nama']; ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
 
-        <!-- Tombol Cari & Reset -->
-        <div class="col-12 col-md-auto">
-            <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-success rounded flex-grow-1 flex-md-grow-0" type="submit">
+        <!-- Tombol Aksi -->
+        <div class="col-12 col-md-5">
+            <div class="d-flex flex-wrap gap-2 justify-content-start">
+                <!-- Tombol Cari -->
+                <button class="btn btn-success" type="submit">
                     <i class="fa fa-search me-1"></i> Cari
                 </button>
-                <?php if ($this->input->get('keyword') || $this->input->get('bulan') || $this->input->get('tahun')): ?>
-                    <a href="<?= base_url('warga/laporan-pembayaran'); ?>" class="btn btn-outline-danger rounded flex-grow-1 flex-md-grow-0">
+
+                <!-- Tombol Reset -->
+                <?php if ($this->input->get('keyword') || $this->input->get('tahun') || $this->input->get('id_koordinator')): ?>
+                    <a href="<?= base_url('warga/laporan-pembayaran'); ?>" class="btn btn-outline-danger">
                         <i class="fa fa-times me-1"></i> Reset
                     </a>
                 <?php endif; ?>
+
+                <!-- Tombol Tambah -->
+                <a href="<?= base_url('pembayaran'); ?>" class="btn btn-primary">
+                    <i class="fa fa-plus me-1"></i> Tambah
+                </a>
+
+                <!-- Tombol PDF Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-danger dropdown-toggle" type="button" id="pdfDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-file-pdf-o me-1"></i> PDF
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="pdfDropdown">
+                        <?php
+                        $bulan_arr = [
+                            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+                        ];
+                        foreach ($bulan_arr as $key => $bulan): ?>
+                            <li>
+                                <a class="dropdown-item" href="<?= base_url('warga/laporan-pembayaran-pdf?bulan=' . $key . '&tahun=' . $selected_tahun); ?>" target="_blank">
+                                    <?= $bulan . ' ' . $selected_tahun; ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </div>
         </div>
-
-        <!-- Tombol Tambah -->
-        <div class="col-12 col-md-auto">
-            <a href="<?= base_url('pembayaran'); ?>" class="btn btn-success rounded w-100">
-                <i class="fa fa-plus-circle me-1"></i> Tambah Pembayaran
-            </a>
-        </div>
-
-        <!-- Tombol Download -->
-        <!-- <div class="col-12 col-md-auto">
-            <div class="btn-group w-100" role="group">
-                <a href="#" class="btn btn-outline-success">
-                    <i class="fa fa-file-excel-o me-1"></i> Excel
-                </a>
-                <a href="#" class="btn btn-outline-danger">
-                    <i class="fa fa-file-pdf-o me-1"></i> PDF
-                </a>
-            </div>
-        </div> -->
 
     </div>
 </form>
+
+
 <style>
     /* Default: sempit untuk mobile */
     th.shrink,
@@ -162,8 +208,8 @@ $this->load->library('encryption');
 
 <!-- Tambahkan wrapper agar tabel bisa di-scroll di HP -->
 <div class="table-responsive mb-4">
-    <table class="table table-bordered align-middle text-nowrap" id="laporanTable">
-        <thead class="table-primary text-center">
+    <table class="table table-bordered align-middle table-striped table-hover" id="laporanTable">
+        <thead style="background: linear-gradient(to right, #28a745, #218838) !important; color: white !important; vertical-align: middle !important;">
             <tr>
                 <th class="shrink text-center">No</th>
                 <th class="shrink">Rumah</th>
@@ -178,19 +224,19 @@ $this->load->library('encryption');
                 <?php endfor; ?>
                 <th>Aksi</th>
             </tr>
-
         </thead>
-
         <tbody>
             <?php $no = 1;
             foreach ($rumah as $key => $data_bulanan): ?>
                 <tr>
-                    <td class="text-center"><?= $no++ ?></td>
-                    <td style="width: 1px;" class="td-narrow">
-                        <i class="bi bi-geo-alt-fill text-danger"></i>
-                        <?php echo $data_bulanan['alamat'] ?> <br>
+                    <td class="text-center" style="width: 1px;"><?= $no++ ?></td>
+                    <td style="width: 10px;" nowrap="">
+                         <div><i class="bi bi-geo-alt-fill text-danger"></i> <?php echo strtoupper($data_bulanan['alamat']) ?></div>
+                        <div><i class="bi bi-person-fill text-primary"></i> <?php echo strtoupper($data_bulanan['nama']) ?> </div>
+                        <!-- <i class="bi bi-geo-alt-fill text-danger"></i>
+                         <br>
                         <i class="bi bi-person-fill text-primary"></i>
-                        <?php echo $data_bulanan['nama'] ?>
+                        -->
                     </td>
 
                     <?php for ($i = 1; $i <= $bulan_terakhir; $i++):

@@ -113,17 +113,17 @@
         <div class="alert alert-info">
             <h4>Halo <?php echo $_SESSION['username']['nama']; ?> !!</h4>
             <ul class="list-unstyled">
-                <li>Mohon ksh selalu aktif mengisi aktivitas sebagai acuan untuk pemberian penilaian individu</li>
+                <!-- <li>Mohon ksh selalu aktif mengisi aktivitas sebagai acuan untuk pemberian penilaian individu</li>
                 <li>Mohon foto yang di upload menyesuakan kondisi yang saat ini dilakukan;</li>
-                <li>Informasi akan ditampilkan aplikasi;</li>
+                <li>Informasi akan ditampilkan aplikasi;</li> -->
             </ul>
         </div>
 
         <div class="alert alert-info">
             <h4>Penyelia</h4>
             <ul class="list-unstyled">
-                <li><b>Penyelia 1:</b> , Telp: , e-mail:</li>
-                <li><b>Penyelia 2:</b> , Telp: , e-mail: </li>
+                <!-- <li><b>Penyelia 1:</b> , Telp: , e-mail:</li>
+                <li><b>Penyelia 2:</b> , Telp: , e-mail: </li> -->
             </ul>
         </div>
     </div>

@@ -12,102 +12,124 @@
                 <span class="hide-menu"> Dashboard</span>
             </a>
         </li>
-        <?php 
-			$menu = $this->uri->segment(1);
-			$submenu = $this->uri->segment(2);
-		?>
-        <?php if($_SESSION['username']['role']=='admin') : ?>
-        <li class="sidebar-item">
-            <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('agenda'))) ? 'active' : ''; ?>"
-                href="javascript:void(0)" aria-expanded="false">
-                <span class="d-flex">
-                    <i class="ti ti-calendar-event"></i>
-                </span>
-                <span class="hide-menu">Rapat</span>
-            </a>
-            <ul aria-expanded="false"
-                class="collapse first-level <?php echo (in_array($menu, array('agenda'))) ? 'in' : ''; ?>">
-                <li class="sidebar-item">
-                    <a href="<?php echo base_url('agenda/agenda') ?>"
-                        class="sidebar-link <?php echo (in_array($submenu, array('agenda', 'contact-group'))) ? 'active' : ''; ?>">
-                        <div class="round-16 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-circle"></i>
-                        </div>
-                        <span class="hide-menu">Agenda</span>
-                    </a>
-                </li>
-                <!-- <li class="sidebar-item">
-                    <a href="<?php echo base_url('agenda/report_agenda') ?>"
-                        class="sidebar-link <?php echo (in_array($submenu, array('report_agenda'))) ? 'active' : ''; ?>">
-                        <div class="round-16 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-circle"></i>
-                        </div>
-                        <span class="hide-menu">Report Agenda</span>
-                    </a>
-                </li> -->
-            </ul>
-        </li>
+        <?php
+        $menu = $this->uri->segment(1);
+        $submenu = $this->uri->segment(2);
+        ?>
+        <?php if ($_SESSION['username']['role'] == 'admin') : ?>
+            <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('agenda'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-calendar-event"></i>
+                    </span>
+                    <span class="hide-menu">Rapat</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('agenda'))) ? 'in' : ''; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('agenda/agenda') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('agenda', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Agenda</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
-        <li class="sidebar-item">
-            <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('warga'))) ? 'active' : ''; ?>"
-                href="javascript:void(0)" aria-expanded="false">
-                <span class="d-flex">
-                    <i class="ti ti-users"></i>
-                </span>
-                <span class="hide-menu">Warga</span>
-            </a>
-            <ul aria-expanded="false"
-                class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : ''; ?>">
-                <li class="sidebar-item">
-                    <a href="<?php echo base_url('warga/data-warga') ?>"
-                        class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
-                        <div class="round-16 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-circle"></i>
-                        </div>
-                        <span class="hide-menu">Data Keluarga</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="<?php echo base_url('warga/laporan-pembayaran') ?>"
-                        class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
-                        <div class="round-16 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-circle"></i>
-                        </div>
-                        <span class="hide-menu">Laporan Pembayaran</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="<?php echo base_url('warga/verifikasi-pembayaran') ?>"
-                        class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
-                        <div class="round-16 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-circle"></i>
-                        </div>
-                        <span class="hide-menu">Verifikasi Pembayaran</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li class="sidebar-item">
-            <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('kas'))) ? 'active' : ''; ?>"
-                href="javascript:void(0)" aria-expanded="false">
-                <span class="d-flex">
-                    <i class="ti ti-calendar-event"></i>
-                </span>
-                <span class="hide-menu">Keuangan</span>
-            </a>
-            <ul aria-expanded="false"
-                class="collapse first-level <?php echo (in_array($menu, array('kas'))) ? 'in' : ''; ?>">
-                <li class="sidebar-item">
-                    <a href="<?php echo base_url('kas/pengeluaran') ?>"
-                        class="sidebar-link <?php echo (in_array($submenu, array('pengeluaran', 'contact-group'))) ? 'active' : ''; ?>">
-                        <div class="round-16 d-flex align-items-center justify-content-center">
-                            <i class="ti ti-circle"></i>
-                        </div>
-                        <span class="hide-menu">Pengeluaran</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('warga'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-users"></i>
+                    </span>
+                    <span class="hide-menu">Warga</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : ''; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('warga/data-warga') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Data Keluarga</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('warga/verifikasi-pembayaran') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Verifikasi Pembayaran</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('warga/laporan-pembayaran') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Riwayat Pembayaran</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('kas'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-calendar-event"></i>
+                    </span>
+                    <span class="hide-menu">Keuangan</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('kas'))) ? 'in' : ''; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('kas/pengeluaran') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('pengeluaran', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Pengeluaran</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        <?php else : ?>
+            <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('warga'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-users"></i>
+                    </span>
+                    <span class="hide-menu">Warga</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : 'in'; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('warga/verifikasi-pembayaran') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Verifikasi Pembayaran</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('warga/laporan-pembayaran') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Riwayat Pembayaran</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
         <?php endif; ?>
         <li class="sidebar-item">
             <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>logout" aria-expanded="false">

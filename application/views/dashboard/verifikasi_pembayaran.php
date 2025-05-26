@@ -189,8 +189,8 @@ $this->load->library('encryption');
                                 <td><?= $row->metode ?></td>
                                 <td><?= number_format($row->jumlah_bayar, 0, ',', '.') ?></td>
                                 <td><?= date('Y-m-d H:i', strtotime($row->created_at)) ?></td>
+                                <td><?= $row->status; ?></td>
                                 <td><?= htmlspecialchars($row->keterangan) ?></td>
-                                <td>...</td>
                                 <td nowrap="">
                                     <!-- Tombol Verifikasi -->
                                     <a href="<?= site_url('pembayaran/aksi_verifikasi/' . $row->id) ?>"
