@@ -20,6 +20,14 @@
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+
 
     <style>
         body {
@@ -171,12 +179,13 @@
                     <?php if (!empty($data_update['bulan_mulai'])) :  ?>
                         <div class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan</label>
-                            <input type="month" placeholder="Bulan Pembayaran" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
+                            <input type="text" placeholder="Bulan Pembayaran" tabindex="1" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
+                            <p id="statusText"></p>
                         </div>
                     <?php else : ?>
                         <div id="opsiBulan" class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan</label>
-                            <input type="text"  placeholder="Bulan Pembayaran" name="bulan_mulai" id="bulan_mulai" class="form-control">
+                            <input type="month" placeholder="Bulan Pembayaran" name="bulan_mulai" id="bulan_mulai" class="form-control">
                             <p id="statusText"></p>
                         </div>
                     <?php endif; ?>
@@ -321,16 +330,6 @@
             });
         });
     </script>
-
-
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const bulanStatus = {
@@ -339,34 +338,32 @@
                 '2025-03': 'paid'
             };
 
-            flatpickr("#bulan_mulai", {
-                dateFormat: "Y-m",
-                plugins: [
-                    new monthSelectPlugin({
-                        shorthand: true, // tampilkan nama bulan singkat
-                        dateFormat: "Y-m", // format
-                        altFormat: "F Y"
-                    })
-                ],
-                onReady: function(selectedDates, dateStr, instance) {
-                    // highlight setiap bulan sesuai status
-                    const days = instance.daysContainer.querySelectorAll('.flatpickr-day');
-                    days.forEach(day => {
-                        const monthYear = instance.currentYear + '-' + String(instance.currentMonth + 1).padStart(2, '0');
-                        if (bulanStatus[monthYear] === 'paid') {
-                            day.classList.add('paid');
-                        } else if (bulanStatus[monthYear] === 'unpaid') {
-                            day.classList.add('unpaid');
-                        }
-                    });
-                }
-            });
+            const bulanMulai = document.querySelector("#bulan_mulai");
+            if (bulanMulai && bulanMulai.offsetParent !== null) { // cek ada & terlihat
+                flatpickr(bulanMulai, {
+                    dateFormat: "Y-m",
+                    disableMobile: true, // ini boolean, bisa disesuaikan
+                    plugins: [
+                        new monthSelectPlugin({
+                            shorthand: true,
+                            dateFormat: "Y-m",
+                            altFormat: "F Y"
+                        })
+                    ],
+                    onChange: function(selectedDates, dateStr, instance) {
+                        const status = bulanStatus[dateStr] || 'unknown';
+                        document.getElementById('statusText').textContent = `Status: ${status}`;
+                    }
+                });
+            }
         });
     </script>
+
     <script>
         flatpickr("#tanggal_bayar", {
             // enableTime: true,
             dateFormat: "Y-m-d",
+            disableMobile: true, // ini boolean, bisa disesuaikan
             // time_24hr: true,
             locale: "id"
         });

@@ -626,8 +626,18 @@ class dashboard extends CI_Controller
 									) as vb ".$whereClause)->result_array();
 		$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
 
+		$jumlah_transfer_bulan_ini_transfer = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('MONTH(bulan_mulai)'=>date('m'), 'YEAR(bulan_mulai)'=>date('Y'), 'status'=>'verified', 'pembayaran_via'=>'transfer'))->row_array();
+		$jumlah_transfer_bulan_ini_koordinator = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('MONTH(bulan_mulai)'=>date('m'), 'YEAR(bulan_mulai)'=>date('Y'), 'status'=>'verified', 'pembayaran_via'=>'koordinator'))->row_array();
+		
+		$jumlah_transfer_sd_transfer = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('status'=>'verified', 'pembayaran_via'=>'transfer'))->row_array();
+		$jumlah_transfer_sd_koordinator = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('status'=>'verified', 'pembayaran_via'=>'koordinator'))->row_array();
+
 		$data['tahun'] = $tahun;
 		$data['rumah'] = $rumah;
+		$data['bulan_ini_koor'] = $jumlah_transfer_bulan_ini_koordinator;
+		$data['bulan_ini_transfer'] = $jumlah_transfer_bulan_ini_transfer;
+		$data['bulan_sd_koor'] = $jumlah_transfer_sd_koordinator;
+		$data['bulan_sd_transfer'] = $jumlah_transfer_sd_transfer;
 		$data['koordinator'] = $koordinator;
 		$data['halaman'] = 'dashboard/laporan_pembayaran';
 		$this->load->view('modul', $data);

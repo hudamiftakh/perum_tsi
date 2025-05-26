@@ -48,7 +48,7 @@ $this->load->library('encryption');
                 <i class="bi bi-person-badge-fill text-primary display-6 me-3"></i>
                 <div>
                     <h6 class="mb-1">Total Koordinator</h6>
-                    <h5 class="fw-bold text-primary">Rp 2.500.000</h5>
+                    <h5 class="fw-bold text-primary">Rp <?php echo number_format($bulan_sd_koor['jumlah_bayar']); ?></h5>
                     <small class="text-muted">Akumulasi sampai bulan ini</small>
                 </div>
             </div>
@@ -62,7 +62,7 @@ $this->load->library('encryption');
                 <i class="bi bi-bank2 text-success display-6 me-3"></i>
                 <div>
                     <h6 class="mb-1">Total Transfer</h6>
-                    <h5 class="fw-bold text-success">Rp 1.750.000</h5>
+                    <h5 class="fw-bold text-success">Rp <?php echo number_format($bulan_sd_transfer['jumlah_bayar']); ?></h5>
                     <small class="text-muted">Akumulasi sampai bulan ini</small>
                 </div>
             </div>
@@ -76,7 +76,7 @@ $this->load->library('encryption');
                 <i class="bi bi-calendar-check text-warning display-6 me-3"></i>
                 <div>
                     <h6 class="mb-1">Koordinator Bulan Ini</h6>
-                    <h5 class="fw-bold text-warning">Rp 750.000</h5>
+                    <h5 class="fw-bold text-warning">Rp <?php echo number_format($bulan_ini_koor['jumlah_bayar']); ?></h5>
                     <small class="text-muted">Periode bulan berjalan</small>
                 </div>
             </div>
@@ -90,7 +90,7 @@ $this->load->library('encryption');
                 <i class="bi bi-cash-coin text-danger display-6 me-3"></i>
                 <div>
                     <h6 class="mb-1">Transfer Bulan Ini</h6>
-                    <h5 class="fw-bold text-danger">Rp 600.000</h5>
+                    <h5 class="fw-bold text-danger">Rp <?php echo number_format($bulan_ini_traansfer['jumlah_bayar']); ?></h5>
                     <small class="text-muted">Periode bulan berjalan</small>
                 </div>
             </div>
@@ -167,9 +167,18 @@ $this->load->library('encryption');
                     <ul class="dropdown-menu" aria-labelledby="pdfDropdown">
                         <?php
                         $bulan_arr = [
-                            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-                            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-                            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+                            '01' => 'Januari',
+                            '02' => 'Februari',
+                            '03' => 'Maret',
+                            '04' => 'April',
+                            '05' => 'Mei',
+                            '06' => 'Juni',
+                            '07' => 'Juli',
+                            '08' => 'Agustus',
+                            '09' => 'September',
+                            '10' => 'Oktober',
+                            '11' => 'November',
+                            '12' => 'Desember'
                         ];
                         foreach ($bulan_arr as $key => $bulan): ?>
                             <li>
@@ -208,7 +217,7 @@ $this->load->library('encryption');
 
 <!-- Tambahkan wrapper agar tabel bisa di-scroll di HP -->
 <div class="table-responsive mb-4">
-    <table class="table table-bordered align-middle table-striped table-hover" id="laporanTable">
+    <table class="table table-bordered align-middle" id="laporanTable">
         <thead style="background: linear-gradient(to right, #28a745, #218838) !important; color: white !important; vertical-align: middle !important;">
             <tr>
                 <th class="shrink text-center">No</th>
@@ -229,15 +238,38 @@ $this->load->library('encryption');
             <?php $no = 1;
             foreach ($rumah as $key => $data_bulanan): ?>
                 <tr>
-                    <td class="text-center" style="width: 1px;"><?= $no++ ?></td>
-                    <td style="width: 10px;" nowrap="">
-                         <div><i class="bi bi-geo-alt-fill text-danger"></i> <?php echo strtoupper($data_bulanan['alamat']) ?></div>
-                        <div><i class="bi bi-person-fill text-primary"></i> <?php echo strtoupper($data_bulanan['nama']) ?> </div>
-                        <!-- <i class="bi bi-geo-alt-fill text-danger"></i>
-                         <br>
-                        <i class="bi bi-person-fill text-primary"></i>
-                        -->
+                    <td class="text-center" style="width: 1px;">
+                          <div style="width: 32px;
+                                        height: 32px;
+                                        background-color: #198754;
+                                        color: white;
+                                        font-weight: bold;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 14px;
+                                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                            <?php echo $no++; ?>
+                        </div>
                     </td>
+                    <td style="min-width: 120px; padding: 6px 8px;">
+                        <div class="d-flex flex-column gap-1">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-geo-alt-fill text-danger me-2" style="font-size: 1.2rem;"></i>
+                                <span class="text-truncate" style="max-width: 150px; font-weight: 400; font-size: 0.95rem;">
+                                    <?php echo htmlspecialchars($data_bulanan['alamat']); ?>
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-fill text-primary me-2" style="font-size: 1.2rem;"></i>
+                                <span class="text-truncate" style="max-width: 150px; font-weight: 600; font-size: 1rem; text-transform: uppercase;">
+                                    <?php echo strtoupper(htmlspecialchars($data_bulanan['nama'])); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+
 
                     <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
                         $data_pembayaran = $this->db->query("
