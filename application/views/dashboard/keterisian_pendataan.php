@@ -144,7 +144,7 @@
                                 mk.id as id_keluarga
                             FROM master_rumah mr
                             LEFT JOIN master_keluarga mk 
-                                ON CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')
+                                ON CONCAT('| ', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')
                             LEFT JOIN master_koordinator_blok as ma ON mr.id_koordinator = ma.id;
                         ")->result_array();
 
