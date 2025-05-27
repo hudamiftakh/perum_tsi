@@ -645,16 +645,89 @@ class dashboard extends CI_Controller
 
 	public function verifikasi_pembayaran()
 	{
-		$sql = "
-            SELECT p.*, u.nama, u.rumah 
-            FROM master_pembayaran p
-            JOIN master_users u ON u.id = p.user_id
-            WHERE p.status = 'pending'
-            ORDER BY p.created_at DESC
-        ";
-        $data['pembayaran'] = $this->db->query($sql)->result();
+		// Ambil input dari query string (GET)
+		$keyword         = $this->input->get('keyword', TRUE);
+		$pembayaran_via  = $this->input->get('pembayaran_via', TRUE);
+		$id_koordinator  = $this->input->get('id_koordinator', TRUE);
+
+		// ====================
+		// Query data pembayaran
+		// ====================
+		$this->db->select('p.*, u.nama, u.rumah');
+		$this->db->from('master_pembayaran p');
+		$this->db->join('master_users u', 'u.id = p.user_id');
+		$this->db->where('p.status', 'pending');
+
+		// Filter jika ada input
+		if (!empty($keyword)) {
+			$this->db->group_start();
+			$this->db->like('u.nama', $keyword);
+			$this->db->or_like('u.rumah', $keyword);
+			$this->db->group_end();
+		}
+		if (!empty($pembayaran_via)) {
+			$this->db->where('p.pembayaran_via', $pembayaran_via);
+		}
+		if (!empty($id_koordinator)) {
+			$this->db->where('u.id_koordinator', $id_koordinator);
+		}
+
+		$this->db->order_by('p.created_at', 'DESC');
+		$data['pembayaran'] = $this->db->get()->result();
+
+
+		// ====================
+		// Hitung total dinamis berdasarkan filter
+		// ====================
+		$base_query = function ($via = null) use ($keyword, $id_koordinator) {
+			$CI = &get_instance(); // CI instance
+
+			$CI->db->select('SUM(p.jumlah_bayar) as total');
+			$CI->db->from('master_pembayaran p');
+			$CI->db->join('master_users u', 'u.id = p.user_id');
+			$CI->db->where('p.status', 'pending');
+
+			// Filter keyword (nama atau rumah)
+			if (!empty($keyword)) {
+				$CI->db->group_start();
+				$CI->db->like('u.nama', $keyword);
+				$CI->db->or_like('u.rumah', $keyword);
+				$CI->db->group_end();
+			}
+
+			// Filter id_koordinator (jika ada)
+			if (!empty($id_koordinator)) {
+				$CI->db->where('u.id_koordinator', $id_koordinator);
+			}
+
+			// Filter pembayaran_via (eksklusif dari parameter $via, bukan GET)
+			if (!empty($via)) {
+				$CI->db->where('p.pembayaran_via', $via);
+			}
+
+			// Return hasil total
+			return $CI->db->get()->row()->total ?? 0;
+		};
+
+
+		// Total seluruh hasil terfilter
+		$data['total_terfilter'] = $base_query();
+
+		// Total transfer
+		$data['total_transfer'] = $base_query('transfer');
+
+		// Total via koordinator
+		$data['total_koordinator'] = $base_query('koordinator');
+
+
+		// ====================
+		// Koordinator dropdown
+		// ====================
+		$data['koordinator'] = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
+
 		$data['halaman'] = 'dashboard/verifikasi_pembayaran';
 		$this->load->view('modul', $data);
+
 	}
 
 	public function save_pembayaran()

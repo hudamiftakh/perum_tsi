@@ -124,13 +124,36 @@
                     enctype="multipart/form-data">
                     <div class="col-md-6">
                         <?php
+                        $Auth = $this->session->userdata['username'];
                         // Ambil ID dari URL lalu decrypt
-                        $id = $this->uri->segment(2);
-                        $id_pembayaran = @$this->uri->segment(3);
-                        $id_decrypt = decrypt_url($id);
+                        // Ambil segmen URI
+                        $id             = $this->uri->segment(2);
+                        $id_pembayaran  = $this->uri->segment(3);
 
-                        // Ambil data user berdasarkan id rumah
-                        $result_rumah = $this->db->where(['id_rumah' => $id_decrypt])->get("master_users")->result_array();
+                        // Dekripsi ID jika tersedia
+                        $id_decrypt = !empty($id) ? decrypt_url($id) : null;
+
+                        // Inisialisasi data rumah
+                        $result_rumah = [];
+
+                        if (empty($id)) {
+                            // Jika ID kosong dan user terautentikasi, ambil semua data rumah
+                            if (!empty($Auth['username'])) {
+                                $result_rumah = $this->db->get("master_users")->result_array();
+                            }
+                        } else {
+                            // Jika ID ada dan berhasil didekripsi, ambil data berdasarkan id_rumah
+                            if (!empty($id_decrypt)) {
+                                $result_rumah = $this->db
+                                    ->where('id_rumah', $id_decrypt)
+                                    ->get("master_users")
+                                    ->result_array();
+                            } else {
+                                // Gagal dekripsi: Anda bisa log error atau tampilkan notifikasi
+                                log_message('error', 'Gagal mendekripsi ID rumah dari URI.');
+                            }
+                        }
+
                         // Misalnya kita ambil data user_id yang terpilih sebelumnya
                         // Contoh: dari database atau form input sebelumnya
                         $selected_user_id = ''; // default kosong

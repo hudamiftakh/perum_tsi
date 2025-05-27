@@ -392,7 +392,7 @@ $Auth = $this->session->userdata['username'];
 
             // API wilayah Indonesia
             const selectedProvinsi = "<?= $data_kk['provinsi'] ?>".toUpperCase();
-            const selectedKota = "<?= $data_kk['kota'] ?>".toUpperCase();
+            const selectedKota = "<?= str_replace('KABUPATEN', 'KAB.', $data_kk['kota']) ?>".toUpperCase();
             const selectedKecamatan = "<?= $data_kk['kecamatan'] ?>".toUpperCase();
             const selectedKelurahan = "<?= $data_kk['kelurahan'] ?>".toUpperCase();
 

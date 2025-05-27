@@ -278,6 +278,7 @@ $this->load->library('encryption');
                             WHERE MONTH(a.bulan_mulai)='$i'
                             AND YEAR(a.bulan_mulai)='$tahun_terpilih'
                             AND b.id_rumah='" . $data_bulanan['id'] . "'
+                            AND a.status='verified'
                         ")->row_array();
                     ?>
                         <td class="text-center <?= $data_pembayaran ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'; ?>">
