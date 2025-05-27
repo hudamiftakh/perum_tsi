@@ -134,18 +134,7 @@
                     <div id="houseList" style="overflow-y: auto; flex-grow: 1; margin-top: 1rem;">
                         <?php
                         $result = $this->db->query("
-                            SELECT 
-                                mr.*,
-                                CASE 
-                                    WHEN mk.nomor_rumah IS NOT NULL THEN 'sudah'
-                                    ELSE 'belum'
-                                END AS status_pengisian,
-                                ma.nama as koordinator,
-                                mk.id as id_keluarga
-                            FROM master_rumah mr
-                            LEFT JOIN master_keluarga mk 
-                                ON CONCAT('| ', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')
-                            LEFT JOIN master_koordinator_blok as ma ON mr.id_koordinator = ma.id;
+                           SELECT mr.*, CASE WHEN mk.nomor_rumah IS NOT NULL THEN 'sudah' ELSE 'belum' END AS status_pengisian, ma.nama as koordinator, mk.id as id_keluarga FROM master_rumah mr LEFT JOIN master_keluarga mk ON CONCAT('| ', mk.nomor_rumah, '|') LIKE CONCAT('%| ', mr.alamat, '|%') LEFT JOIN master_koordinator_blok as ma ON mr.id_koordinator = ma.id;
                         ")->result_array();
 
                         foreach ($result as $key => $data) :
