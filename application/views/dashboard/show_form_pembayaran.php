@@ -422,7 +422,7 @@
                                     cancelButtonText: 'Tutup'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        window.location.href = '<?php echo base_url(); ?>pembayaran/YkHE_seYhh-jJPiiMgZr5_g/' + data.id_pembayaran;
+                                        window.location.href = '<?php echo base_url(); ?>pembayaran/<?php echo decrypt_url($id); ?>/' + data.id_pembayaran;
                                     }
                                 });
                             }

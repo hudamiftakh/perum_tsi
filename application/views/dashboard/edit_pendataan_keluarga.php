@@ -1,3 +1,37 @@
+<?php
+date_default_timezone_set('Asia/Jakarta');
+$username = $this->session->userdata('username');
+$batasWaktu = strtotime('2025-05-30 23:59:00');
+$waktuSekarang = time();
+
+if (empty($username) && $waktuSekarang > $batasWaktu) {?>
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Pendataan Selesai</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                <div>
+                    <strong>Pengisian pendataan warga sudah selesai.</strong>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+<?php
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <?php

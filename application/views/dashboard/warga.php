@@ -155,10 +155,10 @@ $this->load->library('encryption');
         <!-- Tombol Export -->
         <div class="col-12 col-md-auto">
             <div class="btn-group w-100" role="group">
-                <a href="#" class="btn btn-outline-success">
+                <a href="#" onclick="alert('Fitur proses dikembangkan')" class="btn btn-outline-success">
                     <i class="fa fa-file-excel-o me-1"></i> Excel
                 </a>
-                <a href="#" class="btn btn-outline-danger">
+                <a href="#"  onclick="alert('Fitur proses dikembangkan')" class="btn btn-outline-danger">
                     <i class="fa fa-file-pdf-o me-1"></i> PDF
                 </a>
             </div>

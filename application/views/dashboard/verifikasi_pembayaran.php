@@ -255,6 +255,10 @@ $this->load->library('encryption');
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
                             </a>
+                            <a href="<?= site_url('war' . $row->id) ?>"
+                                class="btn btn-success btn-sm d-inline-flex align-items-center">
+                                <i class="bi bi-pencil me-1"></i> Revisi
+                            </a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
