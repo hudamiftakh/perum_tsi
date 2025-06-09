@@ -47,7 +47,10 @@ table.dataTable thead>tr>th {
     float: right;
 }
 </style>
-
+<?php 
+  $id = $this->uri->segment(3);
+    $agenda_id = decrypt_url($id);
+?>
 <div class="card w-100 bg-info-subtle shadow-none position-relative overflow-hidden mb-4">
     <div class="card-body px-4 py-3">
         <div class="row align-items-center">
@@ -112,7 +115,7 @@ if ($check_data <= 0): ?>
                 <tbody>
                     <?php 
                             $no = 1;
-                            $result = $this->db->get("master_partisipant")->result_array();
+                            $result = $this->db->where(array('agenda_id'=>$agenda_id))->get("master_partisipant")->result_array();
                             foreach ($result as $key => $data): ?>
                     <tr>
                         <td><?= $no++ ?></td>
@@ -138,8 +141,7 @@ if ($check_data <= 0): ?>
 <?php endif; ?>
 
 <?php
-    $id = $this->uri->segment(3);
-    $agenda_id = decrypt_url($id);
+  
     $data = $this->db->where(array('id'=>$agenda_id))->get("master_agenda")->row_array();
 ?>
 <div id="pdfArea"
@@ -233,7 +235,7 @@ if ($check_data <= 0): ?>
         <div><strong>Waktu:</strong> <?= date('H:i', strtotime($data['jam_mulai'])); ?> -
             <?= date('H:i', strtotime($data['jam_selesai'])); ?></div>
         <div><strong>Lokasi:</strong> <?= $data['lokasi']; ?></div>
-        <div><strong>Keterangan:</strong> <?= $data['keterangan']; ?></div>
+        <div><strong>Resume Rapat :</strong> <?= $data['keterangan']; ?></div>
     </div>
 
     <table>
@@ -248,7 +250,7 @@ if ($check_data <= 0): ?>
         <tbody>
             <?php 
             $no = 1;
-            $result = $this->db->order_by('created_at','ASC')->get("master_partisipant")->result_array();
+            $result = $this->db->where(array('agenda_id'=>$agenda_id))->order_by('created_at','ASC')->get("master_partisipant")->result_array();
             foreach ($result as $row): ?>
             <tr>
                 <td><?= $no++ ?></td>

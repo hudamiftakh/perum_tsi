@@ -228,6 +228,7 @@ if ($check_data <= 0): ?>
                         <!-- Tombol 1 -->
                         <?php 
                         $url_safe = encrypt_url($data['id']);
+                        // var_dump($data['id']);
                         // var_dump($url_safe);
                         ?>
                         <a class="btn btn-outline-success" target="blank" href="<?php echo base_url('show_form_participant/'.$url_safe); ?>">
