@@ -576,7 +576,7 @@ class dashboard extends CI_Controller
 		$tahun = date('Y', strtotime($tanggal));
 
 		$data_pembayaran = $this->db->query("
-			SELECT a.id as id_pembayaran FROM master_pembayaran AS a
+			SELECT a.id as id_pembayaran, a.id_rumah FROM master_pembayaran AS a
 			LEFT JOIN master_users AS b ON a.user_id = b.id
 			WHERE MONTH(a.bulan_mulai) = '$bulan'
 			AND YEAR(a.bulan_mulai) = '$tahun'
@@ -586,6 +586,7 @@ class dashboard extends CI_Controller
 		if ($data_pembayaran) {
 			echo json_encode([
 				'sudah_dibayar' => true,
+				'id_rumah' => encrypt_url($id_rumah),
 				'id_pembayaran' => encrypt_url($data_pembayaran['id_pembayaran']) // ID dari `master_pembayaran`
 			]);
 		} else {
@@ -802,7 +803,9 @@ class dashboard extends CI_Controller
 		// Siapkan data pembayaran
 		$data_pembayaran = [
 			'user_id' => $user_id,
+			'id_rumah' => $user_id,
 			'metode' => $metode,
+			'pembayaran_via' => $pembayaran_via,
 			'bulan_mulai' => $bulan_mulai ? $bulan_mulai . '-01' : null,
 			'jumlah_bayar' => $jumlah_bayar,
 			'bukti' => $nama_file_bukti, // <-- ini penting

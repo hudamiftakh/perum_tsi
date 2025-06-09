@@ -132,7 +132,6 @@
 
                         // Dekripsi ID jika tersedia
                         $id_decrypt = !empty($id) ? decrypt_url($id) : null;
-
                         // Inisialisasi data rumah
                         $result_rumah = [];
 
@@ -278,7 +277,7 @@
 
                     <div class="mb-3">
                         <label for="keterangan" class="form-label">Keterangan (opsional)</label>
-                        <textarea name="keterangan" class="form-control" rows="2"
+                        <textarea name="keterangan" class="form-control" rows="2" required=""
                             placeholder="Contoh: Pembayaran bulan Januari hingga Maret"><?= $data_update['keterangan'] ?></textarea>
                     </div>
 
@@ -393,8 +392,13 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const bulanInput = document.getElementById('bulan_mulai');
+            
             if (bulanInput) {
                 bulanInput.addEventListener('change', function() {
+                    const nomorRumah = $('#nomorRumah').val();
+                    const idRumahDariPHP = "<?php echo $id ? decrypt_url($id) : ''; ?>";
+                    const idRumah = idRumahDariPHP !== '' ? idRumahDariPHP : nomorRumah;
+                    // alert(nomorRumah);
                     const tanggal = this.value; // format: YYYY-MM
                     const [tahun, bulan] = tanggal.split('-');
 
@@ -408,7 +412,7 @@
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: 'id_rumah=<?php echo decrypt_url($id); ?>&tanggal=' + encodeURIComponent(tanggal)
+                            body: 'id_rumah=' + encodeURIComponent(idRumah) + '&tanggal=' + encodeURIComponent(tanggal)
                         })
                         .then(response => response.json())
                         .then(data => {
@@ -422,7 +426,7 @@
                                     cancelButtonText: 'Tutup'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        window.location.href = '<?php echo base_url(); ?>pembayaran/<?php echo decrypt_url($id); ?>/' + data.id_pembayaran;
+                                        window.location.href = '<?php echo base_url(); ?>pembayaran/'+ data.id_rumah+'/' + data.id_pembayaran;
                                     }
                                 });
                             }

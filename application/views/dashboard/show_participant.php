@@ -224,7 +224,7 @@ if ($check_data <= 0): ?>
     }
     </style>
     <div class="header">
-        <h2>DAFTAR HADIR RAPAT BULANAN</h2>
+        <h2>DAFTAR HADIR RAPAT</h2>
     </div>
 
     <div class="meta-info">

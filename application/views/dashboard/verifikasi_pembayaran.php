@@ -98,7 +98,7 @@ $this->load->library('encryption');
     <div class="row gy-2 gx-3 align-items-end">
 
         <!-- Input Pencarian Keyword -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-3">
             <input type="text" name="keyword" class="form-control" style="background-color: white;"
                 placeholder="Cari No NIK atau Nama..." value="<?= html_escape($this->input->get('keyword')); ?>">
         </div>
@@ -150,8 +150,8 @@ $this->load->library('encryption');
 
     </div>
 </form>
-<div class="card w-100 position-relative overflow-hidden">
-    <div class="card-body">
+<!-- <div class="card w-100 position-relative overflow-hidden">
+    <div class="card-body"> -->
         <style>
         .table thead th {
             vertical-align: middle;
@@ -232,30 +232,60 @@ $this->load->library('encryption');
                         </td>
                         <td><?= formatBulanTahun($row->bulan_mulai); ?></td>
                         <td><?= date('Y-m-d H:i', strtotime($row->created_at)) ?></td>
-                        <td><?= htmlspecialchars($row->status); ?></td>
-                        <td><?= htmlspecialchars($row->keterangan) ?></td>
                         <td>
-                            <?php if ($row->pembayaran_via == 'transfer') : ?>
-                            <a href="#"
+                            <?php
+                                $status = strtolower($row->status); // Ubah ke lowercase agar konsisten
+                                switch ($status) {
+                                    case 'pending':
+                                        echo '<span class="badge bg-warning text-dark">
+                                                <i class="bi bi-hourglass-split me-1"></i> Pending
+                                            </span>';
+                                        break;
+                                    case 'verified':
+                                        echo '<span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i> Verified
+                                            </span>';
+                                        break;
+                                    case 'rejected':
+                                        echo '<span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i> Rejected
+                                            </span>';
+                                        break;
+                                    default:
+                                        echo '<span class="badge bg-secondary">
+                                                <i class="bi bi-question-circle me-1"></i> Unknown
+                                            </span>';
+                                        break;
+                                }
+                            ?>
+                        </td>
+                        <td>
+                           <?php if ($row->pembayaran_via == 'transfer') : ?>
+                                <a href="#"
                                 onclick="openPopup('<?php echo base_url('uploads/bukti/' . $row->bukti) ?>'); return false;"
                                 title="Lihat Bukti Pembayaran">
-                                <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Bukti Pembayaran"
-                                    style="width: 20px; height: 20px;">
-                                Bukti Pembayaran
-                            </a>
+                                    <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Bukti Pembayaran"
+                                        style="width: 20px; height: 20px;">
+                                    Transfer Bank (Lihat Bukti)
+                                </a>
+                            <?php else : ?>
+                                <span class="badge bg-info text-dark">
+                                    <i class="bi bi-person-lines-fill me-1"></i> Bayar ke Koordinator
+                                </span>
                             <?php endif; ?>
                         </td>
+                        <td><?= htmlspecialchars($row->keterangan) ?></td>
                         <td><?= number_format($row->jumlah_bayar, 0, ',', '.') ?></td>
                         <td nowrap>
-                            <a href="<?= site_url('pembayaran/aksi_verifikasi/' . $row->id) ?>"
+                            <a href="<?= site_url('act_verifikasi_pembayaran/aksi_verifikasi/' . $row->id) ?>" onclick="return confirm('Apakah anda yakin ingin verifikasi data ini ?')"
                                 class="btn btn-success btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-check-circle me-1"></i> Verifikasi
                             </a>
-                            <a href="<?= site_url('pembayaran/aksi_tolak/' . $row->id) ?>"
+                            <a href="<?= site_url('act_verifikasi_pembayaran/aksi_tolak/' . $row->id) ?>"
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
                             </a>
-                            <a href="<?= site_url('war' . $row->id) ?>"
+                            <a href="<?= site_url('pembayaran/'.encrypt_url($row->id_rumah)."/". encrypt_url($row->id)); ?>"
                                 class="btn btn-success btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-pencil me-1"></i> Revisi
                             </a>
@@ -264,7 +294,7 @@ $this->load->library('encryption');
                     <?php endforeach; ?>
                     <?php else: ?>
                     <tr>
-                        <td colspan="8" style="text-align:center;">Tidak ada pembayaran menunggu verifikasi</td>
+                        <td colspan="9" style="text-align:center;">Tidak ada pembayaran menunggu verifikasi</td>
                     </tr>
                     <?php endif; ?>
                 </tbody>
@@ -278,8 +308,8 @@ $this->load->library('encryption');
             </table>
             <button id="submitBtn" type="submit" class="btn btn-success">Verifikasi Semua</button>
         </div>
-    </div>
-</div>
+    <!-- </div>
+</div> -->
 
 <script>
 // Ketika checkbox #checkAll diklik
