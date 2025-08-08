@@ -126,13 +126,24 @@ $this->load->library('encryption');
                 <?php endforeach; ?>
             </select>
         </div>
+
+        <!-- Filter Status Verifikasi -->
+        <div class="col-6 col-md-2">
+            <select name="status" class="form-select" style="background-color: white;">
+                <option value="">Status Verifikasi</option>
+                <option value="pending" <?= @$_REQUEST['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                <option value="verified" <?= @$_REQUEST['status'] == 'verified' ? 'selected' : ''; ?>>Verified</option>
+                <option value="rejected" <?= @$_REQUEST['status'] == 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+            </select>
+        </div>
+
         <!-- Tombol Cari & Reset -->
         <div class="col-12 col-md-auto">
             <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-success flex-grow-1 flex-md-grow-0" type="submit">
                     <i class="fa fa-search me-1"></i> Cari
                 </button>
-                <?php if ($this->input->get('keyword') || $this->input->get('pembayaran_via') || $this->input->get('id_koordinator')): ?>
+                <?php if ($this->input->get('keyword') || $this->input->get('pembayaran_via') || $this->input->get('id_koordinator') || $this->input->get('status')): ?>
                 <a href="<?= base_url('warga/verifikasi-pembayaran'); ?>"
                     class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
                     <i class="fa fa-times me-1"></i> Reset
@@ -277,16 +288,16 @@ $this->load->library('encryption');
                         <td><?= htmlspecialchars($row->keterangan) ?></td>
                         <td><?= number_format($row->jumlah_bayar, 0, ',', '.') ?></td>
                         <td nowrap>
-                            <a href="<?= site_url('act_verifikasi_pembayaran/aksi_verifikasi/' . $row->id) ?>" onclick="return confirm('Apakah anda yakin ingin verifikasi data ini ?')"
+                            <button  onclick="handleVerifikasi('<?php echo $row->id; ?>','verified')" 
                                 class="btn btn-success btn-sm d-inline-flex align-items-center">
-                                <i class="bi bi-check-circle me-1"></i> Verifikasi
-                            </a>
-                            <a href="<?= site_url('act_verifikasi_pembayaran/aksi_tolak/' . $row->id) ?>"
+                                <i class="bi bi-check-circle me-1"></i> Setujui
+                            </button>
+                            <button  onclick="handleVerifikasi('<?php echo $row->id; ?>','rejected')" 
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
-                            </a>
-                            <a href="<?= site_url('pembayaran/'.encrypt_url($row->id_rumah)."/". encrypt_url($row->id)); ?>"
-                                class="btn btn-success btn-sm d-inline-flex align-items-center">
+                            </button>
+                            <a href="<?php echo  base_url('pembayaran/'.encrypt_url($row->id)."/".encrypt_url($row->id)); ?>"
+                                class="btn btn-info btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-pencil me-1"></i> Revisi
                             </a>
                         </td>
@@ -340,5 +351,53 @@ checkboxes.forEach(cb => {
 
 function openPopup(url) {
     window.open(url, 'popupWindow', 'width=800,height=600,scrollbars=yes');
+}
+</script>
+
+<script>
+function handleVerifikasi(id,aksi) {
+    let teksKonfirmasi = aksi === 'verified' ? 'Yakin verifikasi data ini?' : 'Yakin tolak data ini?';
+    let teksSukses = aksi === 'verified' ? 'Data berhasil diverifikasi.' : 'Data berhasil ditolak.';
+    let iconSukses = aksi === 'verified' ? 'success' : 'info';
+
+    Swal.fire({
+        title: teksKonfirmasi,
+        text: "Tindakan ini tidak bisa dibatalkan.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: aksi === 'verified' ? '#198754' : '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, lanjutkan!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // AJAX kirim ke server
+            $.ajax({
+                url: '<?= base_url("dashboard/act_verifikasi_pembayaran") ?>', // ganti dengan URL endpoint kamu
+                method: 'POST',
+                data: {
+                    id: id,
+                    aksi: aksi
+                },
+                success: function(response) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Data telah diverifikasi.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload(); // reload halaman setelah berhasil
+                    });
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire(
+                        'Gagal!',
+                        'Terjadi kesalahan saat memverifikasi.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
 }
 </script>

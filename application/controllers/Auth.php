@@ -44,8 +44,8 @@ class auth extends CI_Controller
                     $checkUser = $this->db->get_where('master_koordinator_blok', array('username' => $_POST['username'], 'password' => md5($_REQUEST['password'])));
                     if ($checkUser->num_rows() >= 1) {
                         $data = $checkUser->row_array();
-                        // var_dump($data);
                         $this->db->update('master_koordinator_blok', array('login_at' => date('Y-m-d H:i:s')), array('username' => $_POST['username']));
+                        $data['role'] = 'koordinator';
                         $this->session->set_userdata('username', $data);
                         redirect('./dashboard');
                     } else {

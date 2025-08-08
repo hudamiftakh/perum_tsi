@@ -128,7 +128,12 @@ $this->load->library('encryption');
         <!-- Filter Koordinator -->
         <div class="col-6 col-md-2">
             <select name="id_koordinator" class="form-select rounded" style="background-color: white; color: black;">
-                <option value="">Koordinator Blok</option>
+                <?php if ($this->session->userdata('role') == 'admin'): ?>
+                    <option value="">Koordinator Blok</option>
+                <?php endif; ?>
+                <?php if ($this->session->userdata('role') == 'koordinator'): ?>
+                    <!-- Tidak tampilkan opsi kosong, langsung foreach -->
+                <?php endif; ?>
                 <?php
                 $selected_koordinator = $_REQUEST['id_koordinator'] ?? '';
                 foreach ($koordinator as $value): ?>
@@ -158,9 +163,13 @@ $this->load->library('encryption');
                 <a href="<?= base_url('pembayaran'); ?>" class="btn btn-primary">
                     <i class="fa fa-plus me-1"></i> Tambah
                 </a>
+                
+                <a href="<?= base_url('pembayaran/kirim_ipl'); ?>" class="btn btn-success">
+                    <i class="fa fa-bell me-1"></i> Kirim Peringatan
+                </a>
 
                 <!-- Tombol PDF Dropdown -->
-                <div class="dropdown">
+                <!-- <div class="dropdown">
                     <button class="btn btn-outline-danger dropdown-toggle" type="button" id="pdfDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-file-pdf-o me-1"></i> PDF
                     </button>
@@ -188,7 +197,7 @@ $this->load->library('encryption');
                             </li>
                         <?php endforeach; ?>
                     </ul>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -269,8 +278,6 @@ $this->load->library('encryption');
                             </div>
                         </div>
                     </td>
-
-
                     <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
                         $data_pembayaran = $this->db->query("
                             SELECT * FROM master_pembayaran as a 
@@ -278,14 +285,37 @@ $this->load->library('encryption');
                             WHERE MONTH(a.bulan_mulai)='$i'
                             AND YEAR(a.bulan_mulai)='$tahun_terpilih'
                             AND b.id_rumah='" . $data_bulanan['id'] . "'
-                            AND a.status='verified'
+                            ORDER BY a.status DESC
                         ")->row_array();
                     ?>
-                        <td class="text-center <?= $data_pembayaran ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'; ?>">
+                        <td class="text-center 
+                            <?php 
+                                if ($data_pembayaran) {
+                                    if ($data_pembayaran['status'] == 'verified') {
+                                        echo 'bg-success-subtle text-success';
+                                    } elseif ($data_pembayaran['status'] == 'pending') {
+                                        echo 'bg-warning-subtle text-warning';
+                                    } else {
+                                        echo 'bg-danger-subtle text-danger';
+                                    }
+                                } else {
+                                    echo 'bg-danger-subtle text-danger';
+                                }
+                            ?>">
                             <?php if ($data_pembayaran): ?>
-                                <div class="d-flex flex-column align-items-center">
-                                    <strong>Rp125.000</strong>
-                                </div>
+                                <?php if ($data_pembayaran['status'] == 'verified'): ?>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <strong>Rp125.000</strong>
+                                    </div>
+                                <?php elseif ($data_pembayaran['status'] == 'pending'): ?>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span>⏳ Pending</span>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span>❌ Belum</span>
+                                    </div>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <div class="d-flex flex-column align-items-center">
                                     <span>❌ Belum</span>

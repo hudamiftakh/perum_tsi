@@ -125,8 +125,8 @@
                     <div class="col-md-6">
                         <?php
                         $Auth = $this->session->userdata['username'];
+                        // var_dump($Auth);
                         // Ambil ID dari URL lalu decrypt
-                        // Ambil segmen URI
                         $id             = $this->uri->segment(2);
                         $id_pembayaran  = $this->uri->segment(3);
 
@@ -135,29 +135,38 @@
                         // Inisialisasi data rumah
                         $result_rumah = [];
 
-                        if (empty($id)) {
-                            // Jika ID kosong dan user terautentikasi, ambil semua data rumah
-                            if (!empty($Auth['username'])) {
-                                $result_rumah = $this->db->get("master_users")->result_array();
-                            }
+                        // Cek level user
+                        $level = $Auth['role'];
+
+                        if ($level == 'koordinator') {
+                            // Jika koordinator, ambil rumah yang dikoordinatori
+                            $id_koordinator = $Auth['id'];
+                            $result_rumah = $this->db
+                                ->where('id_koordinator', $id_koordinator)
+                                ->get('master_users')
+                                ->result_array();
                         } else {
-                            // Jika ID ada dan berhasil didekripsi, ambil data berdasarkan id_rumah
-                            if (!empty($id_decrypt)) {
-                                $result_rumah = $this->db
-                                    ->where('id_rumah', $id_decrypt)
-                                    ->get("master_users")
-                                    ->result_array();
+                            if (empty($id)) {
+                                // Jika ID kosong dan user terautentikasi, ambil semua data rumah
+                                if (!empty($Auth['username'])) {
+                                    $result_rumah = $this->db->get("master_users")->result_array();
+                                }
                             } else {
-                                // Gagal dekripsi: Anda bisa log error atau tampilkan notifikasi
-                                log_message('error', 'Gagal mendekripsi ID rumah dari URI.');
+                                // Jika ID ada dan berhasil didekripsi, ambil data berdasarkan id_rumah
+                                if (!empty($id_decrypt)) {
+                                    $result_rumah = $this->db
+                                        ->where('id_rumah', $id_decrypt)
+                                        ->get("master_users")
+                                        ->result_array();
+                                } else {
+                                    // Gagal dekripsi: Anda bisa log error atau tampilkan notifikasi
+                                    log_message('error', 'Gagal mendekripsi ID rumah dari URI.');
+                                }
                             }
                         }
 
                         // Misalnya kita ambil data user_id yang terpilih sebelumnya
-                        // Contoh: dari database atau form input sebelumnya
-                        $selected_user_id = ''; // default kosong
-
-                        // Misal ambil dari POST atau database
+                        $selected_user_id = '';
                         if (isset($id_decrypt)) {
                             $selected_user_id = $id_decrypt;
                         }
@@ -189,8 +198,8 @@
                             <option value="3_bulan">Rapel 3 Bulan</option>
                             <option value="4_bulan">Rapel 4 Bulan</option>
                             <option value="5_bulan">Rapel 5 Bulan</option>
-                            <option value="6_bulan">Rapel 6 Bulan</option>
-                            <option value="7_bulan">Rapel 7 Bulan</option>
+                            <option value="6_bulan">Rapel 6 Bulan</option> -->
+                            <!-- <option value="7_bulan">Rapel 7 Bulan</option>
                             <option value="8_bulan">Rapel 8 Bulan</option>
                             <option value="9_bulan">Rapel 9 Bulan</option>
                             <option value="10_bulan">Rapel 10 Bulan</option>
@@ -202,13 +211,13 @@
                         <div class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan</label>
                             <input type="text" placeholder="Bulan Pembayaran" tabindex="1" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
-                            <p id="statusText"></p>
+                            <!-- <p id="statusText"></p> -->
                         </div>
                     <?php else : ?>
                         <div id="opsiBulan" class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan</label>
                             <input type="month" placeholder="Bulan Pembayaran" name="bulan_mulai" id="bulan_mulai" class="form-control">
-                            <p id="statusText"></p>
+                            <!-- <p id="statusText"></p> -->
                         </div>
                     <?php endif; ?>
                     <div class="mb-3">
@@ -280,8 +289,11 @@
                         <textarea name="keterangan" class="form-control" rows="2" required=""
                             placeholder="Contoh: Pembayaran bulan Januari hingga Maret"><?= $data_update['keterangan'] ?></textarea>
                     </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Bayar Sekarang</button>
+                    <?php if(!empty($id)) :  ?>
+                    <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
+                    <?php else : ?>
+                        <button type="submit" class="btn btn-primary w-100">Bayar Sekarang</button>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>
@@ -306,33 +318,33 @@
             }
         });
 
-        // function tampilkanOpsi() {
-        //     const metode = document.getElementById("metode").value;
-        //     const opsiBulan = document.getElementById("opsiBulan");
-        //     const opsiCicilan = document.getElementById("opsiCicilan");
-        //     const infoPeriode = document.getElementById("infoPeriode");
+        function tampilkanOpsi() {
+            const metode = document.getElementById("metode").value;
+            const opsiBulan = document.getElementById("opsiBulan");
+            const opsiCicilan = document.getElementById("opsiCicilan");
+            const infoPeriode = document.getElementById("infoPeriode");
 
-        //     opsiBulan.classList.remove("d-none");
-        //     infoPeriode.classList.remove("d-none");
-        //     opsiCicilan.classList.add("d-none");
+            opsiBulan.classList.remove("d-none");
+            infoPeriode.classList.remove("d-none");
+            opsiCicilan.classList.add("d-none");
 
-        //     let infoText = "";
+            let infoText = "";
 
-        //     if (metode === "cicilan") {
-        //         opsiCicilan.classList.remove("d-none");
-        //         infoText = "Anda memilih cicilan. Silakan tentukan mulai bulan dan total nominal yang ingin dicicil.";
-        //     } else if (metode.includes("_bulan")) {
-        //         let bulanCount = metode.split("_")[0];
-        //         infoText = `Akan membayar ${bulanCount} bulan iuran berturut-turut dari bulan yang dipilih.`;
-        //     } else if (metode === "7_tahun") {
-        //         infoText = "Akan membayar 12 bulan iuran sekaligus mulai dari bulan yang dipilih.";
-        //     } else {
-        //         opsiBulan.classList.add("d-none");
-        //         infoPeriode.classList.add("d-none");
-        //     }
+            if (metode === "cicilan") {
+                opsiCicilan.classList.remove("d-none");
+                infoText = "Anda memilih cicilan. Silakan tentukan mulai bulan dan total nominal yang ingin dicicil.";
+            } else if (metode.includes("_bulan")) {
+                let bulanCount = metode.split("_")[0];
+                infoText = `Akan membayar ${bulanCount} bulan iuran berturut-turut dari bulan yang dipilih.`;
+            } else if (metode === "7_tahun") {
+                infoText = "Akan membayar 12 bulan iuran sekaligus mulai dari bulan yang dipilih.";
+            } else {
+                opsiBulan.classList.add("d-none");
+                infoPeriode.classList.add("d-none");
+            }
 
-        //     infoPeriode.innerHTML = infoText;
-        // }
+            infoPeriode.innerHTML = infoText;
+        }
 
         // function cekMetodeBayar() {
         //     const metode = document.getElementById("pembayaran_via").value;

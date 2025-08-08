@@ -1,16 +1,16 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class dashboard extends CI_Controller
+class Dashboard extends CI_Controller
 {
 
 	public function __construct()
 	{
 		error_reporting(0);
 		parent::__construct();
+		$this->load->database();
 		$this->load->library('session');
 		$this->load->library('pagination');
-		$this->load->library('session');
 		$this->load->model('M_Datatables');
 	}
 
@@ -60,7 +60,7 @@ class dashboard extends CI_Controller
 		$this->checkSession();
 		$id = $this->input->post('id');
 		if (isset($id)) {
-       		$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
+			$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
 			if (is_numeric($id)) {
 				$id = (int) $id;
 				$this->db->where('id', $id);
@@ -204,27 +204,27 @@ class dashboard extends CI_Controller
 		// Main query with search condition
 		// $this->db->select('*')->from('master_keluarga')->order_by('created_at', 'DESC');
 		$subquery = $this->db->select('keluarga_id')
-				->from('master_anggota_keluarga')
-				->group_start()
-					->like('nik', $keyword)
-					->or_like('nama', $keyword)
-				->group_end()
-				->get_compiled_select();
+			->from('master_anggota_keluarga')
+			->group_start()
+			->like('nik', $keyword)
+			->or_like('nama', $keyword)
+			->group_end()
+			->get_compiled_select();
 
-			$this->db->select('mk.*, mr.nama as nama_pemilik')
-				->from('master_keluarga mk')
-				->join('master_rumah mr', "CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')", 'left')
-				->order_by('mk.created_at', 'DESC');
+		$this->db->select('mk.*, mr.nama as nama_pemilik')
+			->from('master_keluarga mk')
+			->join('master_rumah mr', "CONCAT('|', mk.nomor_rumah, '|') LIKE CONCAT('%|', mr.alamat, '|%')", 'left')
+			->order_by('mk.created_at', 'DESC');
 
-			if (!empty($keyword)) {
-				$this->db->group_start()
-					->like('mk.no_kk', $keyword)
-					->or_like('mk.alamat', $keyword)
-					->or_like('mr.alamat', $keyword)
-					->or_like('mr.nama', $keyword)
-					->or_where("mk.id IN ($subquery)", NULL, FALSE)
+		if (!empty($keyword)) {
+			$this->db->group_start()
+				->like('mk.no_kk', $keyword)
+				->or_like('mk.alamat', $keyword)
+				->or_like('mr.alamat', $keyword)
+				->or_like('mr.nama', $keyword)
+				->or_where("mk.id IN ($subquery)", NULL, FALSE)
 				->group_end();
-			}
+		}
 
 		// Clone the query for counting
 		$db_clone = clone $this->db;
@@ -276,11 +276,11 @@ class dashboard extends CI_Controller
 
 		// Prepare data for view
 		$data = [
-			'start'=> $start,
-			'total_rows'=> $total_rows,
-			'per_page'=> $config['per_page'],
-			'current_page'=> floor($start / $config['per_page']) + 1,
-			'total_pages'=> ceil($total_rows / $config['per_page']),
+			'start' => $start,
+			'total_rows' => $total_rows,
+			'per_page' => $config['per_page'],
+			'current_page' => floor($start / $config['per_page']) + 1,
+			'total_pages' => ceil($total_rows / $config['per_page']),
 			'keluarga' => $keluarga_result,
 			'pagination' => $this->pagination->create_links(),
 			'keyword' => $keyword,
@@ -293,11 +293,11 @@ class dashboard extends CI_Controller
 	public function save_pendataan_keluarga()
 	{
 		$this->load->library('upload');
-        $config['upload_path'] = './uploads/';
-        $config['allowed_types'] = 'pdf|jpg|jpeg|png';
-        $config['max_size'] = 100120;
+		$config['upload_path'] = './uploads/';
+		$config['allowed_types'] = 'pdf|jpg|jpeg|png';
+		$config['max_size'] = 100120;
 
-        $this->upload->initialize($config);
+		$this->upload->initialize($config);
 
 		if ($_FILES['file_kk']['name']) {
 			// Jika ada file yang diupload
@@ -334,7 +334,7 @@ class dashboard extends CI_Controller
 			$file_kk = null;
 		}
 
-        $file_data = $this->upload->data();
+		$file_data = $this->upload->data();
 		$ext = $file_data['file_ext']; // ekstensi file, contoh ".jpg"
 		$no_kk = $this->input->post('no_kk');
 
@@ -344,57 +344,57 @@ class dashboard extends CI_Controller
 
 		rename($file_data['full_path'], $new_file_path);
 
-        // Resize Image
-        $config_resize['image_library'] = 'gd2';
-        $config_resize['source_image'] = $file_path;
-        $config_resize['maintain_ratio'] = TRUE;
-        $config_resize['width'] = 800;
-        $config_resize['height'] = 800;
-        $this->load->library('image_lib', $config_resize);
-        $this->image_lib->resize();
+		// Resize Image
+		$config_resize['image_library'] = 'gd2';
+		$config_resize['source_image'] = $file_path;
+		$config_resize['maintain_ratio'] = TRUE;
+		$config_resize['width'] = 800;
+		$config_resize['height'] = 800;
+		$this->load->library('image_lib', $config_resize);
+		$this->image_lib->resize();
 
-        $file_kk = $file_data['file_name'];
+		$file_kk = $file_data['file_name'];
 
 		$nomor_rumah = implode('| ', $this->input->post('nomor_rumah'));
 
-        $keluarga_data = [
-            'nomor_rumah' => $nomor_rumah,
-            'no_kk' => $this->input->post('no_kk'),
-            'status_rumah' => $this->input->post('status_rumah'),
-            'alamat' => $this->input->post('alamat'),
-            'provinsi' => $this->input->post('provinsi'),
-            'kota' => $this->input->post('kota'),
-            'kecamatan' => $this->input->post('kecamatan'),
-            'kelurahan' => $this->input->post('kelurahan'),
-            'file_kk' => $new_file_name,
-            'no_hp' => $this->input->post('no_hp')	
-        ];
+		$keluarga_data = [
+			'nomor_rumah' => $nomor_rumah,
+			'no_kk' => $this->input->post('no_kk'),
+			'status_rumah' => $this->input->post('status_rumah'),
+			'alamat' => $this->input->post('alamat'),
+			'provinsi' => $this->input->post('provinsi'),
+			'kota' => $this->input->post('kota'),
+			'kecamatan' => $this->input->post('kecamatan'),
+			'kelurahan' => $this->input->post('kelurahan'),
+			'file_kk' => $new_file_name,
+			'no_hp' => $this->input->post('no_hp')
+		];
 
-        $this->db->insert('master_keluarga', $keluarga_data);
-        $keluarga_id = $this->db->insert_id();
+		$this->db->insert('master_keluarga', $keluarga_data);
+		$keluarga_id = $this->db->insert_id();
 
-        $anggota = $this->input->post('nama');
+		$anggota = $this->input->post('nama');
 
-        if ($anggota) {
-            foreach ($anggota as $key => $nama) {
-                $this->db->insert('master_anggota_keluarga', [
-                    'keluarga_id' => $keluarga_id,
-                    'nama' => $nama,
-                    'nik' => $this->input->post('nik')[$key],
-                    'agama' => $this->input->post('agama')[$key],
-                    'status_perkawinan' => $this->input->post('status_perkawinan')[$key],
-                    'hubungan' => $this->input->post('hubungan')[$key],
-                    'pekerjaan' => $this->input->post('pekerjaan')[$key],
-                    'jenis_kelamin' => $this->input->post('jenis_kelamin')[$key],
-                    'golongan_darah' => $this->input->post('golongan_darah')[$key],
-                    'tgl_lahir' => $this->input->post('tgl_lahir')[$key],
-                    'tempat_bekerja' => $this->input->post('tempat_bekerja')[$key]
-                ]);
-            }
-        }
+		if ($anggota) {
+			foreach ($anggota as $key => $nama) {
+				$this->db->insert('master_anggota_keluarga', [
+					'keluarga_id' => $keluarga_id,
+					'nama' => $nama,
+					'nik' => $this->input->post('nik')[$key],
+					'agama' => $this->input->post('agama')[$key],
+					'status_perkawinan' => $this->input->post('status_perkawinan')[$key],
+					'hubungan' => $this->input->post('hubungan')[$key],
+					'pekerjaan' => $this->input->post('pekerjaan')[$key],
+					'jenis_kelamin' => $this->input->post('jenis_kelamin')[$key],
+					'golongan_darah' => $this->input->post('golongan_darah')[$key],
+					'tgl_lahir' => $this->input->post('tgl_lahir')[$key],
+					'tempat_bekerja' => $this->input->post('tempat_bekerja')[$key]
+				]);
+			}
+		}
 
-        echo json_encode(['status' => 'success', 'message' => 'Data berhasil disimpan.']);
-    }
+		echo json_encode(['status' => 'success', 'message' => 'Data berhasil disimpan.']);
+	}
 
 	public function update_pendataan_keluarga()
 	{
@@ -424,7 +424,7 @@ class dashboard extends CI_Controller
 
 			$file_data = $this->upload->data();
 			$ext = $file_data['file_ext'];
-			$new_file_name = $no_kk."-".date('ymd'). $ext;
+			$new_file_name = $no_kk . "-" . date('ymd') . $ext;
 			$new_file_path = $file_data['file_path'] . $new_file_name;
 			rename($file_data['full_path'], $new_file_path);
 
@@ -531,7 +531,7 @@ class dashboard extends CI_Controller
 		$this->checkSession();
 		$id = $this->input->post('id');
 		if (isset($id)) {
-       		$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
+			$id = $this->input->post('id', true);  // ambil id dari form dengan xss clean
 			if (is_numeric($id)) {
 				$id = (int) $id;
 				$this->db->where('id', $id);
@@ -601,8 +601,12 @@ class dashboard extends CI_Controller
 		}
 		$keyword      = $this->input->get('keyword');
 		$tahun          = $this->input->get('tahun');
-		$id_koordinator = $this->input->get('id_koordinator');
-		// Ambil semua rumah
+		// Ambil id_koordinator dari GET atau dari session jika level user adalah koordinator
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$id_koordinator = $this->session->userdata('username')['id'];
+		}else{
+			$id_koordinator = $this->input->get('id_koordinator', TRUE);
+		}
 		$filter = [];
 		if (!empty($id_koordinator)) {
 			$filter[] = "vb.id_koordinator = '" . $this->db->escape_str($id_koordinator) . "'";
@@ -624,14 +628,50 @@ class dashboard extends CI_Controller
 										LEFT JOIN master_rumah as b ON a.id = id_rumah
 										LEFT JOIN master_koordinator_blok as c ON b.id_koordinator = c.id
 										ORDER BY b.alamat ASC
-									) as vb ".$whereClause)->result_array();
-		$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
+									) as vb " . $whereClause)->result_array();
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			// Jika login sebagai koordinator, hanya tampilkan koordinator yang sedang login
+			$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok WHERE id = '" . $this->db->escape_str($this->session->userdata('username')['id']) . "'")->result_array();
+		} else {
+			// Jika admin, tampilkan semua koordinator
+			$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
+		}
 
-		$jumlah_transfer_bulan_ini_transfer = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('MONTH(bulan_mulai)'=>date('m'), 'YEAR(bulan_mulai)'=>date('Y'), 'status'=>'verified', 'pembayaran_via'=>'transfer'))->row_array();
-		$jumlah_transfer_bulan_ini_koordinator = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('MONTH(bulan_mulai)'=>date('m'), 'YEAR(bulan_mulai)'=>date('Y'), 'status'=>'verified', 'pembayaran_via'=>'koordinator'))->row_array();
-		
-		$jumlah_transfer_sd_transfer = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('status'=>'verified', 'pembayaran_via'=>'transfer'))->row_array();
-		$jumlah_transfer_sd_koordinator = $this->db->select("SUM(jumlah_bayar) as jumlah_bayar")->get_where('master_pembayaran',array('status'=>'verified', 'pembayaran_via'=>'koordinator'))->row_array();
+		// Filter pembayaran sesuai login koordinator jika role koordinator
+		$where_koor = [];
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$id_koordinator_login = $this->session->userdata('username')['id'];
+			$where_koor['id_koordinator'] = $id_koordinator_login;
+		} elseif (!empty($id_koordinator)) {
+			$where_koor['id_koordinator'] = $id_koordinator;
+		}
+
+		// Bulan & tahun sekarang
+		$bulan_ini = date('m');
+		$tahun_ini = date('Y');
+
+		// Helper untuk ambil total pembayaran dengan filter koordinator
+		$get_total = function($via, $bulan = null, $tahun = null) use ($where_koor) {
+			$this_ci = $this;
+			$this_ci->db->select("SUM(mp.jumlah_bayar) as jumlah_bayar");
+			$this_ci->db->from('master_pembayaran mp');
+			$this_ci->db->join('master_users u', 'u.id = mp.user_id', 'left');
+			$this_ci->db->join('master_rumah r', 'r.id = u.id_rumah', 'left');
+			$this_ci->db->where('mp.status', 'verified');
+			$this_ci->db->where('mp.pembayaran_via', $via);
+			if ($bulan) $this_ci->db->where('MONTH(mp.bulan_mulai)', $bulan);
+			if ($tahun) $this_ci->db->where('YEAR(mp.bulan_mulai)', $tahun);
+			if (!empty($where_koor['id_koordinator'])) {
+				$this_ci->db->where('r.id_koordinator', $where_koor['id_koordinator']);
+			}
+			return $this_ci->db->get()->row_array();
+		};
+
+		$jumlah_transfer_bulan_ini_transfer = $get_total('transfer', $bulan_ini, $tahun_ini);
+		$jumlah_transfer_bulan_ini_koordinator = $get_total('koordinator', $bulan_ini, $tahun_ini);
+
+		$jumlah_transfer_sd_transfer = $get_total('transfer');
+		$jumlah_transfer_sd_koordinator = $get_total('koordinator');
 
 		$data['tahun'] = $tahun;
 		$data['rumah'] = $rumah;
@@ -647,9 +687,25 @@ class dashboard extends CI_Controller
 	public function verifikasi_pembayaran()
 	{
 		// Ambil input dari query string (GET)
+		$status          = $this->input->get('status', TRUE) ?: 'pending'; // default 'pending'
 		$keyword         = $this->input->get('keyword', TRUE);
 		$pembayaran_via  = $this->input->get('pembayaran_via', TRUE);
 		$id_koordinator  = $this->input->get('id_koordinator', TRUE);
+
+		// Cek jika ada input user dan bulan, tampilkan error jika sudah ada pembayaran
+		$user_id = $this->input->get('user_id', TRUE);
+		$bulan_mulai = $this->input->get('bulan_mulai', TRUE);
+
+		if (!empty($user_id) && !empty($bulan_mulai)) {
+			$cek = $this->db->get_where('master_pembayaran', [
+				'user_id' => $user_id,
+				'MONTH(bulan_mulai)' => date('m', strtotime($bulan_mulai)),
+				'YEAR(bulan_mulai)' => date('Y', strtotime($bulan_mulai))
+		 ])->row();
+			if ($cek) {
+				$this->session->set_flashdata('error', 'Bulan ini sudah terbayarkan untuk user tersebut.');
+			}
+		}
 
 		// ====================
 		// Query data pembayaran
@@ -657,7 +713,7 @@ class dashboard extends CI_Controller
 		$this->db->select('p.*, u.nama, u.rumah');
 		$this->db->from('master_pembayaran p');
 		$this->db->join('master_users u', 'u.id = p.user_id');
-		$this->db->where('p.status', 'pending');
+		$this->db->where('p.status', $status);
 
 		// Filter jika ada input
 		if (!empty($keyword)) {
@@ -676,17 +732,16 @@ class dashboard extends CI_Controller
 		$this->db->order_by('p.created_at', 'DESC');
 		$data['pembayaran'] = $this->db->get()->result();
 
-
 		// ====================
 		// Hitung total dinamis berdasarkan filter
 		// ====================
-		$base_query = function ($via = null) use ($keyword, $id_koordinator) {
+		$base_query = function ($via = null, $status_filter = null) use ($keyword, $id_koordinator) {
 			$CI = &get_instance(); // CI instance
 
 			$CI->db->select('SUM(p.jumlah_bayar) as total');
 			$CI->db->from('master_pembayaran p');
 			$CI->db->join('master_users u', 'u.id = p.user_id');
-			$CI->db->where('p.status', 'pending');
+			$CI->db->where('p.status', $status_filter ?? 'pending');
 
 			// Filter keyword (nama atau rumah)
 			if (!empty($keyword)) {
@@ -710,25 +765,25 @@ class dashboard extends CI_Controller
 			return $CI->db->get()->row()->total ?? 0;
 		};
 
-
 		// Total seluruh hasil terfilter
-		$data['total_terfilter'] = $base_query();
+		$data['total_terfilter'] = $base_query(null, $status);
 
 		// Total transfer
-		$data['total_transfer'] = $base_query('transfer');
+		$data['total_transfer'] = $base_query('transfer', $status);
 
 		// Total via koordinator
-		$data['total_koordinator'] = $base_query('koordinator');
-
+		$data['total_koordinator'] = $base_query('koordinator', $status);
 
 		// ====================
 		// Koordinator dropdown
 		// ====================
 		$data['koordinator'] = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
 
+		// Untuk filter status di view
+		$data['status_filter'] = $status;
+
 		$data['halaman'] = 'dashboard/verifikasi_pembayaran';
 		$this->load->view('modul', $data);
-
 	}
 
 	public function save_pembayaran()
@@ -757,7 +812,7 @@ class dashboard extends CI_Controller
 
 		// Inisialisasi variabel untuk bukti
 		$bukti_lama = $this->input->post('file_kk_existing');
-    	$nama_file_bukti = $bukti_lama;
+		$nama_file_bukti = $bukti_lama;
 
 		// Jika via transfer, lakukan upload
 		if ($pembayaran_via === 'transfer') {
@@ -800,13 +855,25 @@ class dashboard extends CI_Controller
 			}
 		}
 
-		// Siapkan data pembayaran
+		// Cek apakah pembayaran untuk id_rumah dan bulan_mulai sudah ada
+		$bulan_mulai_db = $bulan_mulai ? $bulan_mulai . '-01' : null;
+		$cek_pembayaran = $this->db->get_where('master_pembayaran', [
+			'id_rumah' => $user_id,
+			'bulan_mulai' => $bulan_mulai_db
+	 ])->row_array();
+	 
+		if ($cek_pembayaran && empty($id)) {
+			$this->session->set_flashdata('error', 'Pembayaran untuk rumah dan bulan tersebut sudah ada.');
+			redirect('pembayaran');
+			return;
+		}
+
 		$data_pembayaran = [
 			'user_id' => $user_id,
 			'id_rumah' => $user_id,
 			'metode' => $metode,
 			'pembayaran_via' => $pembayaran_via,
-			'bulan_mulai' => $bulan_mulai ? $bulan_mulai . '-01' : null,
+			'bulan_mulai' => $bulan_mulai_db,
 			'jumlah_bayar' => $jumlah_bayar,
 			'bukti' => $nama_file_bukti, // <-- ini penting
 			'keterangan' => $keterangan,
@@ -815,69 +882,263 @@ class dashboard extends CI_Controller
 		];
 
 		// Insert ke tabel pembayaran
-		if(!empty($id)) {
-			$this->db->where(array('id'=>$id))->update('master_pembayaran', $data_pembayaran);
-			$data_pembayaran['pembayaran_id'] = $id; 
-		}else{
+		if (!empty($id)) {
+			$this->db->where(array('id' => $id))->update('master_pembayaran', $data_pembayaran);
+			$data_pembayaran['pembayaran_id'] = $id;
+		} else {
 			$this->db->insert('master_pembayaran', $data_pembayaran);
-			$data_pembayaran['pembayaran_id'] = $this->db->insert_id(); 
+			$data_pembayaran['pembayaran_id'] = $this->db->insert_id();
 			// $pembayaran_id = $this->db->insert_id();
 		}
-
-		// if (!$pembayaran_id) {
-		// 	$this->session->set_flashdata('error', 'Gagal menyimpan pembayaran');
-		// 	redirect('pembayaran');
-		// 	return;
-		// }
-
-		// if ($metode === 'cicilan') {
-		// 	if (!$lama_cicilan || !$total_cicilan) {
-		// 		$this->session->set_flashdata('error', 'Data cicilan wajib diisi');
-		// 		redirect('pembayaran');
-		// 		return;
-		// 	}
-
-		// 	$data_cicilan = [
-		// 		'pembayaran_id' => $pembayaran_id,
-		// 		'lama_cicilan' => intval($lama_cicilan),
-		// 		'total_cicilan' => intval($total_cicilan)
-		// 	];
-		// 	$this->db->insert('master_detail_cicilan', $data_cicilan);
-		// } else {
-		// 	// Hitung jumlah bulan bayar dari metode
-		// 	$bulanCount = 1;
-		// 	if (strpos($metode, '_bulan') !== false) {
-		// 		$bulanCount = intval(explode('_', $metode)[0]);
-		// 	} elseif ($metode === '7_tahun') {
-		// 		$bulanCount = 12;
-		// 	}
-
-		// 	// if ($bulan_mulai) {
-		// 	// 	$nominal_per_bulan = 125000;
-		// 	// 	$startDate = new DateTime($bulan_mulai . '-01');
-		// 	// 	for ($i = 0; $i < $bulanCount; $i++) {
-		// 	// 		$bulan = $startDate->format('Y-m-01');
-
-		// 	// 		$this->db->insert('master_detail_pembayaran_bulanan', [
-		// 	// 			'pembayaran_id' => $pembayaran_id,
-		// 	// 			'bulan'         => $bulan,
-		// 	// 			'nominal'       => $nominal_per_bulan
-		// 	// 		]);
-		// 	// 		$startDate->modify('+1 month');
-		// 	// 	}
-		// 	// }
-		// }
-
 		$this->session->set_flashdata('success', 'Pembayaran berhasil disimpan');
 		redirect('pembayaran-sukses?data=' . urlencode(json_encode($data_pembayaran)));
 	}
-
 
 	public function pembayaran_sukses()
 	{
 		$this->load->view('dashboard/pembayaran_sukses');
 	}
 
+	public function act_verifikasi_pembayaran()
+	{
+		// Ambil ID dari POST
+		$id = $this->input->post('id');
+		$aksi = $this->input->post('aksi');
+
+		// Validasi ID
+		if (empty($id) || !is_numeric($id)) {
+			echo json_encode(['status' => 'error', 'message' => 'ID tidak valid']);
+			return;
+		}
+
+		// Cek apakah data dengan ID tersebut ada
+		$cek = $this->db->get_where('master_pembayaran', ['id' => $id])->row();
+		if (!$cek) {
+			echo json_encode(['status' => 'error', 'message' => 'Data tidak ditemukan']);
+			return;
+		}
+
+		// Lakukan update status
+		$statusBaru = $aksi === 'verified' ? 'verified' : 'rejected';
+		$this->db->where('id', $id);
+		$update = $this->db->update('master_pembayaran', ['status' => $statusBaru]);
+
+		if ($update) {
+			// Ambil data pembayaran & user
+			$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
+			$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
+			$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
+
+			// Ambil data keluarga berdasarkan id_rumah
+			$keluarga = $this->db->query("SELECT * FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%'")->row_array();
+
+			$nama = $user['nama'] ?? '';
+			$alamat = $rumah['alamat'] ?? '';
+			$no_hp = $keluarga['no_hp'] ?? '';
+
+			// Validasi nomor HP, jika kosong ambil dari master_keluarga lain yang cocok
+			if (empty($no_hp)) {
+				$keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+				$no_hp = $keluarga_alt['no_hp'] ?? '';
+			}
+
+			$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
+
+			// Buat link pembayaran terenkripsi
+			$link = base_url('pembayaran/detail/' . encrypt_url($pembayaran['id']));
+
+			$text = "📥 Konfirmasi Pembayaran IPL
+
+Assalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,
+
+Terima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "** yang telah kami terima. 🙏
+💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "
+📄 Bukti: Sudah diterima
+🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "
+
+Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.
+
+Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
+
+Hormat kami,
+Pengurus IPL
+Perumahan Taman Sukodono Indah";
+
+			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
+			$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
+			$post_data = [
+				'session' => 'wa1',
+				'to' => hp($no_hp),
+				'text' => $text
+			];
+
+			// Kirim POST (gunakan CURL) dengan error handling
+			try {
+				$ch = curl_init($wa_url);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+				curl_setopt($ch, CURLOPT_POST, true);
+				$response = curl_exec($ch);
+				$curl_error = curl_error($ch);
+				curl_close($ch);
+
+				if ($response === false || !empty($curl_error)) {
+					// Jika gagal kirim WA, rollback update status
+					$this->db->where('id', $id);
+					$this->db->update('master_pembayaran', ['status' => $cek->status]); // kembalikan status semula
+					echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA, status tidak diupdate']);
+					return;
+				}
+
+				echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi']);
+			} catch (Exception $e) {
+				// Rollback update status jika error
+				$this->db->where('id', $id);
+				$this->db->update('master_pembayaran', ['status' => $cek->status]);
+				echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA: ' . $e->getMessage()]);
+			}
+		} else {
+			echo json_encode(['status' => 'error', 'message' => 'Gagal memperbarui data']);
+		}
+	}
+	public function ajaxSendWaBatch()
+	{
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$keluarga_list = $this->db->select('id, no_hp, nomor_rumah')
+			->from('master_keluarga')
+			->where('no_hp !=', '')
+			->get()
+			->result_array();
+
+		$bulan = date('F Y');
+		$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
+
+		$hasil = [];
+
+		foreach ($keluarga_list as $index => $row) {
+			$nama = '';
+			$alamat = $row['nomor_rumah'];
+			// Ambil nama dari master_users berdasarkan alamat rumah
+			$user = $this->db->select('nama')
+				->from('master_users')
+				->like('rumah', $alamat)
+				->get()
+				->row_array();
+
+			if ($user && !empty($user['nama'])) {
+				$nama = $user['nama'];
+			} else {
+				// fallback ke kepala keluarga jika tidak ada di master_users
+				$anggota = $this->db->select('nama')
+					->from('master_anggota_keluarga')
+					->where('keluarga_id', $row['id'])
+					->where('hubungan', 'Kepala Keluarga')
+					->get()
+					->row_array();
+
+				if ($anggota && !empty($anggota['nama'])) {
+					$nama = $anggota['nama'];
+				}
+			}
+
+			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat*.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus IPL\nPerumahan Taman Sukodono Indah";
+
+			$no_hp = hp($row['no_hp']);
+			$status = 'Gagal';
+
+			if (!empty($no_hp)) {
+				$post_data = [
+					'session' => 'wa1',
+					'to' => $no_hp,
+					'text' => $text
+				];
+
+				$ch = curl_init($wa_url);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+				curl_setopt($ch, CURLOPT_POST, true);
+				$response = curl_exec($ch);
+				$error = curl_error($ch);
+				curl_close($ch);
+
+				if ($response !== false && empty($error)) {
+					$status = 'Berhasil';
+				}
+			}
+
+			// Simpan ke log DB
+			$this->db->insert('log_pengiriman_wa_ipl', [
+				'keluarga_id' => $row['id'],
+				'nama' => $nama,
+				'alamat' => $alamat,
+				'no_hp' => $no_hp,
+				'status' => $status,
+				'pesan' => $text,
+				'created_at' => date('Y-m-d H:i:s')
+			]);
+
+			$hasil[] = [
+				'nama' => $nama,
+				'alamat' => $alamat,
+				'status' => $status,
+				'index' => $index + 1
+			];
+		}
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode([
+				'status' => 'done',
+				'total' => count($hasil),
+				'data' => $hasil
+			]));
+	}
+
+	public function kirim_ipl()
+	{
+			$this->load->library('pagination');
+
+			// Config pagination
+			$config['base_url'] = site_url('pembayaran/kirim_ipl');
+			$config['total_rows'] = $this->db->count_all('log_pengiriman_wa_ipl');
+			$config['per_page'] = 10;
+			$config['uri_segment'] = 3;
+
+			// Styling (Bootstrap 4/5)
+			$config['full_tag_open'] = '<nav><ul class="pagination justify-content-center">';
+			$config['full_tag_close'] = '</ul></nav>';
+			$config['num_tag_open'] = '<li class="page-item">';
+			$config['num_tag_close'] = '</li>';
+			$config['cur_tag_open'] = '<li class="page-item active"><span class="page-link">';
+			$config['cur_tag_close'] = '</span></li>';
+			$config['next_tag_open'] = '<li class="page-item">';
+			$config['next_tag_close'] = '</li>';
+			$config['prev_tag_open'] = '<li class="page-item">';
+			$config['prev_tag_close'] = '</li>';
+			$config['first_tag_open'] = '<li class="page-item">';
+			$config['first_tag_close'] = '</li>';
+			$config['last_tag_open'] = '<li class="page-item">';
+			$config['last_tag_close'] = '</li>';
+			$config['attributes'] = ['class' => 'page-link'];
+
+			$this->pagination->initialize($config);
+
+			$start = $this->uri->segment(3, 0);
+
+			// Ambil data log
+			$this->db->order_by('created_at', 'DESC');
+			$logs = $this->db->get('log_pengiriman_wa_ipl', $config['per_page'], $start)->result();
+
+			$data = [
+				'logs' => $logs,
+				'pagination' => $this->pagination->create_links()
+			];
+
+			$this->load->view('dashboard/kirim_ipl_view', $data);
+	}
 	public function logout()
 	{
 		$this->session->sess_destroy();
@@ -905,5 +1166,3 @@ class dashboard extends CI_Controller
 		}
 	}
 }
-
-?>
