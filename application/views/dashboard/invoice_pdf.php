@@ -100,6 +100,7 @@
                         $bulanTagihan = $namaBulan[$bulanAngka] . ' ' . $tahun;
                     ?>
                     <table class="details-table" style="width: 100%;">
+                         <tr><td class="label">No. Pembayaran</td><td class="separator">:</td><td><?= htmlspecialchars($pembayaran['id']) ?></td> <td rowspan="8"><?php if ($pembayaran && strtolower($pembayaran['status']) === 'verified'): ?><div class="watermark">LUNAS</div><?php endif; ?></td></tr>
                         <tr>
                             <td class="label" style="padding-top: 10px;">Nama</td>
                             <td class="separator">:</td>
@@ -116,9 +117,6 @@
                             <td><?= $bulanTagihan ?></td>
                         </tr>
                         <?php if ($pembayaran): ?>
-                            <tr><td class="label">No. Pembayaran</td><td class="separator">:</td><td><?= htmlspecialchars($pembayaran['id']) ?></td> <td rowspan="5"><?php if ($pembayaran && strtolower($pembayaran['status']) === 'verified'): ?>
-    <div class="watermark">LUNAS</div>
-<?php endif; ?></td></tr>
                             <tr><td class="label">Jumlah Bayar</td><td class="separator">:</td><td>Rp <?= number_format($pembayaran['jumlah_bayar'], 2, ',', '.') ?></td></tr>
                             <tr><td class="label">Keterangan</td><td class="separator">:</td><td><?= htmlspecialchars($pembayaran['keterangan']) ?></td></tr>
                             <tr><td class="label">Tanggal Bayar</td><td class="separator">:</td><td><?= htmlspecialchars($pembayaran['tanggal_bayar']) ?></td></tr>
