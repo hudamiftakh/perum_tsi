@@ -326,10 +326,51 @@ $this->load->library('encryption');
                         </td>
                     <?php endfor; ?>
 
-                    <td class="text-center fw-bold">
+                    <td class="text-center fw-bold" nowrap="">
                         <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_bulanan['id'])); ?>" class="btn btn-success">
                             <i class="bi bi-cash-coin"></i> Bayar
                         </a>
+                        <!-- Tombol Cetak Kitir -->
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#kitirModal<?= $data_bulanan['id']; ?>">
+                            <i class="bi bi-printer"></i> Cetak Kitir
+                        </button>
+
+                        <!-- Modal Cetak Kitir -->
+                        <div class="modal fade" id="kitirModal<?= $data_bulanan['id']; ?>" tabindex="-1" aria-labelledby="kitirModalLabel<?= $data_bulanan['id']; ?>" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form action="<?= base_url('dashboard/download_invoice'); ?>" method="get" target="_blank">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="kitirModalLabel<?= $data_bulanan['id']; ?>">Cetak Kitir Pembayaran</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="id_rumah" value="<?= $data_bulanan['id']; ?>">
+                                            <div class="mb-3">
+                                                <label for="bulanCetak<?= $data_bulanan['id']; ?>" class="form-label">Pilih Bulan</label>
+                                                <select class="form-select" name="bulan" id="bulanCetak<?= $data_bulanan['id']; ?>" required>
+                                                    <option value="">-- Pilih Bulan --</option>
+                                                    <?php
+                                                    for ($i = 1; $i <= $bulan_terakhir; $i++):
+                                                        $bulan_value = str_pad($i, 2, '0', STR_PAD_LEFT);
+                                                        $bulan_label = $bulan_indonesia[$i];
+                                                        // Format database: YYYY-MM-01
+                                                        $tanggal_format = $tahun_terpilih . '-' . $bulan_value . '-01';
+                                                    ?>
+                                                        <option value="<?= $tanggal_format; ?>"><?= $bulan_label . ' ' . $tahun_terpilih; ?></option>
+                                                    <?php endfor; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-printer"></i> Cetak
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
