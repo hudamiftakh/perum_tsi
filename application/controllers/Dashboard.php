@@ -955,7 +955,7 @@ Terima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . num
 💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "
 📄 Bukti: Sudah diterima
 🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "
-📑 Invoice: $link
+📑 Kitir Pembayaran: $link
 
 Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.
 
