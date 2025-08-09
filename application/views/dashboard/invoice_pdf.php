@@ -40,7 +40,7 @@
                     <table style="width:100%;">
                         <tr>
                             <td style="width:50%; text-align:right;">
-                                <img src="<?= base_url('logo_2-removebg-preview.png') ?>" style="width: 30mm; height: 20mm; object-fit: contain; vertical-align: middle;">
+                                <img src="<?= base_url('logo_2-removebg-preview.png') ?>" style="width: 30mm; height: 40mm; object-fit: contain; vertical-align: middle;">
                             </td>
                             <td style="width:50%; text-align:left;">
                                 <img src="<?= base_url('logo-tsi-removebg-preview.png') ?>" style="width: 30mm; height: 20mm; object-fit: contain; vertical-align: middle;">
@@ -169,9 +169,8 @@
             </div>
                <ol>
                 <li>Iuran diatas sudah termasuk biaya administrasi</li>
-                <li>Pembayaran dapat ditransfer melalui rekening sesuai yang tertera diatas an. BCA 8221586107 / Dhani Kispananto</li>
-                <li>Pembayaran dianggap telah diterima dengan baik apabila dana telah di rekening paguyuban</li>
                 <li>Pembayaran dianggap sah apabila pembayaran di transfer lewat Bendahara Paguyuban (BCA 8221586107 / Dhani Kispananto) atau tunai pada koordinator Blok</li>
+                <li>Pembayaran dianggap telah diterima dengan baik apabila dana telah di rekening paguyuban</li>
                 <li>Pembayaran selambat-lambatnya pada tanggal 10 setiap bulan</li>
                 <li>Simpanlah e-kitir ini sebagai bukti pembayaran</li>
                 <li>Untuk pengajuan keluhan bisa menghubungi pengurus Paguyuban Taman Sukodono Indah</li>
