@@ -1,5 +1,4 @@
-<!-- <h4 class="fs-5 mt-5 mb-3">E-kinerja Kader Surabaya Hebat | Kelurahan Pradah Kalikendal | Dukuh Pakis</h4> -->
-<!-- Row -->
+
 <?php if ($_SESSION['username']['role'] == 'admin') : ?>
     <div class="row">
         <div class="col-lg-3 col-md-6">
@@ -150,7 +149,8 @@
             </div>
         </div>
     </div>
-<?php else : ?>
+<?php endif; ?>
+<?php if ($_SESSION['username']['role'] == 'admin') : ?>
     <style>
         body {
             background-color: #f0f2f5;
@@ -586,6 +586,254 @@
                         });
                     </script>
                 </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if ($_SESSION['username']['role'] == 'bendahara') : ?>
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+        .bendahara-dashboard {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 25px 20px;
+        }
+        .bendahara-header {
+            background: linear-gradient(135deg, #009f60, #00c77c);
+            color: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 15px rgba(0, 159, 96, 0.25);
+            text-align: center;
+            position: relative;
+        }
+        .bendahara-header h2 {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .bendahara-header p {
+            font-size: 1.05rem;
+            margin-bottom: 0;
+            opacity: 0.95;
+        }
+        .header-icon {
+            position: absolute;
+            right: 28px;
+            top: 28px;
+            font-size: 4rem;
+            opacity: 0.12;
+        }
+        .bendahara-card {
+            border-radius: 14px;
+            background: #fff;
+            border: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .bendahara-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+        .card-body {
+            padding: 22px 18px;
+        }
+        .card-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #009f60;
+        }
+        .card-icon {
+            font-size: 2.4rem;
+            margin-right: 14px;
+            border-radius: 50%;
+            padding: 10px;
+            color: #fff;
+        }
+        .icon-green { background-color: #00c77c; }
+        .icon-blue { background-color: #007bff; }
+        .icon-yellow { background-color: #ffc107; }
+        .icon-purple { background-color: #6f42c1; }
+        table th {
+            font-weight: 600;
+        }
+        .btn-custom {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .bendahara-header {
+                padding: 20px;
+            }
+            .bendahara-header h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+
+    <div class="bendahara-dashboard mt-4">
+        <!-- Header -->
+        <div class="bendahara-header mb-4">
+            <h2>
+                <i class="fa fa-money-bill-wave me-2"></i>
+                Dashboard Bendahara IPL TSI
+            </h2>
+            <p>
+                Selamat datang, <b><?= $_SESSION['username']['nama']; ?></b>.<br>
+                Kelola pembayaran IPL, pantau saldo, dan ekspor laporan dengan mudah.
+            </p>
+            <span class="header-icon">
+                <i class="fa fa-wallet"></i>
+            </span>
+        </div>
+
+        <!-- Statistik -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card bendahara-card">
+                    <div class="card-body d-flex align-items-center">
+                        <span class="card-icon icon-green"><i class="fa fa-home"></i></span>
+                        <div>
+                            <div class="card-title">Total Rumah</div>
+                            <div class="card-value">
+                                <?php
+                                $total_rumah = $this->db->get('master_rumah')->num_rows();
+                                echo $total_rumah;
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card bendahara-card">
+                    <div class="card-body d-flex align-items-center">
+                        <span class="card-icon icon-blue"><i class="fa fa-check-circle"></i></span>
+                        <div>
+                            <div class="card-title">Bayar Bulan Ini</div>
+                            <div class="card-value">
+                                <?php
+                                $bulan = date('m');
+                                $tahun = date('Y');
+                                $this->db->where('status', 'verified');
+                                $this->db->where('MONTH(tanggal_bayar)', $bulan);
+                                $this->db->where('YEAR(tanggal_bayar)', $tahun);
+                                $this->db->select('id_rumah');
+                                $this->db->group_by('id_rumah');
+                                $rumah_bayar = $this->db->get('master_pembayaran')->num_rows();
+                                echo $rumah_bayar;
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card bendahara-card">
+                    <div class="card-body d-flex align-items-center">
+                        <span class="card-icon icon-yellow"><i class="fa fa-dollar"></i></span>
+                        <div>
+                            <div class="card-title">Total Saldo IPL</div>
+                            <div class="card-value">
+                                <?php
+                                $this->db->select_sum('jumlah_bayar');
+                                $this->db->where('status', 'verified');
+                                $total_saldo = $this->db->get('master_pembayaran')->row()->jumlah_bayar;
+                                echo 'Rp ' . number_format($total_saldo, 0, ',', '.');
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistik Chart -->
+        <div class="card bendahara-card mb-4">
+            <div class="card-body">
+                <div class="card-title mb-2"><i class="fa fa-chart-bar me-2"></i>Statistik 6 Bulan Terakhir</div>
+                <?php
+                $bulan_ini = date('n');
+                $tahun_ini = date('Y');
+                $statistik = [];
+                for ($i = 5; $i >= 0; $i--) {
+                    $bulan = $bulan_ini - $i;
+                    $tahun = $tahun_ini;
+                    if ($bulan <= 0) {
+                        $bulan += 12;
+                        $tahun -= 1;
+                    }
+                    $this->db->where('status', 'verified');
+                    $this->db->where('MONTH(tanggal_bayar)', $bulan);
+                    $this->db->where('YEAR(tanggal_bayar)', $tahun);
+                    $this->db->select_sum('jumlah_bayar');
+                    $total = $this->db->get('master_pembayaran')->row()->jumlah_bayar;
+                    $statistik[] = [
+                        'bulan' => date('M Y', strtotime("$tahun-$bulan-01")),
+                        'total' => $total ? $total : 0
+                    ];
+                }
+                ?>
+                <canvas id="bendaharaChart" height="80"></canvas>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    const ctxB = document.getElementById('bendaharaChart').getContext('2d');
+                    new Chart(ctxB, {
+                        type: 'bar',
+                        data: {
+                            labels: <?= json_encode(array_column($statistik, 'bulan')); ?>,
+                            datasets: [{
+                                label: 'Total IPL (Rp)',
+                                data: <?= json_encode(array_column($statistik, 'total')); ?>,
+                                backgroundColor: 'rgba(0, 159, 96, 0.7)',
+                                borderColor: 'rgba(0, 159, 96, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'Rp ' + value.toLocaleString('id-ID');
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+
+        <!-- Ekspor -->
+        <div class="card bendahara-card">
+            <div class="card-body">
+                <div class="card-title mb-2"><i class="fa fa-file-export me-2"></i>Ekspor Laporan IPL</div>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="<?= base_url('laporan-ipl/excel'); ?>" class="btn btn-outline-success btn-custom d-flex align-items-center px-3">
+                        <i class="fa fa-file-excel me-1"></i> Excel
+                    </a>
+                    <a href="<?= base_url('laporan-ipl/pdf'); ?>" class="btn btn-outline-danger btn-custom d-flex align-items-center px-3">
+                        <i class="fa fa-file-pdf me-1"></i> PDF
+                    </a>
+                </div>
+                <small class="text-muted d-block mt-2">Ekspor data pembayaran IPL sesuai kebutuhan bendahara.</small>
             </div>
         </div>
     </div>
