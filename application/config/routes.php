@@ -69,6 +69,8 @@ $route['warga/data-warga/(:any)'] = 'dashboard/warga/$1';
 $route['pendataan-keluarga'] = 'dashboard/pendataan_keluarga';
 $route['pendataan-keluarga-koordinator'] = 'dashboard/pendataan_keluarga_koordinator';
 $route['edit-pendataan-keluarga/(:any)'] = 'dashboard/edit_pendataan_keluarga/$1';
+$route['download_invoice/(:any)'] = 'dashboard/download_invoice/$1';
+$route['invoice/(:any)'] = 'dashboard/invoice/$1';
 $route['edit-pendataan-keluarga-koordinator/(:any)'] = 'dashboard/edit_pendataan_keluarga_koordinator/$1';
 $route['keterisian'] = 'dashboard/keterisian_pendataan';
 // Pembayaran

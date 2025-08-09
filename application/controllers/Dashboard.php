@@ -945,16 +945,17 @@ class Dashboard extends CI_Controller
 			$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 
 			// Buat link pembayaran terenkripsi
-			$link = base_url('pembayaran/detail/' . encrypt_url($pembayaran['id']));
+			$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
 
 			$text = "📥 Konfirmasi Pembayaran IPL
 
-Assalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,
+Assalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,
 
 Terima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "** yang telah kami terima. 🙏
 💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "
 📄 Bukti: Sudah diterima
 🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "
+📑 Invoice: $link
 
 Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.
 
@@ -967,7 +968,7 @@ Perumahan Taman Sukodono Indah";
 			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
 			$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
 			$post_data = [
-				'session' => 'wa1',
+				'session' => 'wa2',
 				'to' => hp($no_hp),
 				'text' => $text
 			];
@@ -1051,7 +1052,7 @@ Perumahan Taman Sukodono Indah";
 
 			if (!empty($no_hp)) {
 				$post_data = [
-					'session' => 'wa1',
+					'session' => 'wa2',
 					'to' => $no_hp,
 					'text' => $text
 				];
@@ -1144,7 +1145,43 @@ Perumahan Taman Sukodono Indah";
 		$this->session->sess_destroy();
 		redirect('./login');
 	}
+	public function invoice(){
+		$this->load->view('dashboard/invoice_pdf');
+	}
+	public function download_invoice()
+	{
+		// Load TCPDF library
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
 
+		// Data untuk invoice, bisa dari database atau dummy
+		$id = $this->input->get('id', true);
+		$data = [];
+		if ($id) {
+			// Contoh: ambil data invoice dari database
+			$data['pembayaran'] = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
+		} else {
+			$data['pembayaran'] = [];
+		}
+
+		// Render HTML dari view
+		$html = $this->load->view('dashboard/invoice_pdf', $data, true);
+
+		// Buat objek TCPDF
+		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor('Perum TSI');
+		$pdf->SetTitle('Invoice IPL');
+		$pdf->SetMargins(10, 10, 10, true);
+		$pdf->SetAutoPageBreak(TRUE, 10);
+
+		$pdf->AddPage();
+
+		// Tulis HTML ke PDF
+		$pdf->writeHTML($html, true, false, true, false, '');
+
+		// Output PDF ke browser
+		$pdf->Output('invoice_ipl.pdf', 'I');
+	}
 	public function berhasil()
 	{
 		echo "<script>alert('Berhasil disimpan')</script>";
