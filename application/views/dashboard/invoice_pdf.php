@@ -109,7 +109,7 @@
                         $bulanTagihan = $namaBulan[$bulanAngka] . ' ' . $tahun;
                     ?>
                     <table class="details-table" style="width: 100%;">
-                         <tr><td class="label">No. Pembayaran</td><td class="separator">:</td><td>INV/<?= htmlspecialchars($pembayaran['id'])."/".date('Y') ?>/</td> <td rowspan="8"><?php if ($pembayaran && strtolower($pembayaran['status']) === 'verified'): ?><div class="watermark">LUNAS</div><?php endif; ?></td></tr>
+                         <tr><td class="label">No. Pembayaran</td><td class="separator">:</td><td>INV/<?= htmlspecialchars($pembayaran['id'])."/".date('Y') ?></td> <td rowspan="8"><?php if ($pembayaran && strtolower($pembayaran['status']) === 'verified'): ?><div class="watermark">LUNAS</div><?php endif; ?></td></tr>
                         <tr>
                             <td class="label" style="padding-top: 10px;">Nama</td>
                             <td class="separator">:</td>
