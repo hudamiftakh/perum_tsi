@@ -292,10 +292,10 @@ $this->load->library('encryption');
                                 class="btn btn-success btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-check-circle me-1"></i> Setujui
                             </button>
-                            <button  onclick="handleVerifikasi('<?php echo $row->id; ?>','rejected')" 
+                            <!-- <button  onclick="handleVerifikasi('<?php echo $row->id; ?>','rejected')" 
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
-                            </button>
+                            </button> -->
                             <a href="<?php echo  base_url('pembayaran/'.encrypt_url($row->id)."/".encrypt_url($row->id)); ?>"
                                 class="btn btn-info btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-pencil me-1"></i> Revisi
