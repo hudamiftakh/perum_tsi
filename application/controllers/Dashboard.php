@@ -1180,7 +1180,8 @@ Perumahan Taman Sukodono Indah";
 		$pdf->writeHTML($html, true, false, true, false, '');
 
 		// Output PDF ke browser
-		$pdf->Output('invoice_ipl.pdf', 'I');
+		$nama_file ='invoice_ipl_'.date('YmdHis').'.pdf';
+		$pdf->Output($nama_file, 'D');
 	}
 	public function berhasil()
 	{
