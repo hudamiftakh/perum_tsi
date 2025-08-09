@@ -963,8 +963,8 @@ Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
 
 Hormat kami,
 Pengurus Paguyuban TSI
-Perumahan Taman Sukodono Indah";
-
+Perumahan Taman Sukodono Indah
+_Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
 			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
 			$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
 			$post_data = [
@@ -1008,6 +1008,9 @@ Perumahan Taman Sukodono Indah";
 			show_404();
 		}
 
+		// Set unlimited execution time
+		set_time_limit(0);
+
 		$keluarga_list = $this->db->select('id, no_hp, nomor_rumah')
 			->from('master_keluarga')
 			->where('no_hp !=', '')
@@ -1045,7 +1048,7 @@ Perumahan Taman Sukodono Indah";
 				}
 			}
 
-			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat*.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah";
+			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
 
 			$no_hp = hp($row['no_hp']);
 			$status = 'Gagal';
