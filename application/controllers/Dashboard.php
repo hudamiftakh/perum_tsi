@@ -962,7 +962,7 @@ Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkung
 Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
 
 Hormat kami,
-Pengurus IPL
+Pengurus Paguyuban TSI
 Perumahan Taman Sukodono Indah";
 
 			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
@@ -1045,7 +1045,7 @@ Perumahan Taman Sukodono Indah";
 				}
 			}
 
-			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat*.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus IPL\nPerumahan Taman Sukodono Indah";
+			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat*.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah";
 
 			$no_hp = hp($row['no_hp']);
 			$status = 'Gagal';
