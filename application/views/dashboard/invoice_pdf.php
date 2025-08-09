@@ -40,7 +40,7 @@
                     <table style="width:100%;">
                         <tr>
                             <td style="width:50%; text-align:right;">
-                                <img src="<?= base_url('logo_2-removebg-preview.png') ?>" style="width: 30mm; height: 40mm; object-fit: contain; vertical-align: middle;">
+                                <img src="<?= base_url('logo_2-removebg-preview.png') ?>" style="width: 30mm; height: 20mm; object-fit: contain; vertical-align: middle;">
                             </td>
                             <td style="width:50%; text-align:left;">
                                 <img src="<?= base_url('logo-tsi-removebg-preview.png') ?>" style="width: 30mm; height: 20mm; object-fit: contain; vertical-align: middle;">
