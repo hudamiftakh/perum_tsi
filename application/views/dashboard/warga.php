@@ -332,34 +332,58 @@ $this->load->library('encryption');
                         <form method="post" action="<?= base_url('warga/data-warga'); ?>" onsubmit="return confirm('Yakin ingin menghapus data ini?');" class="d-inline">
                             <input type="hidden" name="id" value="<?= $value['id']; ?>">
                             <div class="btn-group" role="group" aria-label="Aksi">
-                                <!-- Tombol Edit Data -->
-                                <a href="<?= base_url('edit-pendataan-keluarga/' . encrypt_url($value['id'])); ?>"
-                                    class="btn btn-outline-success"
-                                    data-bs-toggle="tooltip"
-                                    title="Edit Data">
-                                    <i class="fa fa-pencil"></i>
-                                </a>
+                                <?php if ($Auth['role'] === 'admin'): ?>
+                                    <!-- Tombol Edit Data -->
+                                    <a href="<?= base_url('edit-pendataan-keluarga/' . encrypt_url($value['id'])); ?>"
+                                        class="btn btn-outline-success"
+                                        data-bs-toggle="tooltip"
+                                        title="Edit Data">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
 
-                                <!-- Tombol Edit Koordinator -->
-                                <a href="<?= base_url('edit-pendataan-keluarga-koordinator/' . encrypt_url($value['id'])); ?>"
-                                    class="btn btn-outline-primary"
-                                    data-bs-toggle="tooltip"
-                                    title="Edit Koordinator">
-                                    <i class="fa fa-users"></i>
-                                </a>
+                                    <!-- Tombol Edit Koordinator -->
+                                    <a href="<?= base_url('edit-pendataan-keluarga-koordinator/' . encrypt_url($value['id'])); ?>"
+                                        class="btn btn-outline-primary"
+                                        data-bs-toggle="tooltip"
+                                        title="Edit Koordinator">
+                                        <i class="fa fa-users"></i>
+                                    </a>
 
-                                <!-- Tombol Hapus -->
-                                <button type="submit"
-                                    name="hapus"
-                                    class="btn btn-outline-danger"
-                                    data-bs-toggle="tooltip"
-                                    title="Hapus Data">
-                                    <i class="fa fa-trash"></i>
-                                </button>
+                                    <!-- Tombol Hapus -->
+                                    <button type="submit"
+                                        name="hapus"
+                                        class="btn btn-outline-danger"
+                                        data-bs-toggle="tooltip"
+                                        title="Hapus Data">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <!-- Tombol Edit Data (disabled) -->
+                                    <a href="javascript:void(0);"
+                                        class="btn btn-outline-success disabled"
+                                        data-bs-toggle="tooltip"
+                                        title="Hanya admin bisa edit">
+                                        <i class="fa fa-pencil"></i>
+                                    </a>
+
+                                    <!-- Tombol Edit Koordinator (disabled) -->
+                                    <a href="javascript:void(0);"
+                                        class="btn btn-outline-primary disabled"
+                                        data-bs-toggle="tooltip"
+                                        title="Hanya admin bisa edit">
+                                        <i class="fa fa-users"></i>
+                                    </a>
+
+                                    <!-- Tombol Hapus (disabled) -->
+                                    <button type="button"
+                                        class="btn btn-outline-danger disabled"
+                                        data-bs-toggle="tooltip"
+                                        title="Hanya admin bisa hapus">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </div>
-
                         </form>
-
                     </td>
                 </tr>
             <?php endforeach; ?>
