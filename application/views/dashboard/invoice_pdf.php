@@ -36,8 +36,17 @@
     <div class="invoice-container">
         <table class="header-table"  cellpadding="4" width="100%">
             <tr>
-                <td style="width: 25mm; text-align:center;">
-                    <img src="<?= base_url('logo_2-removebg-preview.png') ?>" style="width: 15mm;">
+                <td style="width: 80mm; text-align: left; vertical-align: middle;">
+                    <table style="width:100%;">
+                        <tr>
+                            <td style="width:50%; text-align:right;">
+                                <img src="<?= base_url('logo_2-removebg-preview.png') ?>" style="width: 30mm; height: 20mm; object-fit: contain; vertical-align: middle;">
+                            </td>
+                            <td style="width:50%; text-align:left;">
+                                <img src="<?= base_url('logo-tsi-removebg-preview.png') ?>" style="width: 30mm; height: 20mm; object-fit: contain; vertical-align: middle;">
+                            </td>
+                        </tr>
+                    </table>
                 </td>
                 <td style="padding-top: 1px;">
                    <label for="" style="font-size: large;"><b>PAGUYUBAN TAMAN SUKODONO INDAH</b></label>

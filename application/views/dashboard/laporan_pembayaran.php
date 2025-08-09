@@ -164,9 +164,11 @@ $this->load->library('encryption');
                     <i class="fa fa-plus me-1"></i> Tambah
                 </a>
                 
-                <a href="<?= base_url('pembayaran/kirim_ipl'); ?>" class="btn btn-success">
-                    <i class="fa fa-bell me-1"></i> Kirim Peringatan
-                </a>
+                <?php if ($this->session->userdata('username')['role'] == 'admin'): ?>
+                    <a href="<?= base_url('pembayaran/kirim_ipl'); ?>" class="btn btn-success">
+                        <i class="fa fa-bell me-1"></i> Kirim Peringatan
+                    </a>
+                <?php endif; ?>
 
                 <!-- Tombol PDF Dropdown -->
                 <!-- <div class="dropdown">

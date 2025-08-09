@@ -109,7 +109,7 @@
                     <span class="hide-menu">Warga</span>
                 </a>
                 <ul aria-expanded="false"
-                    class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : 'in'; ?>">
+                    class="collapse first-level <?php echo (in_array($menu, array('warga'))) ? 'in' : ''; ?>">
                      <li class="sidebar-item">
                         <a href="<?php echo base_url('warga/data-warga') ?>"
                             class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
@@ -158,6 +158,27 @@
                             <span class="hide-menu">Input Pembayaran</span>
                         </a>
                     </li>
+                     <?php if ($_SESSION['username']['role'] == 'bendahara') : ?>
+                        <?php
+                        // Query jumlah pembayaran dengan status pending
+                        $this->db->where('status', 'pending');
+                        $pending_count = $this->db->count_all_results('master_pembayaran');
+                        ?>
+                        <li class="sidebar-item">
+                            <a href="<?php echo base_url('pembayaran/verifikasi-pembayaran') ?>"
+                                class="sidebar-link <?php echo ($submenu == 'verifikasi-pembayaran') ? 'active' : ''; ?>">
+                                <div class="round-16 d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-circle"></i>
+                                </div>
+                                <span class="hide-menu d-flex align-items-center">
+                                    Verifikasi Pembayaran
+                                    <?php if ($pending_count > 0): ?>
+                                        <span class="badge bg-danger ms-2" style="font-size: 0.8em;"><?php echo $pending_count; ?></span>
+                                    <?php endif; ?>
+                                </span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
                     <li class="sidebar-item">
                         <a href="<?php echo base_url('pembayaran/laporan-pembayaran') ?>"
                             class="sidebar-link <?php echo ($submenu == 'laporan-pembayaran') ? 'active' : ''; ?>">
@@ -167,6 +188,7 @@
                             <span class="hide-menu">Rekap Pembayaran</span>
                         </a>
                     </li>
+                   
                 </ul>
             </li>
         <?php endif; ?>

@@ -76,6 +76,7 @@ $route['keterisian'] = 'dashboard/keterisian_pendataan';
 // Pembayaran
 $route['pembayaran'] = 'dashboard/show_form_pembayaran';
 $route['pembayaran/kirim_ipl'] = 'dashboard/kirim_ipl';
+$route['pembayaran/verifikasi-pembayaran'] = 'dashboard/verifikasi_pembayaran';
 $route['pembayaran/kirim_ipl/(:any)'] = 'dashboard/kirim_ipl/$1';
 $route['pembayaran/laporan-pembayaran'] = 'dashboard/laporan_pembayaran';
 $route['pembayaran/(:any)'] = 'dashboard/show_form_pembayaran';
