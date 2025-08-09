@@ -1,4 +1,5 @@
-
+<!-- <h4 class="fs-5 mt-5 mb-3">E-kinerja Kader Surabaya Hebat | Kelurahan Pradah Kalikendal | Dukuh Pakis</h4> -->
+<!-- Row -->
 <?php if ($_SESSION['username']['role'] == 'admin') : ?>
     <div class="row">
         <div class="col-lg-3 col-md-6">
@@ -150,7 +151,7 @@
         </div>
     </div>
 <?php endif; ?>
-<?php if ($_SESSION['username']['role'] == 'admin') : ?>
+<?php if ($_SESSION['username']['role'] == 'koordinator') : ?>
     <style>
         body {
             background-color: #f0f2f5;
