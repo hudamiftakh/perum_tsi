@@ -93,7 +93,7 @@ $this->load->library('encryption');
 <?php endif; ?>
 
 
-<form method="get" action="<?= base_url('warga/verifikasi-pembayaran'); ?>" class="mb-3 p-3 border rounded shadow-sm"
+<form method="get" action="<?= base_url('pembayaran/verifikasi-pembayaran'); ?>" class="mb-3 p-3 border rounded shadow-sm"
     style="background-color: #f0f8ff;">
     <div class="row gy-2 gx-3 align-items-end">
 
