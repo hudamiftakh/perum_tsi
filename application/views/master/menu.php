@@ -193,6 +193,14 @@
             </li>
         <?php endif; ?>
         <li class="sidebar-item">
+            <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>dashboard/update_password" aria-expanded="false">
+                <span class="rounded-3">
+                    <i class="ti ti-key"></i>
+                </span>
+                <span class="hide-menu"> Ganti Password</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
             <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>logout" aria-expanded="false">
                 <span class="rounded-3">
                     <i class="ti ti-logout"></i>

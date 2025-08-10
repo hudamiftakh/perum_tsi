@@ -969,7 +969,7 @@ Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
 Hormat kami,
 Pengurus Paguyuban TSI
 Perumahan Taman Sukodono Indah
-_Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
+_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
 			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
 			$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
 			$post_data = [
@@ -1054,7 +1054,7 @@ _Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak memba
 				}
 			}
 
-			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
+			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
 
 			$no_hp = hp($row['no_hp']);
 			$status = 'Gagal';
@@ -1204,6 +1204,52 @@ _Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak memba
 	public function berhasil()
 	{
 		echo "<script>alert('Berhasil disimpan')</script>";
+	}
+	public function act_update_password()
+	{
+		$this->checkSession();
+
+		$username_data = $this->session->userdata('username');
+		$role = $username_data['role'] ?? '';
+		$id = $username_data['id'] ?? '';
+
+		$new_password = $this->input->post('new_password', true);
+		$old_password = $this->input->post('old_password', true);
+
+		if (empty($new_password) || empty($old_password)) {
+			echo json_encode(['status' => 'error', 'message' => 'Password lama dan baru wajib diisi']);
+			return;
+		}
+
+		// Pilih tabel sesuai role
+		if ($role === 'koordinator') {
+			$table = 'master_koordinator_blok';
+			$where = ['id' => $id];
+		} else {
+			$table = 'master_admin';
+			$where = ['id' => $id];
+		}
+
+		// Ambil data user
+		$user = $this->db->get_where($table, $where)->row_array();
+		if (!$user) {
+			echo json_encode(['status' => 'error', 'message' => 'User tidak ditemukan']);
+			return;
+		}
+
+		// Validasi password lama
+		if ($user['password'] !== md5($old_password)) {
+			echo json_encode(['status' => 'error', 'message' => 'Password lama salah']);
+			return;
+		}
+
+		// Update password baru
+		$this->db->where($where)->update($table, ['password' => md5($new_password)]);
+		echo json_encode(['status' => 'success', 'message' => 'Password berhasil diupdate']);
+	}
+	public function update_password()  {
+		$data['halaman'] = 'dashboard/update_password';
+		$this->load->view('modul', $data);
 	}
 	public function berhasil_dikirim()
 	{

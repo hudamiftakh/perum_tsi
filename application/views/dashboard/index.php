@@ -1,156 +1,6 @@
 <!-- <h4 class="fs-5 mt-5 mb-3">E-kinerja Kader Surabaya Hebat | Kelurahan Pradah Kalikendal | Dukuh Pakis</h4> -->
 <!-- Row -->
-<?php if ($_SESSION['username']['role'] == 'admin') : ?>
-    <div class="row">
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-info">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div>
-                            <h2 class="fs-7">
-                                <?php
-                                // echo $this->db->get("master_pegawai")->num_rows();
-                                ?>
-                            </h2>
-                            <h6 class="fw-medium text-info mb-0">TOTAL RUMAH</h6>
-                        </div>
-                        <div class="ms-auto">
-                            <span class="text-info display-6"><i class="ti ti-file-text"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-primary">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2 class="fs-7">
-                                <?php
-                                // echo $this->db->query("
-                                // SELECT 
-                                // 	b.*, 
-                                // 	a.*, 
-                                // 	b.nama as pegawai,
-                                // 	b.nik as nik_pegawai,
-                                // 	ROW_NUMBER() OVER (ORDER BY a.total DESC) AS ranking
-                                // FROM 
-                                // 	master_pegawai AS b
-                                // LEFT JOIN 
-                                // 	report AS a ON a.nik = b.nik
-                                //  WHERE 
-                                // a.total > 1
-                                // ORDER BY 
-                                // 	ranking
-                                // ")->num_rows();
-                                // Hitung jumlah rumah yang sudah membayar IPL (status pembayaran sudah diverifikasi) per bulan
-                                // Cek bulan ini, jika kosong cek bulan sebelumnya, jika kosong cari bulan yang ada
-                                $bulan = date('m');
-                                $tahun = date('Y');
 
-                                // Fungsi untuk mendapatkan bulan dan tahun terakhir yang ada data pembayaran
-                                function get_last_payment_month($db) {
-                                    $db->select('MONTH(tanggal_bayar) as bulan, YEAR(tanggal_bayar) as tahun');
-                                    $db->where('status', 'verified');
-                                    $db->order_by('tahun', 'DESC');
-                                    $db->order_by('bulan', 'DESC');
-                                    $db->limit(1);
-                                    $result = $db->get('master_pembayaran')->row();
-                                    if ($result) {
-                                        return [$result->bulan, $result->tahun];
-                                    }
-                                    return [date('m'), date('Y')];
-                                }
-
-                                // Cek data bulan ini
-                                $this->db->where('status', 'verified');
-                                $this->db->where('MONTH(tanggal_bayar)', $bulan);
-                                $this->db->where('YEAR(tanggal_bayar)', $tahun);
-                                $this->db->select('id_rumah');
-                                $this->db->group_by('id_rumah');
-                                $count = $this->db->get('master_pembayaran')->num_rows();
-
-                                if ($count == 0) {
-                                    // Cek bulan sebelumnya
-                                    $bulan_sebelumnya = $bulan - 1;
-                                    $tahun_sebelumnya = $tahun;
-                                    if ($bulan_sebelumnya == 0) {
-                                        $bulan_sebelumnya = 12;
-                                        $tahun_sebelumnya = $tahun - 1;
-                                    }
-                                    $this->db->where('status', 'verified');
-                                    $this->db->where('MONTH(tanggal_bayar)', $bulan_sebelumnya);
-                                    $this->db->where('YEAR(tanggal_bayar)', $tahun_sebelumnya);
-                                    $this->db->select('id_rumah');
-                                    $this->db->group_by('id_rumah');
-                                    $count = $this->db->get('master_pembayaran')->num_rows();
-
-                                    if ($count == 0) {
-                                        // Cari bulan terakhir yang ada data
-                                        list($bulan_ada, $tahun_ada) = get_last_payment_month($this->db);
-                                        $this->db->where('status', 'verified');
-                                        $this->db->where('MONTH(tanggal_bayar)', $bulan_ada);
-                                        $this->db->where('YEAR(tanggal_bayar)', $tahun_ada);
-                                        $this->db->select('id_rumah');
-                                        $this->db->group_by('id_rumah');
-                                        $count = $this->db->get('master_pembayaran')->num_rows();
-                                    }
-                                }
-                                echo $count;
-                                ?>
-                            </h2>
-                            <h6 class="fw-medium text-primary mb-0">TOTAL RUMAH BAYAR IPL</h6>
-                        </div>
-                        <div class="ms-auto">
-                            <span class="text-primary display-6"><i class="ti ti-users"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-success">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2 class="fs-7">
-                                <?php
-                                // Hitung total IPL terkumpul
-                                $this->db->select_sum('jumlah_bayar');
-                                $this->db->where('status', 'verified');
-                                $total_ipl = $this->db->get('master_pembayaran')->row()->jumlah_bayar;
-                                echo number_format($total_ipl, 0, ',', '.');
-                                ?>
-                            </h2>
-                            <h6 class="fw-medium text-success mb-0">IPL TERKUMPUL</h6>
-                        </div>
-                        <div class="ms-auto">
-                            <span class="text-success display-6"><i class="ti ti-phone"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-danger">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2 class="fs-7">
-                                
-                            </h2>
-                            <h6 class="fw-medium text-danger mb-0">TOTAL SALDO</h6>
-                        </div>
-                        <div class="ms-auto">
-                            <span class="text-danger display-6"><i class="ti ti-send"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
 <?php if ($_SESSION['username']['role'] == 'koordinator') : ?>
     <style>
         body {
@@ -312,6 +162,23 @@
                 font-size: 0.89rem;
             }
         }
+        .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+  }
+  .filter-item {
+    flex: 1 1 auto;
+  }
+  @media (max-width: 768px) {
+    .filter-bar {
+      flex-direction: column;
+    }
+    .filter-item {
+      width: 100%;
+    }
+  }
     </style>
     <div class="dashboard-header mb-4">
         <h2 style="color: #fff; font-weight: 600;">
@@ -325,27 +192,43 @@
             <i class="fa fa-bar-chart"></i>
         </span>
     </div>
-    <div class="filter-bar flex-column flex-md-row d-flex align-items-stretch align-items-md-center justify-content-between gap-3 gap-md-0" style="background: linear-gradient(90deg, #e6f7ee 70%, #d2f4e3 100%); box-shadow: 0 2px 10px rgba(0,141,76,0.09); border-radius: 16px; padding: 22px 18px; margin-bottom: 28px;">
-        <form class="d-flex flex-wrap gap-2 align-items-center" method="get" id="filterForm" style="margin-bottom:0;">
-            <label class="mb-0 fw-bold text-success" for="start_date" style="font-size:1.05rem;">
-                <i class="fa fa-calendar-alt me-1"></i> Periode:
-            </label>
-            <input type="date" class="form-control border-success" name="start_date" id="start_date" value="<?= isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); ?>" style="min-width:140px;">
-            <span class="mx-2 fw-bold text-secondary">s/d</span>
-            <input type="date" class="form-control border-success" name="end_date" id="end_date" value="<?= isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d'); ?>" style="min-width:140px;">
-            <button type="submit" class="btn btn-success d-flex align-items-center px-3 ms-2" style="font-weight:500;">
-                <i class="fa fa-filter me-1"></i> Filter
+    <div class="filter-bar d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-3" 
+     style="background: linear-gradient(90deg, #e6f7ee 70%, #d2f4e3 100%);
+            box-shadow: 0 2px 10px rgba(0,141,76,0.09);
+            border-radius: 16px; padding: 22px 18px; margin-bottom: 28px;">
+
+    <!-- Filter Form -->
+    <form class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2 mb-0" method="get" id="filterForm">
+        <label class="mb-0 fw-bold text-success" for="start_date" style="font-size:1.05rem;">
+            <i class="fa fa-calendar-alt me-1"></i> Periode:
+        </label>
+       <input type="date" class="form-control form-control-lg border-success" 
+       name="start_date" id="start_date" 
+       value="<?= isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); ?>" 
+       style="min-width:140px;">
+
+        <span class="fw-bold text-secondary">s/d</span>
+
+        <input type="date" class="form-control form-control-lg border-success" 
+            name="end_date" id="end_date" 
+            value="<?= isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d'); ?>" 
+            style="min-width:140px;">
+
+        <!-- Button Group -->
+        <div class="btn-group ms-2" style="gap: 6px;">
+            <button type="submit" class="btn btn-success px-3 py-1">
+            <i class="fa fa-filter me-2"></i> Filter
             </button>
-        </form>
-        <div class="export-btns d-flex align-items-center gap-2 mt-3 mt-md-0">
-            <button class="btn btn-outline-success d-flex align-items-center px-3" id="exportExcel" style="font-weight:500;">
-                <i class="fa fa-file-excel me-1"></i> Excel
+            <button type="button" class="btn btn-outline-success px-3 py-1" id="exportExcel">
+            <i class="fa fa-file-excel-o"></i> Export Excel
             </button>
-            <button class="btn btn-outline-success d-flex align-items-center px-3" id="exportImage" style="font-weight:500;">
-                <i class="fa fa-image me-1"></i> Image
+            <button type="button" class="btn btn-outline-success px-3 py-1" id="exportImage">
+            <i class="fa fa-image me-2"></i> Export Gambar
             </button>
         </div>
-    </div>
+    </form>
+</div>
+
     <style>
         .filter-bar input[type="date"]::-webkit-input-placeholder { color: #198754; }
         .filter-bar input[type="date"]::-moz-placeholder { color: #198754; }
@@ -431,7 +314,7 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex flex-wrap align-items-center justify-content-between">
-                    <span class="fw-bold fs-5"><i class="fa fa-calendar-check me-2"></i>Statistik Pembayaran IPL Per Bulan</span>
+                    <span class="fw-bold fs-5 text-white"><i class="fa fa-calendar-check me-2"></i>Statistik Pembayaran IPL Per Bulan</span>
                     <span class="d-none d-md-inline text-white-50 fs-6">Periode: <?= date('d M Y', strtotime($start_date)); ?> - <?= date('d M Y', strtotime($end_date)); ?></span>
                 </div>
                 <div class="card-body">
