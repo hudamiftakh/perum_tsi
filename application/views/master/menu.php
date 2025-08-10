@@ -58,7 +58,7 @@
                             <span class="hide-menu">Data Keluarga</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
+                    <!-- <li class="sidebar-item">
                         <a href="<?php echo base_url('warga/verifikasi-pembayaran') ?>"
                             class="sidebar-link <?php echo (in_array($submenu, array('warga', 'contact-group'))) ? 'active' : ''; ?>">
                             <div class="round-16 d-flex align-items-center justify-content-center">
@@ -75,7 +75,57 @@
                             </div>
                             <span class="hide-menu">Riwayat Pembayaran</span>
                         </a>
+                    </li> -->
+                </ul>
+            </li>
+              <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('pembayaran'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-cash"></i>
+                    </span>
+                    <span class="hide-menu">Pembayaran</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('pembayaran'))) ? 'in' : ''; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('pembayaran') ?>"
+                            class="sidebar-link <?php echo ($submenu == 'input') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Input Pembayaran</span>
+                        </a>
                     </li>
+                        <?php
+                        // Query jumlah pembayaran dengan status pending
+                        $this->db->where('status', 'pending');
+                        $pending_count = $this->db->count_all_results('master_pembayaran');
+                        ?>
+                        <li class="sidebar-item">
+                            <a href="<?php echo base_url('pembayaran/verifikasi-pembayaran') ?>"
+                                class="sidebar-link <?php echo ($submenu == 'verifikasi-pembayaran') ? 'active' : ''; ?>">
+                                <div class="round-16 d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-circle"></i>
+                                </div>
+                                <span class="hide-menu d-flex align-items-center">
+                                    Verifikasi Pembayaran
+                                    <?php if ($pending_count > 0): ?>
+                                        <span class="badge bg-danger ms-2" style="font-size: 0.8em;"><?php echo $pending_count; ?></span>
+                                    <?php endif; ?>
+                                </span>
+                            </a>
+                        </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('pembayaran/laporan-pembayaran') ?>"
+                            class="sidebar-link <?php echo ($submenu == 'laporan-pembayaran') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Rekap Pembayaran</span>
+                        </a>
+                    </li>
+                   
                 </ul>
             </li>
             <li class="sidebar-item">
