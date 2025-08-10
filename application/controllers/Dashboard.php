@@ -569,6 +569,7 @@ class Dashboard extends CI_Controller
 
 	public function cek_pembayaran()
 	{
+		$this->checkSession();
 		$tanggal = $this->input->post('tanggal');
 		$id_rumah = $this->input->post('id_rumah'); // bisa juga dari session
 
@@ -596,6 +597,7 @@ class Dashboard extends CI_Controller
 
 	public function laporan_pembayaran($tahun = null)
 	{
+		$this->checkSession();
 		if ($tahun === null) {
 			$tahun = date('Y');
 		}
@@ -686,6 +688,7 @@ class Dashboard extends CI_Controller
 
 	public function verifikasi_pembayaran()
 	{
+		$this->checkSession();
 		// Ambil input dari query string (GET)
 		$status          = $this->input->get('status', TRUE) ?: 'pending'; // default 'pending'
 		$keyword         = $this->input->get('keyword', TRUE);
@@ -788,6 +791,7 @@ class Dashboard extends CI_Controller
 
 	public function save_pembayaran()
 	{
+		$this->checkSession();
 		// Ambil data dari POST
 		$id = $this->input->post('id_pembayaran');
 		$user_id = $this->input->post('user_id');
@@ -901,6 +905,7 @@ class Dashboard extends CI_Controller
 
 	public function act_verifikasi_pembayaran()
 	{
+		$this->checkSession();
 		// Ambil ID dari POST
 		$id = $this->input->post('id');
 		$aksi = $this->input->post('aksi');
@@ -1004,6 +1009,7 @@ _Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak memba
 	}
 	public function ajaxSendWaBatch()
 	{
+		$this->checkSession();
 		if (!$this->input->is_ajax_request()) {
 			show_404();
 		}
@@ -1048,7 +1054,7 @@ _Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak memba
 				}
 			}
 
-			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu $nama,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
+			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
 
 			$no_hp = hp($row['no_hp']);
 			$status = 'Gagal';
@@ -1103,6 +1109,7 @@ _Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak memba
 
 	public function kirim_ipl()
 	{
+		 	$this->checkSession();
 			$this->load->library('pagination');
 
 			// Config pagination
@@ -1149,10 +1156,12 @@ _Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak memba
 		redirect('./login');
 	}
 	public function invoice(){
+		$this->checkSession();
 		$this->load->view('dashboard/invoice_pdf');
 	}
 	public function download_invoice()
 	{
+
 		// Load TCPDF library
 		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
 

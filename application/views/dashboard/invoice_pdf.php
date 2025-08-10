@@ -113,7 +113,7 @@
                         <tr>
                             <td class="label" style="padding-top: 10px;">Nama</td>
                             <td class="separator">:</td>
-                            <td><?= htmlspecialchars($rumah['nama']) ?></td>
+                            <td><?= htmlspecialchars(strtoupper($rumah['nama'])) ?></td>
                         </tr>
                         <tr>
                             <td class="label">Nomor Rumah</td>

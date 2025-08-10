@@ -150,7 +150,7 @@
                 <ul aria-expanded="false"
                     class="collapse first-level <?php echo (in_array($menu, array('pembayaran'))) ? 'in' : ''; ?>">
                     <li class="sidebar-item">
-                        <a href="<?php echo base_url('pembayaran/input') ?>"
+                        <a href="<?php echo base_url('pembayaran') ?>"
                             class="sidebar-link <?php echo ($submenu == 'input') ? 'active' : ''; ?>">
                             <div class="round-16 d-flex align-items-center justify-content-center">
                                 <i class="ti ti-circle"></i>

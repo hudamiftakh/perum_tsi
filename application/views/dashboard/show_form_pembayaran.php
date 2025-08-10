@@ -290,7 +290,7 @@
                             placeholder="Contoh: Pembayaran bulan Januari hingga Maret"><?= $data_update['keterangan'] ?></textarea>
                     </div>
                     <?php if(!empty($id)) :  ?>
-                    <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
+                        <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
                     <?php else : ?>
                         <button type="submit" class="btn btn-primary w-100">Bayar Sekarang</button>
                     <?php endif; ?>
