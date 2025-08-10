@@ -144,7 +144,7 @@ $this->load->library('encryption');
                     <i class="fa fa-search me-1"></i> Cari
                 </button>
                 <?php if ($this->input->get('keyword') || $this->input->get('pembayaran_via') || $this->input->get('id_koordinator') || $this->input->get('status')): ?>
-                <a href="<?= base_url('warga/verifikasi-pembayaran'); ?>"
+                <a href="<?= base_url('pembayaran/verifikasi-pembayaran'); ?>"
                     class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
                     <i class="fa fa-times me-1"></i> Reset
                 </a>
