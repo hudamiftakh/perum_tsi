@@ -31,33 +31,53 @@ class auth extends CI_Controller
 
     public function doLogin()
     {
-        try {
-            if (isset($_POST['username'])) {
-                $checkUser = $this->db->get_where('master_admin',array('username'=>$_POST['username'], 'password'=>md5($_REQUEST['password'])));
-                if($checkUser->num_rows()>=1){
-					$data = $checkUser->row_array();
-					// var_dump($data);
-                    $this->db->update('master_admin',array('login_at'=>date('Y-m-d H:i:s')),array('username'=>$_POST['username']));
-                    $this->session->set_userdata('username', $data);
-                    redirect('./dashboard');
-                }else{
-                    $checkUser = $this->db->get_where('master_koordinator_blok', array('username' => $_POST['username'], 'password' => md5($_REQUEST['password'])));
-                    if ($checkUser->num_rows() >= 1) {
-                        $data = $checkUser->row_array();
-                        $this->db->update('master_koordinator_blok', array('login_at' => date('Y-m-d H:i:s')), array('username' => $_POST['username']));
-                        $data['role'] = 'koordinator';
-                        $this->session->set_userdata('username', $data);
-                        redirect('./dashboard');
-                    } else {
-                        redirect('./login');
-                    }
-                }
-                
-            } 
-        } catch (Exception $e) {
-            echo "Error " . $e;
+        // Load form validation library
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('username', 'Username', 'required|trim');
+        $this->form_validation->set_rules('password', 'Password', 'required');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', 'Username dan Password wajib diisi.');
             redirect('./login');
+            return;
         }
+
+        $username = $this->input->post('username', TRUE);
+        $password = $this->input->post('password', TRUE);
+        $password_md5 = md5($password);
+
+        // Cek di master_admin
+        $checkUser = $this->db->get_where('master_admin', [
+            'username' => $username,
+            'password' => $password_md5
+        ]);
+
+        if ($checkUser->num_rows() >= 1) {
+            $data = $checkUser->row_array();
+            $this->db->update('master_admin', ['login_at' => date('Y-m-d H:i:s')], ['username' => $username]);
+            $this->session->set_userdata('username', $data);
+            redirect('./dashboard');
+            return;
+        }
+
+        // Cek di master_koordinator_blok
+        $checkKoordinator = $this->db->get_where('master_koordinator_blok', [
+            'username' => $username,
+            'password' => $password_md5
+        ]);
+
+        if ($checkKoordinator->num_rows() >= 1) {
+            $data = $checkKoordinator->row_array();
+            $this->db->update('master_koordinator_blok', ['login_at' => date('Y-m-d H:i:s')], ['username' => $username]);
+            $this->session->set_userdata('username', $data);
+            $this->session->set_userdata('role', 'koordinator');
+            redirect('./dashboard');
+            return;
+        }
+
+        // Jika gagal login
+        $this->session->set_flashdata('error', 'Username atau Password salah.');
+        redirect('./login');
     }
     public function checkSession()
     {

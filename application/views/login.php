@@ -63,10 +63,28 @@
                     <label for="exampleInputEmail1" class="form-label">Username</label>
                     <input type="text" class="form-control" name="username" aria-describedby="emailHelp" placeholder="Username">
                   </div>
-                  <div class="mb-4">
+                    <div class="mb-4">
                     <label for="exampleInputPassword1" class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password" placeholder="Password">
-                  </div>
+                    <div class="input-group">
+                      <input type="password" class="form-control" name="password" id="passwordInput" placeholder="Password">
+                      <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                      <span id="toggleIcon">Show</span>
+                      </button>
+                    </div>
+                    </div>
+                    <script>
+                    document.getElementById('togglePassword').addEventListener('click', function () {
+                      var passwordInput = document.getElementById('passwordInput');
+                      var toggleIcon = document.getElementById('toggleIcon');
+                      if (passwordInput.type === 'password') {
+                      passwordInput.type = 'text';
+                      toggleIcon.textContent = 'Hide';
+                      } else {
+                      passwordInput.type = 'password';
+                      toggleIcon.textContent = 'Show';
+                      }
+                    });
+                    </script>
                   <div class="d-flex align-items-center justify-content-between mb-4" >
                     <div class="form-check">
                       <input class="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" checked>
