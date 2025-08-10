@@ -69,8 +69,8 @@ class auth extends CI_Controller
         if ($checkKoordinator->num_rows() >= 1) {
             $data = $checkKoordinator->row_array();
             $this->db->update('master_koordinator_blok', ['login_at' => date('Y-m-d H:i:s')], ['username' => $username]);
+            $data['role'] ='koordinator';
             $this->session->set_userdata('username', $data);
-            $this->session->set_userdata('role', 'koordinator');
             redirect('./dashboard');
             return;
         }
