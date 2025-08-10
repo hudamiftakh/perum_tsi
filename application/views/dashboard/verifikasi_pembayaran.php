@@ -153,11 +153,11 @@ $this->load->library('encryption');
         </div>
 
         <!-- Tombol Tambah -->
-        <div class="col-12 col-md-auto">
+        <!-- <div class="col-12 col-md-auto">
             <a href="<?= base_url('pembayaran'); ?>" class="btn btn-success w-100">
                 <i class="fa fa-plus-circle me-1"></i> Tambah Pembayaran
             </a>
-        </div>
+        </div> -->
 
     </div>
 </form>

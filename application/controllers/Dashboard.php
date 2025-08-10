@@ -1054,7 +1054,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				}
 			}
 
-			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
+			$text = "📢 Pengingat Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nKami mengingatkan untuk melakukan pembayaran IPL bulan *$bulan* untuk rumah di alamat *$alamat* batas pembayaran tanggal 10 setiap bulannya.\n\n💳 Cara Pembayaran:\n- Melalui Koordinator Blok\n- Transfer ke Bendahara Paguyuban (BCA 8221586107 / Dhani Kispananto)\n\nPembayaran IPL sangat penting untuk mendukung operasional dan pemeliharaan lingkungan kita bersama.\n\nTerima kasih atas perhatian dan kerjasama Bapak/Ibu.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi. Mohon tidak membalas pesan ini._";
 
 			$no_hp = hp($row['no_hp']);
 			$status = 'Gagal';

@@ -160,12 +160,12 @@ $this->load->library('encryption');
                 <?php endif; ?>
 
                 <!-- Tombol Tambah -->
-                <a href="<?= base_url('pembayaran'); ?>" class="btn btn-primary">
+                <!-- <a href="<?= base_url('pembayaran'); ?>" class="btn btn-primary">
                     <i class="fa fa-plus me-1"></i> Tambah
-                </a>
+                </a> -->
                 
                 <?php if ($this->session->userdata('username')['role'] == 'admin'): ?>
-                    <a href="<?= base_url('pembayaran/kirim_ipl'); ?>" class="btn btn-success">
+                    <a href="<?= base_url('pembayaran/kirim_ipl'); ?>" class="btn btn-danger">
                         <i class="fa fa-bell me-1"></i> Kirim Peringatan
                     </a>
                 <?php endif; ?>
