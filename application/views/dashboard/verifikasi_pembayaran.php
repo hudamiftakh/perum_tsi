@@ -335,7 +335,7 @@ $this->load->library('encryption');
                     </tr>
                 </tfoot>
             </table>
-            <button id="submitBtn" type="submit" class="btn btn-success">Verifikasi Semua</button>
+            <!-- <button id="submitBtn" type="submit" class="btn btn-success">Verifikasi Semua</button> -->
         </div>
     <!-- </div>
 </div> -->

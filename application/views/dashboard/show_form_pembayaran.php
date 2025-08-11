@@ -207,55 +207,75 @@
                             <option value="11_bulan" <?php echo (@$data_update['metode'] == '11_bulan') ? "selected" : ""; ?>>Rapel 11 Bulan</option>
                             <option value="12_bulan" <?php echo (@$data_update['metode'] == '12_bulan') ? "selected" : ""; ?>>Rapel 12 Bulan</option>
                         </select>
-                        <div id="bulanRapelContainer" class="mt-2" style="display:none; padding-left: 12px;">
-                            <label class="form-label">Pilih Bulan yang Dirapel</label>
-                            <div id="bulanRapelCheckboxes" class="d-flex flex-wrap gap-2 bulan-rapel-flex"></div>
-                            <div class="info-small">Centang sesuai jumlah bulan yang dirapel.</div>
-                            <style>
-                                /* Styling khusus bulan rapel agar responsif dan rapi */
-                                .bulan-rapel-flex {
-                                    gap: 0.5rem !important;
-                                    row-gap: 0.5rem !important;
-                                    flex-wrap: wrap;
-                                    justify-content: flex-start;
+                        <div id="bulanRapelContainer" class="mt-2" style="display:none;">
+                            <label class="form-label fw-bold mb-2">Pilih Bulan yang Dirapel</label>
+                            <div id="bulanRapelCheckboxes" class="bulan-rapel-grid"></div>
+                            <div class="info-small text-muted mt-1">Centang sesuai jumlah bulan yang dirapel.</div>
+                        </div>
+
+                        <style>
+                            /* Grid responsive */
+                            .bulan-rapel-grid {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                                gap: 0.6rem;
+                            }
+
+                            /* Desain kartu checkbox */
+                            .bulan-rapel-item {
+                                position: relative;
+                                border: 1px solid #ddd;
+                                border-radius: 10px;
+                                padding: 10px 12px;
+                                background: #f9f9f9;
+                                cursor: pointer;
+                                transition: all 0.2s ease-in-out;
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                            }
+
+                            /* Hover efek */
+                            .bulan-rapel-item:hover {
+                                background: #eaf4ff;
+                                border-color: #0d6efd;
+                                box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                            }
+
+                            /* Checkbox style */
+                            .bulan-rapel-item input[type="checkbox"] {
+                                width: 1.1em;
+                                height: 1.1em;
+                                accent-color: #0d6efd;
+                                cursor: pointer;
+                            }
+
+                            /* Label style */
+                            .bulan-rapel-label {
+                                font-size: 0.95rem;
+                                font-weight: 500;
+                                color: #333;
+                                margin: 0;
+                            }
+
+                            /* Mobile optimasi */
+                            @media (max-width: 600px) {
+                                .bulan-rapel-grid {
+                                    grid-template-columns: repeat(2, 1fr);
                                 }
-                                .bulan-rapel-flex .form-check {
-                                    min-width: 120px;
-                                    margin-bottom: 0 !important;
-                                    background: #f1f3f4;
-                                    border-radius: 8px;
-                                    padding: 6px 10px 6px 6px;
-                                    border: 1px solid #e0e0e0;
-                                    transition: background 0.2s;
-                                    display: flex;
-                                    align-items: center;
+                                .bulan-rapel-label {
+                                    font-size: 0.9rem;
                                 }
-                                .bulan-rapel-flex .form-check-input {
-                                    margin-right: 8px;
-                                    width: 1.1em;
-                                    height: 1.1em;
-                                    accent-color: #0d6efd;
+                            }
+
+                            @media (max-width: 400px) {
+                                .bulan-rapel-grid {
+                                    grid-template-columns: 1fr;
                                 }
-                                .bulan-rapel-flex .form-check-label {
-                                    font-size: 1em;
-                                    font-weight: 500;
-                                    color: #333;
-                                    margin-bottom: 0;
-                                    cursor: pointer;
-                                }
-                                @media (max-width: 600px) {
-                                    .bulan-rapel-flex .form-check {
-                                        min-width: 48vw;
-                                        font-size: 0.98em;
-                                        padding: 6px 6px 6px 4px;
-                                    }
-                                    .bulan-rapel-flex {
-                                        gap: 0.3rem !important;
-                                    }
-                                }
-                            </style>
-                            <script>
-                            // Daftar bulan tahun 2025 saja
+                            }
+                        </style>
+
+                        <script>
                             function getBulanPilihan2025() {
                                 const bulan = [
                                     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -270,12 +290,10 @@
                                 return options;
                             }
 
-                            // Ambil data bulan_rapel dari PHP jika edit
                             <?php
                             $bulan_rapel_checked = [];
                             if (!empty($data_update['bulan_rapel'])) {
                                 $bulan_rapel_checked = explode(',', $data_update['bulan_rapel']);
-                                // pastikan array
                                 if (!is_array($bulan_rapel_checked)) $bulan_rapel_checked = [];
                             }
                             ?>
@@ -286,49 +304,42 @@
                                 const bulanRapelContainer = document.getElementById('bulanRapelContainer');
                                 const bulanRapelCheckboxes = document.getElementById('bulanRapelCheckboxes');
                                 let rapelMatch = metode.match(/^(\d+)_bulan$/);
+
                                 if (rapelMatch && parseInt(rapelMatch[1]) > 1) {
                                     bulanRapelContainer.style.display = '';
-                                    // Isi checkbox bulan
                                     let options = getBulanPilihan2025();
                                     bulanRapelCheckboxes.innerHTML = '';
                                     options.forEach((opt, idx) => {
                                         let id = 'bulan_rapel_' + idx;
+                                        let wrapper = document.createElement('label');
+                                        wrapper.className = 'bulan-rapel-item';
+
                                         let checkbox = document.createElement('input');
                                         checkbox.type = 'checkbox';
                                         checkbox.name = 'bulan_rapel[]';
                                         checkbox.value = opt.value;
                                         checkbox.id = id;
-                                        checkbox.className = 'form-check-input bulan-rapel-check';
+                                        checkbox.checked = bulanRapelChecked.includes(opt.value);
                                         checkbox.required = true;
 
-                                        // Ceklist otomatis jika edit
-                                        if (bulanRapelChecked.includes(opt.value)) {
-                                            checkbox.checked = true;
-                                        }
+                                        let span = document.createElement('span');
+                                        span.className = 'bulan-rapel-label';
+                                        span.textContent = opt.label;
 
-                                        let label = document.createElement('label');
-                                        label.htmlFor = id;
-                                        label.className = 'form-check-label me-3';
-                                        label.textContent = opt.label;
-
-                                        let wrapper = document.createElement('div');
-                                        wrapper.className = 'form-check form-check-inline mb-1';
                                         wrapper.appendChild(checkbox);
-                                        wrapper.appendChild(label);
-
+                                        wrapper.appendChild(span);
                                         bulanRapelCheckboxes.appendChild(wrapper);
                                     });
 
-                                    // Batasi jumlah centang sesuai rapel
-                                    bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check').forEach(cb => {
+                                    // Batasi jumlah centang
+                                    bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                                         cb.addEventListener('change', function() {
-                                            let checked = bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check:checked');
+                                            let checked = bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
                                             if (checked.length > parseInt(rapelMatch[1])) {
                                                 this.checked = false;
                                             }
-                                            // Set required hanya jika kurang dari jumlah rapel
-                                            bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check').forEach(c => {
-                                                c.required = (bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check:checked').length < parseInt(rapelMatch[1]));
+                                            bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]').forEach(c => {
+                                                c.required = (bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]:checked').length < parseInt(rapelMatch[1]));
                                             });
                                         });
                                     });
@@ -337,11 +348,10 @@
                                     bulanRapelCheckboxes.innerHTML = '';
                                 }
                             }
-                            document.addEventListener('DOMContentLoaded', function() {
-                                handleMetodeChange();
-                            });
-                            </script>
-                        </div>
+
+                            document.addEventListener('DOMContentLoaded', handleMetodeChange);
+                        </script>
+
                     <?php if (!empty($data_update['bulan_mulai'])) :  ?>
                         <div class="mb-3">
                             <label for="bulan_mulai" class="form-label">Bulan Bayar</label>
