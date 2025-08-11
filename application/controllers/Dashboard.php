@@ -1223,6 +1223,40 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	{
 		echo "<script>alert('Berhasil disimpan')</script>";
 	}
+	public function act_hapus_pembayaran()
+	{
+		$this->checkSession();
+		$id = $this->input->post('id', true);
+
+		if (empty($id) || !is_numeric($id)) {
+			echo json_encode(['status' => 'error', 'message' => 'ID tidak valid']);
+			return;
+		}
+
+		// Ambil data pembayaran
+		$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
+		if (!$pembayaran) {
+			echo json_encode(['status' => 'error', 'message' => 'Data pembayaran tidak ditemukan']);
+			return;
+		}
+
+		// Hapus file bukti jika ada
+		if (!empty($pembayaran['bukti'])) {
+			$file_path = FCPATH . 'uploads/bukti/' . $pembayaran['bukti'];
+			if (file_exists($file_path)) {
+				@unlink($file_path);
+			}
+		}
+
+		// Hapus data pembayaran
+		$this->db->where('id', $id)->delete('master_pembayaran');
+
+		if ($this->db->affected_rows() > 0) {
+			echo json_encode(['status' => 'success', 'message' => 'Pembayaran berhasil dihapus']);
+		} else {
+			echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus pembayaran']);
+		}
+	}
 	public function act_update_password()
 	{
 		$this->checkSession();

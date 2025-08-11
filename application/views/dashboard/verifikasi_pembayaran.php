@@ -313,6 +313,11 @@ $this->load->library('encryption');
                                 class="btn btn-info btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-pencil me-1"></i> Revisi
                             </a>
+
+                            <button  onclick="handleHapus('<?php echo $row->id; ?>')" 
+                                class="btn btn-danger btn-sm d-inline-flex align-items-center">
+                                <i class="bi bi-trash me-1"></i> Hapus
+                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -406,6 +411,45 @@ function handleVerifikasi(id,aksi) {
                     Swal.fire(
                         'Gagal!',
                         'Terjadi kesalahan saat memverifikasi.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+
+function handleHapus(id) {
+    Swal.fire({
+        title: 'Yakin ingin menghapus data ini?',
+        text: "Data yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '<?= base_url("dashboard/act_hapus_pembayaran") ?>',
+                method: 'POST',
+                data: { id: id },
+                success: function(response) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Data berhasil dihapus.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire(
+                        'Gagal!',
+                        'Terjadi kesalahan saat menghapus data.',
                         'error'
                     );
                 }
