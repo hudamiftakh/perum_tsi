@@ -222,7 +222,7 @@
                     <?php endif; ?>
                     <div class="mb-3">
                         <label for="tanggal_bayar" class="form-label">Tanggal Pembayaran</label>
-                        <input type="text" class="form-control" value="<?php echo $data_update['tanggal_bayar']; ?>" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal pembayaran" required>
+                        <input type="text" class="form-control" value="<?php echo @$data_update['tanggal_bayar']; ?>" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal pembayaran" required>
                     </div>
                     <div id="opsiCicilan" class="row d-none">
                         <div class="col-md-6 mb-3">
@@ -280,7 +280,7 @@
                             <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
                             <input type="file" class="form-control" name="bukti" id="bukti"
                                 accept="image/*,application/pdf">
-                            <div class="info-small">Format: JPG, PNG, atau PDF</div>
+                            <div class="info-small">Format: JPG, PNG, atau PDF. Maksimal 5 MB.</div>
                             <label class="form-label">Bukti Sebelumnya:</label><br>
                             <?php
                             $ext = pathinfo($data_update['bukti'], PATHINFO_EXTENSION);
@@ -300,7 +300,7 @@
                             <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
                             <input type="file" class="form-control" name="bukti" id="bukti"
                                 accept="image/*,application/pdf">
-                            <div class="info-small">Format: JPG, PNG, atau PDF</div>
+                            <div class="info-small">Format: JPG, PNG, atau PDF. Maksimal 5 MB.</div>
                         </div>
                     <?php endif; ?>
 
