@@ -192,7 +192,7 @@
                     <div class="mb-3">
                         <br>
                         <label class="form-label">Jenis Pembayaran</label>
-                        <select class="form-select" name="metode" style="width: 100%; height: 40px; font-size: 14px;" id="metode" required onchange="handleMetodeChange()">
+                        <select class="form-select" name="metode" style="width: 100%; height: 40px; font-size: 17px;" id="metode" required onchange="handleMetodeChange()">
                             <option value="">Pilih metode pembayaran...</option>
                             <option value="1_bulan" <?php echo (@$data_update['metode'] == '1_bulan') ? "selected" : ""; ?>>Bayar 1 Bulan</option>
                             <option value="2_bulan" <?php echo (@$data_update['metode'] == '2_bulan') ? "selected" : ""; ?>>Rapel 2 Bulan</option>
