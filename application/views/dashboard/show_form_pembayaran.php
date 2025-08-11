@@ -397,16 +397,21 @@
                             function updateJumlahBayar() {
                                 let metodeVal = metode.value;
                                 let rapelMatch = metodeVal.match(/^(\d+)_bulan$/);
-                                if (rapelMatch && parseInt(rapelMatch[1]) > 1 && bulanRapelCheckboxes) {
-                                    // Hitung jumlah centang
-                                    let checked = bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check:checked').length;
-                                    if (checked > 0) {
-                                        jumlahBayar.value = (checked * hargaPerBulan).toLocaleString('id-ID');
-                                    } else {
-                                        jumlahBayar.value = '';
+                                if (rapelMatch) {
+                                    let bulanCount = parseInt(rapelMatch[1]);
+                                    if (bulanCount > 1 && bulanRapelCheckboxes) {
+                                        // Hitung jumlah centang
+                                        let checked = bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]:checked').length;
+                                        if (checked > 0) {
+                                            jumlahBayar.value = (checked * hargaPerBulan).toLocaleString('id-ID');
+                                        } else {
+                                            jumlahBayar.value = '';
+                                        }
+                                    } else if (bulanCount === 1) {
+                                        jumlahBayar.value = hargaPerBulan.toLocaleString('id-ID');
                                     }
-                                } else if (metodeVal === '1_bulan') {
-                                    jumlahBayar.value = hargaPerBulan.toLocaleString('id-ID');
+                                } else {
+                                    jumlahBayar.value = '';
                                 }
                             }
 
@@ -417,12 +422,12 @@
                             // Event untuk ganti metode
                             if (metode) {
                                 metode.addEventListener('change', function() {
-                                    setTimeout(updateJumlahBayar, 100); // tunggu checkbox render
+                                    setTimeout(updateJumlahBayar, 150); // tunggu checkbox render
                                 });
                             }
 
                             // Inisialisasi saat load
-                            setTimeout(updateJumlahBayar, 300);
+                            setTimeout(updateJumlahBayar, 350);
 
                             // Format input manual jika user edit
                             if (jumlahBayar) {
