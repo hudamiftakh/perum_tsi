@@ -305,47 +305,18 @@ $this->load->library('encryption');
                                 }
                             ?>">
                             <?php if ($data_pembayaran): ?>
-                                <?php if (in_array($data_pembayaran['status'], ['verified','pending'])): ?>
+                                <?php if (in_array($data_pembayaran['status'], ['verified'])): ?>
                                     <div class="d-flex flex-column align-items-center">
                                         <!-- Tambahkan trigger modal pada nominal -->
                                         <strong style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>">
                                             <?php echo number_format($data_pembayaran['jumlah_bayar']); ?>
                                         </strong>
                                     </div>
-                                    <!-- Modal Revisi -->
-                                    <div class="modal fade" id="revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>" tabindex="-1" aria-labelledby="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>">Revisi Pembayaran</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body text-center">
-                                                    <p>
-                                                        <strong><?= htmlspecialchars($data_bulanan['nama']); ?></strong><br>
-                                                        <span class="text-muted"><?= htmlspecialchars($data_bulanan['alamat']); ?></span>
-                                                    </p>
-                                                    <p>
-                                                        Nominal: <strong>Rp <?= number_format($data_pembayaran['jumlah_bayar']); ?></strong><br>
-                                                        Bulan Bayar: <strong>
-                                                            <?php
-                                                                $bulan_bayar = (int)date('n', strtotime($data_pembayaran['bulan_mulai']));
-                                                                $bulan_indonesia = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
-                                                                echo $bulan_indonesia[$bulan_bayar] . ' ' . date('Y', strtotime($data_pembayaran['bulan_mulai']));
-                                                            ?>
-                                                        </strong>
-                                                    </p>
-                                                    <a href="<?php echo  base_url('pembayaran/'.encrypt_url($data_pembayaran['id_rumah']))."/".encrypt_url($data_pembayaran['id_pembayaran']); ?>" class="btn btn-warning">
-                                                        <i class="bi bi-pencil-square"></i> Revisi
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                   
                                 <?php elseif ($data_pembayaran['status'] == 'pending'): ?>
-                                    <div class="d-flex flex-column align-items-center">
+                                    <strong style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>">
                                         <span>⏳ Pending</span>
-                                    </div>
+                                    </strong>
                                 <?php else: ?>
                                     <div class="d-flex flex-column align-items-center">
                                         <span>❌ Belum</span>
@@ -357,6 +328,37 @@ $this->load->library('encryption');
                                 </div>
                             <?php endif; ?>
                         </td>
+
+                         <!-- Modal Revisi -->
+                        <div class="modal fade" id="revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>" tabindex="-1" aria-labelledby="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>">Revisi Pembayaran</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <p>
+                                            <strong><?= htmlspecialchars($data_bulanan['nama']); ?></strong><br>
+                                            <span class="text-muted"><?= htmlspecialchars($data_bulanan['alamat']); ?></span>
+                                        </p>
+                                        <p>
+                                            Nominal: <strong>Rp <?= number_format($data_pembayaran['jumlah_bayar']); ?></strong><br>
+                                            Bulan Bayar: <strong>
+                                                <?php
+                                                    $bulan_bayar = (int)date('n', strtotime($data_pembayaran['bulan_mulai']));
+                                                    $bulan_indonesia = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+                                                    echo $bulan_indonesia[$bulan_bayar] . ' ' . date('Y', strtotime($data_pembayaran['bulan_mulai']));
+                                                ?>
+                                            </strong>
+                                        </p>
+                                        <a href="<?php echo  base_url('pembayaran/'.encrypt_url($data_pembayaran['id_rumah']))."/".encrypt_url($data_pembayaran['id_pembayaran']); ?>" class="btn btn-warning">
+                                            <i class="bi bi-pencil-square"></i> Revisi
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     <?php endfor; ?>
 
                     <td class="text-center fw-bold" nowrap="">
