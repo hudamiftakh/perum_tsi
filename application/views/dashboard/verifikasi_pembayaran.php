@@ -241,7 +241,20 @@ $this->load->library('encryption');
                         <td nowrap><?= htmlspecialchars($row->nama) ?> <br>
                             <?= htmlspecialchars($row->rumah) ?>
                         </td>
-                        <td><?= formatBulanTahun($row->bulan_mulai); ?></td>
+                        <?php if ($row->metode == '1_bulan'): ?>
+                            <td><?= formatBulanTahun($row->bulan_mulai); ?></td>
+                        <?php else: ?>
+                            <td>
+                                <?php
+                                    // bulan_rapel format: "2025-01,2025-02"
+                                    $bulanArr = explode(',', $row->bulan_rapel);
+                                    $formatted = array_map(function($b) {
+                                        return formatBulanTahun(trim($b));
+                                    }, $bulanArr);
+                                    echo implode(', ', $formatted);
+                                ?>
+                            </td>
+                        <?php endif; ?>
                         <td><?= date('Y-m-d H:i', strtotime($row->created_at)) ?></td>
                         <td>
                             <?php

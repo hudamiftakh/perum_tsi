@@ -192,30 +192,165 @@
                     <div class="mb-3">
                         <br>
                         <label class="form-label">Jenis Pembayaran</label>
-                        <select class="form-select" name="metode" id="metode" required>
+                        <select class="form-select" name="metode" style="width: 100%; height: 40px; font-size: 14px;" id="metode" required onchange="handleMetodeChange()">
                             <option value="">Pilih metode pembayaran...</option>
                             <option value="1_bulan" <?php echo (@$data_update['metode'] == '1_bulan') ? "selected" : ""; ?>>Bayar 1 Bulan</option>
-                           <option value="2_bulan" <?php echo (@$data_update['metode'] == '2_bulan') ? "selected" : ""; ?>>Rapel 2 Bulan</option>
+                            <option value="2_bulan" <?php echo (@$data_update['metode'] == '2_bulan') ? "selected" : ""; ?>>Rapel 2 Bulan</option>
                             <option value="3_bulan" <?php echo (@$data_update['metode'] == '3_bulan') ? "selected" : ""; ?>>Rapel 3 Bulan</option>
                             <option value="4_bulan" <?php echo (@$data_update['metode'] == '4_bulan') ? "selected" : ""; ?>>Rapel 4 Bulan</option>
                             <option value="5_bulan" <?php echo (@$data_update['metode'] == '5_bulan') ? "selected" : ""; ?>>Rapel 5 Bulan</option>
                             <option value="6_bulan" <?php echo (@$data_update['metode'] == '6_bulan') ? "selected" : ""; ?>>Rapel 6 Bulan</option>
-                           <option value="7_bulan" <?php echo (@$data_update['metode'] == '7_bulan') ? "selected" : ""; ?>>Rapel 7 Bulan</option>
+                            <option value="7_bulan" <?php echo (@$data_update['metode'] == '7_bulan') ? "selected" : ""; ?>>Rapel 7 Bulan</option>
                             <option value="8_bulan" <?php echo (@$data_update['metode'] == '8_bulan') ? "selected" : ""; ?>>Rapel 8 Bulan</option>
                             <option value="9_bulan" <?php echo (@$data_update['metode'] == '9_bulan') ? "selected" : ""; ?>>Rapel 9 Bulan</option>
                             <option value="10_bulan" <?php echo (@$data_update['metode'] == '10_bulan') ? "selected" : ""; ?>>Rapel 10 Bulan</option>
-                            <option value="1_tahun" <?php echo (@$data_update['metode'] == '1_tahun') ? "selected" : ""; ?>>Bayar 1 Tahun Sekaligus</option>
+                            <option value="11_bulan" <?php echo (@$data_update['metode'] == '11_bulan') ? "selected" : ""; ?>>Rapel 11 Bulan</option>
+                            <option value="12_bulan" <?php echo (@$data_update['metode'] == '12_bulan') ? "selected" : ""; ?>>Rapel 12 Bulan</option>
                         </select>
-                    </div>
+                        <div id="bulanRapelContainer" class="mt-2" style="display:none; padding-left: 12px;">
+                            <label class="form-label">Pilih Bulan yang Dirapel</label>
+                            <div id="bulanRapelCheckboxes" class="d-flex flex-wrap gap-2 bulan-rapel-flex"></div>
+                            <div class="info-small">Centang sesuai jumlah bulan yang dirapel.</div>
+                            <style>
+                                /* Styling khusus bulan rapel agar responsif dan rapi */
+                                .bulan-rapel-flex {
+                                    gap: 0.5rem !important;
+                                    row-gap: 0.5rem !important;
+                                    flex-wrap: wrap;
+                                    justify-content: flex-start;
+                                }
+                                .bulan-rapel-flex .form-check {
+                                    min-width: 120px;
+                                    margin-bottom: 0 !important;
+                                    background: #f1f3f4;
+                                    border-radius: 8px;
+                                    padding: 6px 10px 6px 6px;
+                                    border: 1px solid #e0e0e0;
+                                    transition: background 0.2s;
+                                    display: flex;
+                                    align-items: center;
+                                }
+                                .bulan-rapel-flex .form-check-input {
+                                    margin-right: 8px;
+                                    width: 1.1em;
+                                    height: 1.1em;
+                                    accent-color: #0d6efd;
+                                }
+                                .bulan-rapel-flex .form-check-label {
+                                    font-size: 1em;
+                                    font-weight: 500;
+                                    color: #333;
+                                    margin-bottom: 0;
+                                    cursor: pointer;
+                                }
+                                @media (max-width: 600px) {
+                                    .bulan-rapel-flex .form-check {
+                                        min-width: 48vw;
+                                        font-size: 0.98em;
+                                        padding: 6px 6px 6px 4px;
+                                    }
+                                    .bulan-rapel-flex {
+                                        gap: 0.3rem !important;
+                                    }
+                                }
+                            </style>
+                            <script>
+                            // Daftar bulan tahun 2025 saja
+                            function getBulanPilihan2025() {
+                                const bulan = [
+                                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                                ];
+                                let options = [];
+                                let tahun = 2025;
+                                for(let i=0; i<12; i++) {
+                                    let val = tahun + '-' + String(i+1).padStart(2,'0');
+                                    options.push({value: val, label: bulan[i] + ' ' + tahun});
+                                }
+                                return options;
+                            }
+
+                            // Ambil data bulan_rapel dari PHP jika edit
+                            <?php
+                            $bulan_rapel_checked = [];
+                            if (!empty($data_update['bulan_rapel'])) {
+                                $bulan_rapel_checked = explode(',', $data_update['bulan_rapel']);
+                                // pastikan array
+                                if (!is_array($bulan_rapel_checked)) $bulan_rapel_checked = [];
+                            }
+                            ?>
+                            const bulanRapelChecked = <?php echo json_encode($bulan_rapel_checked); ?>;
+
+                            function handleMetodeChange() {
+                                const metode = document.getElementById('metode').value;
+                                const bulanRapelContainer = document.getElementById('bulanRapelContainer');
+                                const bulanRapelCheckboxes = document.getElementById('bulanRapelCheckboxes');
+                                let rapelMatch = metode.match(/^(\d+)_bulan$/);
+                                if (rapelMatch && parseInt(rapelMatch[1]) > 1) {
+                                    bulanRapelContainer.style.display = '';
+                                    // Isi checkbox bulan
+                                    let options = getBulanPilihan2025();
+                                    bulanRapelCheckboxes.innerHTML = '';
+                                    options.forEach((opt, idx) => {
+                                        let id = 'bulan_rapel_' + idx;
+                                        let checkbox = document.createElement('input');
+                                        checkbox.type = 'checkbox';
+                                        checkbox.name = 'bulan_rapel[]';
+                                        checkbox.value = opt.value;
+                                        checkbox.id = id;
+                                        checkbox.className = 'form-check-input bulan-rapel-check';
+                                        checkbox.required = true;
+
+                                        // Ceklist otomatis jika edit
+                                        if (bulanRapelChecked.includes(opt.value)) {
+                                            checkbox.checked = true;
+                                        }
+
+                                        let label = document.createElement('label');
+                                        label.htmlFor = id;
+                                        label.className = 'form-check-label me-3';
+                                        label.textContent = opt.label;
+
+                                        let wrapper = document.createElement('div');
+                                        wrapper.className = 'form-check form-check-inline mb-1';
+                                        wrapper.appendChild(checkbox);
+                                        wrapper.appendChild(label);
+
+                                        bulanRapelCheckboxes.appendChild(wrapper);
+                                    });
+
+                                    // Batasi jumlah centang sesuai rapel
+                                    bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check').forEach(cb => {
+                                        cb.addEventListener('change', function() {
+                                            let checked = bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check:checked');
+                                            if (checked.length > parseInt(rapelMatch[1])) {
+                                                this.checked = false;
+                                            }
+                                            // Set required hanya jika kurang dari jumlah rapel
+                                            bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check').forEach(c => {
+                                                c.required = (bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check:checked').length < parseInt(rapelMatch[1]));
+                                            });
+                                        });
+                                    });
+                                } else {
+                                    bulanRapelContainer.style.display = 'none';
+                                    bulanRapelCheckboxes.innerHTML = '';
+                                }
+                            }
+                            document.addEventListener('DOMContentLoaded', function() {
+                                handleMetodeChange();
+                            });
+                            </script>
+                        </div>
                     <?php if (!empty($data_update['bulan_mulai'])) :  ?>
                         <div class="mb-3">
-                            <label for="bulan_mulai" class="form-label">Bulan</label>
+                            <label for="bulan_mulai" class="form-label">Bulan Bayar</label>
                             <input type="text" placeholder="Bulan Pembayaran" tabindex="1" value="<?= date('Y-m', strtotime($data_update['bulan_mulai'])) ?>" id="bulan_mulai" name="bulan_mulai" class="form-control">
                             <!-- <p id="statusText"></p> -->
                         </div>
                     <?php else : ?>
                         <div id="opsiBulan" class="mb-3">
-                            <label for="bulan_mulai" class="form-label">Bulan</label>
+                            <label for="bulan_mulai" class="form-label">Bulan Bayar</label>
                             <input type="month" placeholder="Bulan Pembayaran" name="bulan_mulai" id="bulan_mulai" class="form-control">
                             <!-- <p id="statusText"></p> -->
                         </div>
@@ -242,6 +377,60 @@
                     <div class="mb-3">
                         <label for="total_bayar" class="form-label">Jumlah yang Dibayar Hari Ini</label>
                         <input type="text" class="form-control" name="jumlah_bayar" value="<?php echo !empty($data_update['jumlah_bayar']) ? number_format($data_update['jumlah_bayar'], 0, ',', '.') : '125.000'; ?>" id="jumlah_bayar" required autocomplete="off">
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const jumlahBayar = document.getElementById('jumlah_bayar');
+                            const metode = document.getElementById('metode');
+                            const bulanRapelCheckboxes = document.getElementById('bulanRapelCheckboxes');
+                            const hargaPerBulan = 125000;
+
+                            function updateJumlahBayar() {
+                                let metodeVal = metode.value;
+                                let rapelMatch = metodeVal.match(/^(\d+)_bulan$/);
+                                if (rapelMatch && parseInt(rapelMatch[1]) > 1 && bulanRapelCheckboxes) {
+                                    // Hitung jumlah centang
+                                    let checked = bulanRapelCheckboxes.querySelectorAll('.bulan-rapel-check:checked').length;
+                                    if (checked > 0) {
+                                        jumlahBayar.value = (checked * hargaPerBulan).toLocaleString('id-ID');
+                                    } else {
+                                        jumlahBayar.value = '';
+                                    }
+                                } else if (metodeVal === '1_bulan') {
+                                    jumlahBayar.value = hargaPerBulan.toLocaleString('id-ID');
+                                }
+                            }
+
+                            // Event untuk centang bulan rapel
+                            if (bulanRapelCheckboxes) {
+                                bulanRapelCheckboxes.addEventListener('change', updateJumlahBayar);
+                            }
+                            // Event untuk ganti metode
+                            if (metode) {
+                                metode.addEventListener('change', function() {
+                                    setTimeout(updateJumlahBayar, 100); // tunggu checkbox render
+                                });
+                            }
+
+                            // Inisialisasi saat load
+                            setTimeout(updateJumlahBayar, 300);
+
+                            // Format input manual jika user edit
+                            if (jumlahBayar) {
+                                jumlahBayar.addEventListener('input', function(e) {
+                                    let value = this.value.replace(/\D/g, '');
+                                    if (value) {
+                                        this.value = parseInt(value, 10).toLocaleString('id-ID');
+                                    } else {
+                                        this.value = '';
+                                    }
+                                });
+
+                                jumlahBayar.form.addEventListener('submit', function() {
+                                    jumlahBayar.value = jumlahBayar.value.replace(/\./g, '').replace(/,/g, '');
+                                });
+                            }
+                        });
+                        </script>
 
                         <script>
                         document.addEventListener('DOMContentLoaded', function() {
@@ -309,12 +498,110 @@
                         <textarea name="keterangan" class="form-control" rows="2" required=""
                             placeholder="Contoh: Pembayaran bulan Januari hingga Maret"><?= $data_update['keterangan'] ?></textarea>
                     </div>
-                    <?php if(!empty($id)) :  ?>
-                        <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
-                    <?php else : ?>
-                        <button type="submit" class="btn btn-primary w-100">Bayar Sekarang</button>
-                    <?php endif; ?>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-warning w-100 mb-2" id="btnPreview">Preview</button>
+                        <?php if(!empty($id)) :  ?>
+                            <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
+                        <?php else : ?>
+                            <button type="submit" class="btn btn-primary w-100">Kirim</button>
+                        <?php endif; ?>
+                    </div>
                 </form>
+
+                <!-- Modal Preview -->
+                <div class="modal fade" id="modalPreview" tabindex="-1" aria-labelledby="modalPreviewLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="modalPreviewLabel">Preview Data Pembayaran</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body" id="previewContent">
+                        <!-- Preview content will be injected here -->
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const btnPreview = document.getElementById('btnPreview');
+                    const form = document.getElementById('formBayar');
+                    const previewContent = document.getElementById('previewContent');
+                    const modalPreview = new bootstrap.Modal(document.getElementById('modalPreview'));
+                    const btnSubmitPreview = document.getElementById('btnSubmitPreview');
+
+                    btnPreview.addEventListener('click', function(e) {
+                        e.preventDefault();
+
+                        // Ambil data form
+                        const nomorRumah = form.querySelector('[name="user_id"]');
+                        const metode = form.querySelector('[name="metode"]');
+                        const bulanMulai = form.querySelector('[name="bulan_mulai"]');
+                        const tanggalBayar = form.querySelector('[name="tanggal_bayar"]');
+                        const lamaCicilan = form.querySelector('[name="lama_cicilan"]');
+                        const totalCicilan = form.querySelector('[name="total_cicilan"]');
+                        const jumlahBayar = form.querySelector('[name="jumlah_bayar"]');
+                        const pembayaranVia = form.querySelector('[name="pembayaran_via"]');
+                        const keterangan = form.querySelector('[name="keterangan"]');
+                        const bukti = form.querySelector('[name="bukti"]');
+
+                        let nomorRumahText = nomorRumah.options[nomorRumah.selectedIndex]?.text || '';
+                        let metodeText = metode.options[metode.selectedIndex]?.text || '';
+                        let pembayaranViaText = pembayaranVia.options[pembayaranVia.selectedIndex]?.text || '';
+
+                        let previewHtml = `
+                            <table class="table table-bordered">
+                                <tr><th>Nomor Rumah</th><td>${nomorRumahText}</td></tr>
+                                <tr><th>Jenis Pembayaran</th><td>${metodeText}</td></tr>
+                                <tr><th>Bulan Mulai</th><td>${bulanMulai.value}</td></tr>
+                                <tr><th>Tanggal Pembayaran</th><td>${tanggalBayar.value}</td></tr>
+                        `;
+
+                        if (!lamaCicilan.closest('.d-none')) {
+                            previewHtml += `<tr><th>Lama Cicilan</th><td>${lamaCicilan.value}</td></tr>`;
+                        }
+                        if (!totalCicilan.closest('.d-none')) {
+                            previewHtml += `<tr><th>Total Cicilan</th><td>${totalCicilan.value}</td></tr>`;
+                        }
+
+                        previewHtml += `
+                                <tr><th>Jumlah Bayar</th><td>${jumlahBayar.value}</td></tr>
+                                <tr><th>Metode Pembayaran</th><td>${pembayaranViaText}</td></tr>
+                        `;
+
+                        if (bukti && bukti.files && bukti.files.length > 0) {
+                            const file = bukti.files[0];
+                            if (file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    previewHtml += `<tr><th>Bukti</th><td><img src="${e.target.result}" style="max-width:200px;max-height:200px;" /></td></tr>`;
+                                    previewHtml += `<tr><th>Keterangan</th><td>${keterangan.value}</td></tr></table>`;
+                                    previewContent.innerHTML = previewHtml;
+                                };
+                                reader.readAsDataURL(file);
+                            } else {
+                                previewHtml += `<tr><th>Bukti</th><td>${file.name}</td></tr>`;
+                                previewHtml += `<tr><th>Keterangan</th><td>${keterangan.value}</td></tr></table>`;
+                                previewContent.innerHTML = previewHtml;
+                            }
+                        } else {
+                            previewHtml += `<tr><th>Keterangan</th><td>${keterangan.value}</td></tr></table>`;
+                            previewContent.innerHTML = previewHtml;
+                        }
+
+                        modalPreview.show();
+                    });
+
+                    btnSubmitPreview.addEventListener('click', function() {
+                        modalPreview.hide();
+                        form.submit();
+                    });
+                });
+                </script>
             </div>
         </div>
     </div>

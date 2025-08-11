@@ -1,3 +1,4 @@
+<?php header('Content-Type: text/html; charset=UTF-8');?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -63,60 +64,63 @@
                 <td style="width: 100%; vertical-align: top;">
                     <div class="section-title"><br> E-KITIR PEMBAYARAN IPL <br></div> <br>
                     <?php
-                    // Ambil id_rumah dan bulan_mulai dari GET
+                    // Ambil id_rumah dan bulan_mulai dari GET/URL
                     $id = decrypt_url($this->uri->segment(2));
-                    if(!empty($id)) {
+                    if (!empty($id)) {
                         $this->db->where('id', $id);
                         $pembayaran = $this->db->get('master_pembayaran')->row_array();
                         if ($pembayaran) {
                             $id_rumah = $pembayaran['id_rumah'];
                             $bulan_mulai = $pembayaran['bulan_mulai'];
                         } else {
-                            // Jika tidak ada pembayaran, ambil dari GET
                             $id_rumah = $this->input->get('id_rumah');
                             $bulan_mulai = $this->input->get('bulan');
                         }
                     } else {
-                        // Jika id tidak valid, ambil dari GET
                         $id_rumah = $this->input->get('id_rumah');
                         $bulan_mulai = $this->input->get('bulan');
-
                     }
-                    // Query pembayaran
+
+                    // Query pembayaran: cek bulan_mulai atau bulan ada di bulan_rapel
                     $this->db->where('id_rumah', $id_rumah);
-                    $this->db->where('bulan_mulai', $bulan_mulai);
+                    $this->db->group_start()
+                        ->where('bulan_mulai', $bulan_mulai)
+                        ->or_where("FIND_IN_SET(DATE_FORMAT('$bulan_mulai', '%Y-%m'), bulan_rapel) >", 0)
+                    ->group_end();
                     $pembayaran = $this->db->get('master_pembayaran')->row_array();
 
                     // Query rumah
                     $this->db->where('id', $id_rumah);
                     $rumah = $this->db->get('master_rumah')->row_array();
+
+                    // Ambil data bulan tagihan
+                    if ($pembayaran) {
+                        $bulanAngka = (int)substr($bulan_mulai, 5, 2);
+                        $tahun = substr($bulan_mulai, 0, 4);
+                    } else {
+                        $bulanAngka = (int)substr($bulan_mulai, 5, 2);
+                        $tahun = substr($bulan_mulai, 0, 4);
+                    }
+                    $namaBulan = [
+                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    ];
+                    $bulanTagihan = $namaBulan[$bulanAngka] . ' ' . $tahun;
                     ?>
 
-                    <?php
-                        // Ambil data bulan tagihan dari GET jika pembayaran belum ada
-                        if ($pembayaran) {
-                            $bulanAngka = (int)substr($pembayaran['bulan_mulai'], 5, 2);
-                            $tahun = substr($pembayaran['bulan_mulai'], 0, 4);
-                        } else {
-                            $bulanAngka = (int)substr($bulan_mulai, 5, 2);
-                            $tahun = substr($bulan_mulai, 0, 4);
-                        }
-                        $namaBulan = [
-                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-                        ];
-                        $bulanTagihan = $namaBulan[$bulanAngka] . ' ' . $tahun;
-                    ?>
                     <table class="details-table" style="width: 100%;">
-                         <tr><td class="label">No. Pembayaran</td><td class="separator">:</td><td>INV/<?= htmlspecialchars($pembayaran['id'])."/".date('Y') ?></td> 
-                        <td rowspan="10">
-                            <?php if ($pembayaran && strtolower($pembayaran['status']) === 'verified'): ?>
-                                <div style="position: relative; width: 100%; height: 100px;">
-                                    <img src="<?= base_url('lunas.png') ?>" alt="LUNAS" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15; width: 120px; height: auto; z-index: 999;">
-                                </div>
-                            <?php endif; ?>
-                        </td>
+                        <tr>
+                            <td class="label">No. Pembayaran</td>
+                            <td class="separator">:</td>
+                            <td>INV/<?= htmlspecialchars($pembayaran['id'] ?? '-') . "/" . date('Y') ?></td> 
+                            <td rowspan="10">
+                                <?php if ($pembayaran && strtolower($pembayaran['status']) === 'verified'): ?>
+                                    <div style="position: relative; width: 100%; height: 100px;">
+                                        <img src="<?= base_url('lunas.png') ?>" alt="LUNAS" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15; width: 120px; height: auto; z-index: 999;">
+                                    </div>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                         <tr>
                             <td class="label" style="padding-top: 10px;">Nama</td>
@@ -126,12 +130,18 @@
                         <tr>
                             <td class="label">Nomor Rumah</td>
                             <td class="separator">:</td>
-                            <td><?= htmlspecialchars($rumah['alamat'] ?? '-') ?></td>
+                            <td><?= str_replace('?', '-', $rumah['alamat']); ?></td>
                         </tr>
                         <tr>
                             <td class="label">Bulan Tagihan</td>
                             <td class="separator">:</td>
-                            <td><?= $bulanTagihan ?></td>
+                            <td><?= $bulanTagihan ?>
+                                <?php
+                                if ($pembayaran && date('Y-m', strtotime($bulan_mulai)) !== date('Y-m', strtotime($pembayaran['bulan_mulai']))) {
+                                    echo " <small class='text-primary'>(Rapel pembayaran di bulan " . $namaBulan[(int)substr($pembayaran['bulan_mulai'], 5, 2)] . " " . substr($pembayaran['bulan_mulai'], 0, 4) . ")</small>";
+                                }
+                                ?>
+                            </td>
                         </tr>
                         <?php if ($pembayaran): ?>
                             <tr><td class="label">Jumlah Bayar</td><td class="separator">:</td><td>Rp <?= number_format($pembayaran['jumlah_bayar'], 2, ',', '.') ?></td></tr>
@@ -139,16 +149,15 @@
                             <tr><td class="label">Tanggal Bayar</td><td class="separator">:</td><td><?= htmlspecialchars($pembayaran['tanggal_bayar']) ?></td></tr>
                             <tr><td class="label">Pembayaran Via</td><td class="separator">:</td><td><?= htmlspecialchars($pembayaran['pembayaran_via']) ?></td></tr>
                             <tr><td class="label">Alamat</td><td class="separator">:</td><td><?= htmlspecialchars($rumah['alamat']) ?></td></tr>
-                             <tr>
+                            <tr>
                                 <td class="label">Status</td>
                                 <td class="separator">:</td>
                                 <td><?php if (strtolower($pembayaran['status']) === 'verified'): ?><span style="color: green; font-weight: bold;">Sudah Bayar</span>
-                                    <?php else: ?>
-                                        <?= htmlspecialchars($pembayaran['status']) ?>
+                                    <?php else: ?><?= htmlspecialchars($pembayaran['status']) ?>
                                     <?php endif; ?>
                                 </td>
                             </tr>
-                            <?php else: ?>
+                        <?php else: ?>
                             <tr>
                                 <td class="label">Status</td>
                                 <td class="separator">:</td>
@@ -167,6 +176,7 @@
                         <?php endif; ?>
                     </table>
                 </td>
+
             </tr>
         </table>
         <div class="total-section">

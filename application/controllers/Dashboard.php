@@ -872,6 +872,13 @@ class Dashboard extends CI_Controller
 			return;
 		}
 
+		// Ambil data bulan rapel dari POST (array), gabungkan jadi string dipisah koma
+		$bulan_rapel = $this->input->post('bulan_rapel');
+		$bulan_rapel_str = '';
+		if (!empty($bulan_rapel) && is_array($bulan_rapel)) {
+			$bulan_rapel_str = implode(',', $bulan_rapel);
+		}
+
 		$data_pembayaran = [
 			'user_id' => $user_id,
 			'id_rumah' => $user_id,
@@ -882,6 +889,7 @@ class Dashboard extends CI_Controller
 			'bukti' => $nama_file_bukti, // <-- ini penting
 			'keterangan' => $keterangan,
 			'tanggal_bayar' => $tanggal_bayar,
+			'bulan_rapel' => $bulan_rapel_str, // <-- simpan sebagai string
 			'created_at' => date('Y-m-d H:i:s'),
 		];
 
@@ -1161,25 +1169,36 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 	public function download_invoice()
 	{
+		mb_internal_encoding('UTF-8');
 
-		// Load TCPDF library
 		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
 
-		// Data untuk invoice, bisa dari database atau dummy
+		// Ambil data
 		$id = $this->input->get('id', true);
 		$data = [];
 		if ($id) {
-			// Contoh: ambil data invoice dari database
 			$data['pembayaran'] = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
 		} else {
 			$data['pembayaran'] = [];
 		}
 
-		// Render HTML dari view
+		// Render view jadi HTML
 		$html = $this->load->view('dashboard/invoice_pdf', $data, true);
+
+		// 1. Normalisasi semua dash ke hyphen ASCII
+		$html = preg_replace('/[‐-‒–—−]/u', '-', $html);
+
+		// 2. Pastikan encoding HTML UTF-8
+		if (stripos($html, '<meta charset') === false) {
+			$html = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />' . $html;
+		}
 
 		// Buat objek TCPDF
 		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+
+		// 3. Gunakan font Unicode penuh
+		$pdf->SetFont('dejavusans', '', 10, '', true);
+
 		$pdf->SetCreator(PDF_CREATOR);
 		$pdf->SetAuthor('Perum TSI');
 		$pdf->SetTitle('Invoice IPL');
@@ -1188,19 +1207,18 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 		$pdf->AddPage();
 
-		// Tulis HTML ke PDF
+		// Tulis HTML
 		$pdf->writeHTML($html, true, false, true, false, '');
 
-		// Output PDF ke browser
-		$nama_file ='invoice_ipl_'.date('YmdHis').'.pdf';
+		// Output PDF
+		$nama_file = 'invoice_ipl_' . date('YmdHis') . '.pdf';
 		if (!empty($this->session->userdata['username'])) {
-			// Jika sudah login, tampilkan preview di browser
-			$pdf->Output($nama_file, 'I');
+			$pdf->Output($nama_file, 'I'); // Preview
 		} else {
-			// Jika belum login, langsung force download
-			$pdf->Output($nama_file, 'D');
+			$pdf->Output($nama_file, 'D'); // Download
 		}
 	}
+
 	public function berhasil()
 	{
 		echo "<script>alert('Berhasil disimpan')</script>";
