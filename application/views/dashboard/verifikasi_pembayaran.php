@@ -296,7 +296,7 @@ $this->load->library('encryption');
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
                             </button> -->
-                            <a href="<?php echo  base_url('pembayaran/'.encrypt_url($row->id)."/".encrypt_url($row->id)); ?>"
+                            <a href="<?php echo  base_url('pembayaran/'.encrypt_url($row->id_rumah)."/".encrypt_url($row->id)); ?>"
                                 class="btn btn-info btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-pencil me-1"></i> Revisi
                             </a>

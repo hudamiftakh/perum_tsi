@@ -685,7 +685,7 @@ class Dashboard extends CI_Controller
 		$data['halaman'] = 'dashboard/laporan_pembayaran';
 		$this->load->view('modul', $data);
 	}
-
+	
 	public function verifikasi_pembayaran()
 	{
 		$this->checkSession();

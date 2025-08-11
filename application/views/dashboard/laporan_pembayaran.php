@@ -282,7 +282,7 @@ $this->load->library('encryption');
                     </td>
                     <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
                         $data_pembayaran = $this->db->query("
-                            SELECT * FROM master_pembayaran as a 
+                            SELECT a.*, b.*, a.id as id_pembayaran FROM master_pembayaran as a 
                             LEFT JOIN master_users as b ON a.user_id = b.id
                             WHERE MONTH(a.bulan_mulai)='$i'
                             AND YEAR(a.bulan_mulai)='$tahun_terpilih'
@@ -307,7 +307,40 @@ $this->load->library('encryption');
                             <?php if ($data_pembayaran): ?>
                                 <?php if ($data_pembayaran['status'] == 'verified'): ?>
                                     <div class="d-flex flex-column align-items-center">
-                                        <strong>Rp125.000</strong>
+                                        <!-- Tambahkan trigger modal pada nominal -->
+                                        <strong style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>">
+                                            <?php echo number_format($data_pembayaran['jumlah_bayar']); ?>
+                                        </strong>
+                                    </div>
+                                    <!-- Modal Revisi -->
+                                    <div class="modal fade" id="revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>" tabindex="-1" aria-labelledby="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>">Revisi Pembayaran</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <p>
+                                                        <strong><?= htmlspecialchars($data_bulanan['nama']); ?></strong><br>
+                                                        <span class="text-muted"><?= htmlspecialchars($data_bulanan['alamat']); ?></span>
+                                                    </p>
+                                                    <p>
+                                                        Nominal: <strong>Rp <?= number_format($data_pembayaran['jumlah_bayar']); ?></strong><br>
+                                                        Bulan Bayar: <strong>
+                                                            <?php
+                                                                $bulan_bayar = (int)date('n', strtotime($data_pembayaran['bulan_mulai']));
+                                                                $bulan_indonesia = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+                                                                echo $bulan_indonesia[$bulan_bayar] . ' ' . date('Y', strtotime($data_pembayaran['bulan_mulai']));
+                                                            ?>
+                                                        </strong>
+                                                    </p>
+                                                    <a href="<?php echo  base_url('pembayaran/'.encrypt_url($data_pembayaran['id_rumah']))."/".encrypt_url($data_pembayaran['id_pembayaran']); ?>" class="btn btn-warning">
+                                                        <i class="bi bi-pencil-square"></i> Revisi
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 <?php elseif ($data_pembayaran['status'] == 'pending'): ?>
                                     <div class="d-flex flex-column align-items-center">
@@ -374,6 +407,37 @@ $this->load->library('encryption');
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <?php
+            // Hitung total pembayaran per bulan sesuai filter
+            $total_per_bulan = [];
+            for ($i = 1; $i <= $bulan_terakhir; $i++) {
+                $total_per_bulan[$i] = 0;
+            }
+            foreach ($rumah as $data_bulanan) {
+                for ($i = 1; $i <= $bulan_terakhir; $i++) {
+                    $data_pembayaran = $this->db->query("
+                        SELECT * FROM master_pembayaran as a 
+                        LEFT JOIN master_users as b ON a.user_id = b.id
+                        WHERE MONTH(a.bulan_mulai)='$i'
+                        AND YEAR(a.bulan_mulai)='$tahun_terpilih'
+                        AND b.id_rumah='" . $data_bulanan['id'] . "'
+                        AND a.status = 'verified'
+                    ")->row_array();
+                    if ($data_pembayaran) {
+                        $total_per_bulan[$i] += $data_pembayaran['jumlah_bayar'];
+                    }
+                }
+            }
+            ?>
+            <tr style="background: #e9f7ef; font-weight: bold;">
+                <td colspan="2" class="text-center">TOTAL</td>
+                <?php for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
+                    <td class="text-center">
+                        <?= $total_per_bulan[$i] > 0 ? number_format($total_per_bulan[$i]) : '-'; ?>
+                    </td>
+                <?php endfor; ?>
+                <td></td>
+            </tr>
         </tbody>
     </table>
 </div>

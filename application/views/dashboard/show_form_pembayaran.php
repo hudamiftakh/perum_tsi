@@ -129,7 +129,8 @@
                         // Ambil ID dari URL lalu decrypt
                         $id             = $this->uri->segment(2);
                         $id_pembayaran  = $this->uri->segment(3);
-
+                        // var_dump(decrypt_url($id));
+                        // var_dump(decrypt_url($id_pembayaran));
                         // Dekripsi ID jika tersedia
                         $id_decrypt = !empty($id) ? decrypt_url($id) : null;
                         // Inisialisasi data rumah
@@ -191,20 +192,19 @@
                     <div class="mb-3">
                         <br>
                         <label class="form-label">Jenis Pembayaran</label>
-                        <select class="form-select" name="metode" id="metode" onchange="tampilkanOpsi()" required>
+                        <select class="form-select" name="metode" id="metode" required>
                             <option value="">Pilih metode pembayaran...</option>
                             <option value="1_bulan" <?php echo (@$data_update['metode'] == '1_bulan') ? "selected" : ""; ?>>Bayar 1 Bulan</option>
-                            <!-- <option value="2_bulan">Rapel 2 Bulan</option>
-                            <option value="3_bulan">Rapel 3 Bulan</option>
-                            <option value="4_bulan">Rapel 4 Bulan</option>
-                            <option value="5_bulan">Rapel 5 Bulan</option>
-                            <option value="6_bulan">Rapel 6 Bulan</option> -->
-                            <!-- <option value="7_bulan">Rapel 7 Bulan</option>
-                            <option value="8_bulan">Rapel 8 Bulan</option>
-                            <option value="9_bulan">Rapel 9 Bulan</option>
-                            <option value="10_bulan">Rapel 10 Bulan</option>
-                            <option value="7_tahun">Bayar 1 Tahun Sekaligus</option>
-                            <option value="cicilan">Cicilan Beberapa Bulan</option> -->
+                           <option value="2_bulan" <?php echo (@$data_update['metode'] == '2_bulan') ? "selected" : ""; ?>>Rapel 2 Bulan</option>
+                            <option value="3_bulan" <?php echo (@$data_update['metode'] == '3_bulan') ? "selected" : ""; ?>>Rapel 3 Bulan</option>
+                            <option value="4_bulan" <?php echo (@$data_update['metode'] == '4_bulan') ? "selected" : ""; ?>>Rapel 4 Bulan</option>
+                            <option value="5_bulan" <?php echo (@$data_update['metode'] == '5_bulan') ? "selected" : ""; ?>>Rapel 5 Bulan</option>
+                            <option value="6_bulan" <?php echo (@$data_update['metode'] == '6_bulan') ? "selected" : ""; ?>>Rapel 6 Bulan</option>
+                           <option value="7_bulan" <?php echo (@$data_update['metode'] == '7_bulan') ? "selected" : ""; ?>>Rapel 7 Bulan</option>
+                            <option value="8_bulan" <?php echo (@$data_update['metode'] == '8_bulan') ? "selected" : ""; ?>>Rapel 8 Bulan</option>
+                            <option value="9_bulan" <?php echo (@$data_update['metode'] == '9_bulan') ? "selected" : ""; ?>>Rapel 9 Bulan</option>
+                            <option value="10_bulan" <?php echo (@$data_update['metode'] == '10_bulan') ? "selected" : ""; ?>>Rapel 10 Bulan</option>
+                            <option value="1_tahun" <?php echo (@$data_update['metode'] == '1_tahun') ? "selected" : ""; ?>>Bayar 1 Tahun Sekaligus</option>
                         </select>
                     </div>
                     <?php if (!empty($data_update['bulan_mulai'])) :  ?>
@@ -241,8 +241,28 @@
 
                     <div class="mb-3">
                         <label for="total_bayar" class="form-label">Jumlah yang Dibayar Hari Ini</label>
-                        <input type="number" class="form-control" name="jumlah_bayar" value="<?php echo (!empty($data_update['jumlah_bayar'])) ? $data_update['jumlah_bayar'] : "125000"; ?>" id="jumlah_bayar"
-                            required>
+                        <input type="text" class="form-control" name="jumlah_bayar" value="<?php echo !empty($data_update['jumlah_bayar']) ? number_format($data_update['jumlah_bayar'], 0, ',', '.') : '125.000'; ?>" id="jumlah_bayar" required autocomplete="off">
+
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const jumlahBayar = document.getElementById('jumlah_bayar');
+                            if (jumlahBayar) {
+                                jumlahBayar.addEventListener('input', function(e) {
+                                    let value = this.value.replace(/\D/g, '');
+                                    if (value) {
+                                        this.value = parseInt(value, 10).toLocaleString('id-ID');
+                                    } else {
+                                        this.value = '';
+                                    }
+                                });
+
+                                // Saat submit, hapus pemisah ribuan agar value bersih ke server
+                                jumlahBayar.form.addEventListener('submit', function() {
+                                    jumlahBayar.value = jumlahBayar.value.replace(/\./g, '').replace(/,/g, '');
+                                });
+                            }
+                        });
+                        </script>
                     </div>
 
                     <div class="mb-3">
@@ -364,34 +384,29 @@
             });
         });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const bulanStatus = {
-                '2025-01': 'paid',
-                '2025-02': 'unpaid',
-                '2025-03': 'paid'
-            };
 
-            const bulanMulai = document.querySelector("#bulan_mulai");
-            if (bulanMulai && bulanMulai.offsetParent !== null) { // cek ada & terlihat
-                flatpickr(bulanMulai, {
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const bulanMulai = document.querySelector("#bulan_mulai");
+
+    if (bulanMulai && bulanMulai.offsetParent !== null) {
+        flatpickr(bulanMulai, {
+            dateFormat: "Y-m",
+            disableMobile: true,
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
                     dateFormat: "Y-m",
-                    disableMobile: true, // ini boolean, bisa disesuaikan
-                    plugins: [
-                        new monthSelectPlugin({
-                            shorthand: true,
-                            dateFormat: "Y-m",
-                            altFormat: "F Y"
-                        })
-                    ],
-                    onChange: function(selectedDates, dateStr, instance) {
-                        const status = bulanStatus[dateStr] || 'unknown';
-                        document.getElementById('statusText').textContent = `Status: ${status}`;
-                    }
-                });
+                    altFormat: "F Y"
+                })
+            ],
+            onChange: function (selectedDates, dateStr, instance) {
+                instance.close(); // langsung tutup setelah pilih bulan
             }
         });
-    </script>
+    }
+});
+</script>
 
     <script>
         flatpickr("#tanggal_bayar", {
