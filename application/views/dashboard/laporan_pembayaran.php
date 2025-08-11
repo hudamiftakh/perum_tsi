@@ -305,7 +305,7 @@ $this->load->library('encryption');
                                 }
                             ?>">
                             <?php if ($data_pembayaran): ?>
-                                <?php if ($data_pembayaran['status'] == 'verified'): ?>
+                                <?php if (in_array($data_pembayaran['status'], ['verified','pending'])): ?>
                                     <div class="d-flex flex-column align-items-center">
                                         <!-- Tambahkan trigger modal pada nominal -->
                                         <strong style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>">
