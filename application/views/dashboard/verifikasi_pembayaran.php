@@ -282,7 +282,7 @@ $this->load->library('encryption');
                             <br>
                         
                         </td>
-                        <td><?= date('Y-m-d H:i', strtotime($row->tanggal_bayar)) ?></td>
+                        <td><?= date('Y-m-d', strtotime($row->tanggal_bayar)) ?></td>
                         <td>
                             <?php
                             $status = strtolower($row->status); // Ubah ke lowercase agar konsisten
