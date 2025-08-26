@@ -861,7 +861,7 @@ class Dashboard extends CI_Controller
 		}
 
 		// Cek apakah pembayaran untuk id_rumah dan bulan_mulai sudah ada
-	// 	$bulan_mulai_db = $bulan_mulai ? $bulan_mulai . '-01' : null;
+		$bulan_mulai_db = $bulan_mulai ? $bulan_mulai . '-01' : null;
 	// 	$cek_pembayaran = $this->db->get_where('master_pembayaran', [
 	// 		'id_rumah' => $user_id,
 	// 		'bulan_mulai' => $bulan_mulai_db
