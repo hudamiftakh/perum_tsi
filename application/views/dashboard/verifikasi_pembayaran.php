@@ -259,7 +259,7 @@ $this->load->library('encryption');
                             ];
 
                             $bulan_mulai_pembayaran = date('Y-m', strtotime($row->bulan_mulai));
-                            $bulan_untuk = $row->untuk_bulan;
+                            $bulan_untuk =  date('Y-m', strtotime($row->untuk_bulan));
                             $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
 
                             // Periksa apakah bulan_rapel tidak kosong
