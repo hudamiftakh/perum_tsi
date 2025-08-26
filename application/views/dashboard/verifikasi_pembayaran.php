@@ -60,36 +60,36 @@ $this->load->library('encryption');
 </div>
 
 <style>
-.table thead th {
-    vertical-align: middle;
-    text-align: center;
-}
+    .table thead th {
+        vertical-align: middle;
+        text-align: center;
+    }
 
-.table td,
-.table th {
-    text-align: center;
-}
+    .table td,
+    .table th {
+        text-align: center;
+    }
 
-.left {
-    text-align: left !important;
-}
+    .left {
+        text-align: left !important;
+    }
 
-.report-title {
-    text-align: center;
-    margin: 30px 0;
-}
+    .report-title {
+        text-align: center;
+        margin: 30px 0;
+    }
 </style>
 <?php if ($this->session->flashdata('success')): ?>
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    <?= $this->session->flashdata('success'); ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= $this->session->flashdata('success'); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 <?php endif; ?>
 <?php if ($this->session->flashdata('error')): ?>
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <?= $this->session->flashdata('error'); ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= $this->session->flashdata('error'); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 <?php endif; ?>
 
 
@@ -120,9 +120,9 @@ $this->load->library('encryption');
                 <?php
                 $selected_koordinator = @$_REQUEST['id_koordinator'] ?? '';
                 foreach ($koordinator as $value): ?>
-                <option value="<?= $value['id']; ?>" <?= $value['id'] == $selected_koordinator ? 'selected' : ''; ?>>
-                    <?= $value['nama']; ?>
-                </option>
+                    <option value="<?= $value['id']; ?>" <?= $value['id'] == $selected_koordinator ? 'selected' : ''; ?>>
+                        <?= $value['nama']; ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -144,10 +144,10 @@ $this->load->library('encryption');
                     <i class="fa fa-search me-1"></i> Cari
                 </button>
                 <?php if ($this->input->get('keyword') || $this->input->get('pembayaran_via') || $this->input->get('id_koordinator') || $this->input->get('status')): ?>
-                <a href="<?= base_url('pembayaran/verifikasi-pembayaran'); ?>"
-                    class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
-                    <i class="fa fa-times me-1"></i> Reset
-                </a>
+                    <a href="<?= base_url('pembayaran/verifikasi-pembayaran'); ?>"
+                        class="btn btn-outline-danger flex-grow-1 flex-md-grow-0">
+                        <i class="fa fa-times me-1"></i> Reset
+                    </a>
                 <?php endif; ?>
             </div>
         </div>
@@ -163,77 +163,77 @@ $this->load->library('encryption');
 </form>
 <!-- <div class="card w-100 position-relative overflow-hidden">
     <div class="card-body"> -->
-        <style>
-        .table thead th {
-            vertical-align: middle;
-            text-align: center;
-        }
+<style>
+    .table thead th {
+        vertical-align: middle;
+        text-align: center;
+    }
 
-        .table td,
-        .table th {
-            text-align: center;
-        }
+    .table td,
+    .table th {
+        text-align: center;
+    }
 
-        .left {
-            text-align: left !important;
-        }
+    .left {
+        text-align: left !important;
+    }
 
-        .report-title {
-            text-align: center;
-            margin: 30px 0;
-        }
+    .report-title {
+        text-align: center;
+        margin: 30px 0;
+    }
 
-        table thead th {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.85rem;
-        }
+    table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
 
-        table tbody tr:hover {
-            background-color: #f1fdf3;
-        }
+    table tbody tr:hover {
+        background-color: #f1fdf3;
+    }
 
-        table {
-            border-radius: 15px;
-            overflow: hidden;
-        }
+    table {
+        border-radius: 15px;
+        overflow: hidden;
+    }
 
-        input[type="checkbox"] {
-            width: 16px;
-            /* Lebar checkbox */
-            height: 16px;
-            /* Tinggi checkbox */
-        }
+    input[type="checkbox"] {
+        width: 16px;
+        /* Lebar checkbox */
+        height: 16px;
+        /* Tinggi checkbox */
+    }
 
-        #submitBtn {
-            display: none;
-        }
-        </style>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover" id="laporanTable">
-                <thead
-                    style="background: linear-gradient(to right, #28a745, #218838) !important; color: white !important; vertical-align: middle !important;">
-                    <tr>
-                        <th><input type="checkbox" name="selected_ids[]" id="checkAll"></th>
-                        <th>Nama / Alamat</th>
-                        <th>Bulan</th>
-                        <th>Tanggal Bayar</th>
-                        <th>Status Verifikasi</th>
-                        <th>Bukti Pembayaran</th>
-                        <th>Keterangan</th>
-                        <th>Jumlah Bayar</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($pembayaran)): ?>
-                    <?php
-                        $no = 1;
-                        $total = 0;
-                        foreach ($pembayaran as $row):
-                            $total += $row->jumlah_bayar;
-                        ?>
+    #submitBtn {
+        display: none;
+    }
+</style>
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover" id="laporanTable">
+        <thead
+            style="background: linear-gradient(to right, #28a745, #218838) !important; color: white !important; vertical-align: middle !important;">
+            <tr>
+                <th><input type="checkbox" name="selected_ids[]" id="checkAll"></th>
+                <th>Nama / Alamat</th>
+                <th>Bulan</th>
+                <th>Tanggal Bayar</th>
+                <th>Status Verifikasi</th>
+                <th>Bukti Pembayaran</th>
+                <th>Keterangan</th>
+                <th>Jumlah Bayar</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($pembayaran)): ?>
+                <?php
+                $no = 1;
+                $total = 0;
+                foreach ($pembayaran as $row):
+                    $total += $row->jumlah_bayar;
+                ?>
                     <tr>
                         <td style="vertical-align: middle;">
                             <input type="checkbox" class="checkItem" name="selected_ids[]" value="<?= $row->id ?>">
@@ -241,56 +241,99 @@ $this->load->library('encryption');
                         <td nowrap><?= htmlspecialchars($row->nama) ?> <br>
                             <?= htmlspecialchars($row->rumah) ?>
                         </td>
-                        <?php if ($row->metode == '1_bulan'): ?>
-                            <td><?= formatBulanTahun($row->bulan_mulai); ?></td>
-                        <?php else: ?>
-                            <td>
-                                <?php
-                                    // bulan_rapel format: "2025-01,2025-02"
-                                    $bulanArr = explode(',', $row->bulan_rapel);
-                                    $formatted = array_map(function($b) {
-                                        return formatBulanTahun(trim($b));
-                                    }, $bulanArr);
-                                    echo implode(', ', $formatted);
-                                ?>
-                            </td>
-                        <?php endif; ?>
-                        <td><?= date('Y-m-d H:i', strtotime($row->created_at)) ?></td>
                         <td>
                             <?php
-                                $status = strtolower($row->status); // Ubah ke lowercase agar konsisten
-                                switch ($status) {
-                                    case 'pending':
-                                        echo '<span class="badge bg-warning text-dark">
+                            $bulan_indonesia = [
+                                1 => 'Januari',
+                                2 => 'Februari',
+                                3 => 'Maret',
+                                4 => 'April',
+                                5 => 'Mei',
+                                6 => 'Juni',
+                                7 => 'Juli',
+                                8 => 'Agustus',
+                                9 => 'September',
+                                10 => 'Oktober',
+                                11 => 'November',
+                                12 => 'Desember'
+                            ];
+
+                            $bulan_mulai_pembayaran = date('Y-m', strtotime($row->bulan_mulai));
+                            $bulan_untuk = $row->untuk_bulan;
+                            $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
+
+                            // Periksa apakah bulan_rapel tidak kosong
+                            if (!empty($row->bulan_rapel)) {
+                                // Jika ada data rapel, tampilkan semua bulan dari bulan_rapel
+                                $all_months = explode(',', $row->bulan_rapel);
+                                sort($all_months);
+
+                                $formatted_months = array_map(function ($b) use ($bulan_indonesia) {
+                                    list($thn, $angka) = explode('-', trim($b));
+                                    return $bulan_indonesia[(int)$angka] . " " . $thn;
+                                }, $all_months);
+
+                                echo implode(', ', $formatted_months);
+                            } else {
+                                // Jika tidak ada data rapel, tampilkan bulan dari untuk_bulan
+                                echo formatBulanTahun($row->untuk_bulan);
+                            }
+                            ?>
+                            <br>
+                            <?php if ($is_bayar_dimuka): ?>
+                                <span class="badge bg-info text-dark">
+                                    Bayar Dimuka
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">
+                                    Rapel
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= date('Y-m-d H:i', strtotime($row->tanggal_bayar)) ?></td>
+                        <td>
+                            <?php
+                            $status = strtolower($row->status); // Ubah ke lowercase agar konsisten
+                            switch ($status) {
+                                case 'pending':
+                                    echo '<span class="badge bg-warning text-dark">
                                                 <i class="bi bi-hourglass-split me-1"></i> Pending
                                             </span>';
-                                        break;
-                                    case 'verified':
-                                        echo '<span class="badge bg-success">
+                                    break;
+                                case 'verified':
+                                    echo '<span class="badge bg-success">
                                                 <i class="bi bi-check-circle me-1"></i> Verified
                                             </span>';
-                                        break;
-                                    case 'rejected':
-                                        echo '<span class="badge bg-danger">
+                                    break;
+                                case 'rejected':
+                                    echo '<span class="badge bg-danger">
                                                 <i class="bi bi-x-circle me-1"></i> Rejected
                                             </span>';
-                                        break;
-                                    default:
-                                        echo '<span class="badge bg-secondary">
+                                    break;
+                                default:
+                                    echo '<span class="badge bg-secondary">
                                                 <i class="bi bi-question-circle me-1"></i> Unknown
                                             </span>';
-                                        break;
-                                }
+                                    break;
+                            }
                             ?>
                         </td>
                         <td>
-                           <?php if ($row->pembayaran_via == 'transfer') : ?>
+                            <?php if ($row->pembayaran_via == 'transfer') : ?>
                                 <a href="#"
-                                onclick="openPopup('<?php echo base_url('uploads/bukti/' . $row->bukti) ?>'); return false;"
-                                title="Lihat Bukti Pembayaran">
+                                    onclick="openPopup('<?php echo base_url('uploads/bukti/' . $row->bukti) ?>'); return false;"
+                                    title="Lihat Bukti Pembayaran">
                                     <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Bukti Pembayaran"
                                         style="width: 20px; height: 20px;">
                                     Transfer Bank (Lihat Bukti)
+                                </a>
+                            <?php elseif ($row->pembayaran_via == 'transfer_2') : ?>
+                                <a href="#"
+                                    onclick="openPopup('<?php echo base_url('uploads/bukti/' . $row->bukti) ?>'); return false;"
+                                    title="Lihat Bukti Pembayaran">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Bukti Pembayaran"
+                                        style="width: 20px; height: 20px;">
+                                    Transfer ke Aditya (Lihat Bukti)
                                 </a>
                             <?php else : ?>
                                 <span class="badge bg-info text-dark">
@@ -301,7 +344,7 @@ $this->load->library('encryption');
                         <td><?= htmlspecialchars($row->keterangan) ?></td>
                         <td><?= number_format($row->jumlah_bayar, 0, ',', '.') ?></td>
                         <td nowrap>
-                            <button  onclick="handleVerifikasi('<?php echo $row->id; ?>','verified')" 
+                            <button onclick="handleVerifikasi('<?php echo $row->id; ?>','verified')"
                                 class="btn btn-success btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-check-circle me-1"></i> Setujui
                             </button>
@@ -309,152 +352,154 @@ $this->load->library('encryption');
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
                             </button> -->
-                            <a href="<?php echo  base_url('pembayaran/'.encrypt_url($row->id_rumah)."/".encrypt_url($row->id)); ?>"
+                            <a href="<?php echo  base_url('pembayaran/' . encrypt_url($row->id_rumah) . "/" . encrypt_url($row->id)); ?>"
                                 class="btn btn-info btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-pencil me-1"></i> Revisi
                             </a>
 
-                            <button  onclick="handleHapus('<?php echo $row->id; ?>')" 
+                            <button onclick="handleHapus('<?php echo $row->id; ?>')"
                                 class="btn btn-danger btn-sm d-inline-flex align-items-center">
                                 <i class="bi bi-trash me-1"></i> Hapus
                             </button>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
-                    <?php else: ?>
-                    <tr>
-                        <td colspan="9" style="text-align:center;">Tidak ada pembayaran menunggu verifikasi</td>
-                    </tr>
-                    <?php endif; ?>
-                </tbody>
-                <tfoot style="background-color: rgb(223, 229, 223);">
-                    <tr>
-                        <td colspan="7">Total</td>
-                        <td><?= number_format($total, 0, ',', '.') ?></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
-            <!-- <button id="submitBtn" type="submit" class="btn btn-success">Verifikasi Semua</button> -->
-        </div>
-    <!-- </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="9" style="text-align:center;">Tidak ada pembayaran menunggu verifikasi</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+        <tfoot style="background-color: rgb(223, 229, 223);">
+            <tr>
+                <td colspan="7">Total</td>
+                <td><?= number_format($total, 0, ',', '.') ?></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+    <!-- <button id="submitBtn" type="submit" class="btn btn-success">Verifikasi Semua</button> -->
+</div>
+<!-- </div>
 </div> -->
 
 <script>
-// Ketika checkbox #checkAll diklik
-const checkAll = document.getElementById('checkAll');
-const checkboxes = document.querySelectorAll('.checkItem');
-const submitBtn = document.getElementById('submitBtn');
+    // Ketika checkbox #checkAll diklik
+    const checkAll = document.getElementById('checkAll');
+    const checkboxes = document.querySelectorAll('.checkItem');
+    const submitBtn = document.getElementById('submitBtn');
 
-// Fungsi cek apakah ada checkbox yang dicentang
-function toggleSubmitBtn() {
-    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-    submitBtn.style.display = anyChecked ? 'inline-block' : 'none';
-}
+    // Fungsi cek apakah ada checkbox yang dicentang
+    function toggleSubmitBtn() {
+        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+        submitBtn.style.display = anyChecked ? 'inline-block' : 'none';
+    }
 
-// Event ketika klik checkbox "Pilih Semua"
-checkAll.addEventListener('change', function() {
-    checkboxes.forEach(cb => cb.checked = this.checked);
-    toggleSubmitBtn();
-});
-
-// Event ketika klik checkbox item satu per satu
-checkboxes.forEach(cb => {
-    cb.addEventListener('change', function() {
-        // Jika semua item sudah dicentang, centang juga checkAll
-        checkAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+    // Event ketika klik checkbox "Pilih Semua"
+    checkAll.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
         toggleSubmitBtn();
     });
-});
 
-function openPopup(url) {
-    window.open(url, 'popupWindow', 'width=800,height=600,scrollbars=yes');
-}
+    // Event ketika klik checkbox item satu per satu
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            // Jika semua item sudah dicentang, centang juga checkAll
+            checkAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+            toggleSubmitBtn();
+        });
+    });
+
+    function openPopup(url) {
+        window.open(url, 'popupWindow', 'width=800,height=600,scrollbars=yes');
+    }
 </script>
 
 <script>
-function handleVerifikasi(id,aksi) {
-    let teksKonfirmasi = aksi === 'verified' ? 'Yakin verifikasi data ini?' : 'Yakin tolak data ini?';
-    let teksSukses = aksi === 'verified' ? 'Data berhasil diverifikasi.' : 'Data berhasil ditolak.';
-    let iconSukses = aksi === 'verified' ? 'success' : 'info';
+    function handleVerifikasi(id, aksi) {
+        let teksKonfirmasi = aksi === 'verified' ? 'Yakin verifikasi data ini?' : 'Yakin tolak data ini?';
+        let teksSukses = aksi === 'verified' ? 'Data berhasil diverifikasi.' : 'Data berhasil ditolak.';
+        let iconSukses = aksi === 'verified' ? 'success' : 'info';
 
-    Swal.fire({
-        title: teksKonfirmasi,
-        text: "Tindakan ini tidak bisa dibatalkan.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: aksi === 'verified' ? '#198754' : '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, lanjutkan!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // AJAX kirim ke server
-            $.ajax({
-                url: '<?= base_url("dashboard/act_verifikasi_pembayaran") ?>', // ganti dengan URL endpoint kamu
-                method: 'POST',
-                data: {
-                    id: id,
-                    aksi: aksi
-                },
-                success: function(response) {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Data telah diverifikasi.',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload(); // reload halaman setelah berhasil
-                    });
-                },
-                error: function(xhr, status, error) {
-                    Swal.fire(
-                        'Gagal!',
-                        'Terjadi kesalahan saat memverifikasi.',
-                        'error'
-                    );
-                }
-            });
-        }
-    });
-}
+        Swal.fire({
+            title: teksKonfirmasi,
+            text: "Tindakan ini tidak bisa dibatalkan.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: aksi === 'verified' ? '#198754' : '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, lanjutkan!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // AJAX kirim ke server
+                $.ajax({
+                    url: '<?= base_url("dashboard/act_verifikasi_pembayaran") ?>', // ganti dengan URL endpoint kamu
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        aksi: aksi
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Data telah diverifikasi.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload(); // reload halaman setelah berhasil
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire(
+                            'Gagal!',
+                            'Terjadi kesalahan saat memverifikasi.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
 
-function handleHapus(id) {
-    Swal.fire({
-        title: 'Yakin ingin menghapus data ini?',
-        text: "Data yang dihapus tidak dapat dikembalikan!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: '<?= base_url("dashboard/act_hapus_pembayaran") ?>',
-                method: 'POST',
-                data: { id: id },
-                success: function(response) {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Data berhasil dihapus.',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                error: function(xhr, status, error) {
-                    Swal.fire(
-                        'Gagal!',
-                        'Terjadi kesalahan saat menghapus data.',
-                        'error'
-                    );
-                }
-            });
-        }
-    });
-}
+    function handleHapus(id) {
+        Swal.fire({
+            title: 'Yakin ingin menghapus data ini?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '<?= base_url("dashboard/act_hapus_pembayaran") ?>',
+                    method: 'POST',
+                    data: {
+                        id: id
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Data berhasil dihapus.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire(
+                            'Gagal!',
+                            'Terjadi kesalahan saat menghapus data.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
 </script>

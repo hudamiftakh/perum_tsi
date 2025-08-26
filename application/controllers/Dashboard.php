@@ -797,6 +797,7 @@ class Dashboard extends CI_Controller
 		$user_id = $this->input->post('user_id');
 		$metode = $this->input->post('metode');
 		$bulan_mulai = $this->input->post('bulan_mulai'); // format yyyy-mm
+		$untuk_bulan = $this->input->post('untuk_bulan'); // format yyyy-mm
 		$jumlah_bayar = $this->input->post('jumlah_bayar');
 		$tanggal_bayar = $this->input->post('tanggal_bayar');
 		$keterangan = $this->input->post('keterangan');
@@ -819,7 +820,7 @@ class Dashboard extends CI_Controller
 		$nama_file_bukti = $bukti_lama;
 
 		// Jika via transfer, lakukan upload
-		if ($pembayaran_via === 'transfer') {
+		if (in_array($pembayaran_via,array('transfer','transfer_2'))) {
 			// Cek apakah ada file yang diupload
 			if (!empty($_FILES['bukti']['name'])) {
 				$config['upload_path']   = './uploads/bukti/';
@@ -860,17 +861,17 @@ class Dashboard extends CI_Controller
 		}
 
 		// Cek apakah pembayaran untuk id_rumah dan bulan_mulai sudah ada
-		$bulan_mulai_db = $bulan_mulai ? $bulan_mulai . '-01' : null;
-		$cek_pembayaran = $this->db->get_where('master_pembayaran', [
-			'id_rumah' => $user_id,
-			'bulan_mulai' => $bulan_mulai_db
-	 ])->row_array();
+	// 	$bulan_mulai_db = $bulan_mulai ? $bulan_mulai . '-01' : null;
+	// 	$cek_pembayaran = $this->db->get_where('master_pembayaran', [
+	// 		'id_rumah' => $user_id,
+	// 		'bulan_mulai' => $bulan_mulai_db
+	//  ])->row_array();
 	 
-		if ($cek_pembayaran && empty($id)) {
-			$this->session->set_flashdata('error', 'Pembayaran untuk rumah dan bulan tersebut sudah ada.');
-			redirect('pembayaran');
-			return;
-		}
+	// 	if ($cek_pembayaran && empty($id)) {
+	// 		$this->session->set_flashdata('error', 'Pembayaran untuk rumah dan bulan tersebut sudah ada.');
+	// 		redirect('pembayaran');
+	// 		return;
+	// 	}
 
 		// Ambil data bulan rapel dari POST (array), gabungkan jadi string dipisah koma
 		$bulan_rapel = $this->input->post('bulan_rapel');
@@ -889,6 +890,7 @@ class Dashboard extends CI_Controller
 			'bukti' => $nama_file_bukti, // <-- ini penting
 			'keterangan' => $keterangan,
 			'tanggal_bayar' => $tanggal_bayar,
+			'untuk_bulan' => $untuk_bulan,
 			'bulan_rapel' => $bulan_rapel_str, // <-- simpan sebagai string
 			'created_at' => date('Y-m-d H:i:s'),
 		];
