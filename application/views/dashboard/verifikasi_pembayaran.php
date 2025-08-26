@@ -280,15 +280,7 @@ $this->load->library('encryption');
                             }
                             ?>
                             <br>
-                            <?php if ($is_bayar_dimuka): ?>
-                                <span class="badge bg-info text-dark">
-                                    Bayar Dimuka
-                                </span>
-                            <?php else: ?>
-                                <span class="badge bg-secondary">
-                                    Rapel
-                                </span>
-                            <?php endif; ?>
+                        
                         </td>
                         <td><?= date('Y-m-d H:i', strtotime($row->tanggal_bayar)) ?></td>
                         <td>
