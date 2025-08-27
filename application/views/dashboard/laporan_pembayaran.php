@@ -306,7 +306,7 @@ $this->load->library('encryption');
                                         $bulan_mulai_pembayaran = date('Y-m', strtotime($data_pembayaran['bulan_mulai']));
                                         $bulan_untuk = date('Y-m', strtotime($data_pembayaran['untuk_bulan']));
                                         $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
-                                        $is_rapel = ($data_pembayaran['metode']<>'1_bulan') ? true : false;
+                                        $is_rapel = ($data_pembayaran['metode']!== '1_bulan') ?  true : false;
 
                                         // Gabungkan bulan utama dan bulan rapel menjadi satu array
                                         $all_months_covered = explode(',', $data_pembayaran['bulan_rapel']);
@@ -345,7 +345,7 @@ $this->load->library('encryption');
                                                 $bulan_untuk = date('Y-m', strtotime($data_pembayaran['untuk_bulan']));
                                                 $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
                                                 // $is_rapel = ($bulan_mulai_pembayaran > $bulan_untuk);
-                                                 $is_rapel = ($data_pembayaran['metode']<>'1_bulan') ?  false : true;
+                                                 $is_rapel = ($data_pembayaran['metode']!== '1_bulan') ?  true : false;
                                                 // var_dump($currentMonthStr."-".$bulan_mulai_pembayaran);
                                             ?>
 
