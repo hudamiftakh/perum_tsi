@@ -387,14 +387,29 @@ $this->load->library('encryption');
                                                             Bulan Bayar: <strong style="color: <?= ($data_pembayaran['status'] == 'pending') ? 'orange' : 'green'; ?>;">
                                                                 <?php
                                                                     $bulan_indonesia = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
-                                                                    
+
                                                                     // Gabungkan semua bulan yang dicakup, termasuk bulan utama
                                                                     $all_months_covered = [$data_pembayaran['untuk_bulan']];
+
                                                                     if (!empty($data_pembayaran['bulan_rapel'])) {
-                                                                        $all_months_covered = array_merge($all_months_covered, explode(',', $data_pembayaran['bulan_rapel']));
+                                                                        $all_months_covered = array_merge(
+                                                                            $all_months_covered,
+                                                                            explode(',', $data_pembayaran['bulan_rapel'])
+                                                                        );
                                                                     }
+
+                                                                    // Hilangkan duplikat
                                                                     $all_months_covered = array_unique($all_months_covered);
-                                                                    sort($all_months_covered); // Urutkan bulan-bulan
+
+                                                                    // Urutkan berdasarkan bulan-tahun
+                                                                    usort($all_months_covered, function ($a, $b) {
+                                                                        $da = DateTime::createFromFormat('m-Y', $a);
+                                                                        $db = DateTime::createFromFormat('m-Y', $b);
+                                                                        return $da <=> $db;
+                                                                    });
+
+                                                                    // Reset index array biar rapi
+                                                                    $all_months_covered = array_values($all_months_covered);
 
                                                                     $bulan_text = [];
                                                                     foreach ($all_months_covered as $bln) {
