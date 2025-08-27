@@ -393,6 +393,7 @@ $this->load->library('encryption');
                                                                     if (!empty($data_pembayaran['bulan_rapel'])) {
                                                                         $all_months_covered = array_merge($all_months_covered, explode(',', $data_pembayaran['bulan_rapel']));
                                                                     }
+                                                                    $all_months_covered = array_unique($all_months_covered);
                                                                     sort($all_months_covered); // Urutkan bulan-bulan
 
                                                                     $bulan_text = [];
