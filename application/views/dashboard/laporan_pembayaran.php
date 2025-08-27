@@ -342,7 +342,7 @@ $this->load->library('encryption');
                                         <div class="d-flex flex-column align-items-center">
                                             <?php 
                                                 $bulan_mulai_pembayaran = date('Y-m', strtotime($data_pembayaran['bulan_mulai']));
-                                                $bulan_untuk = $data_pembayaran['untuk_bulan'];
+                                                $bulan_untuk = date('Y-m', strtotime($data_pembayaran['untuk_bulan']));
                                                 $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
                                                 $is_rapel = ($bulan_mulai_pembayaran > $bulan_untuk);
                                             ?>
