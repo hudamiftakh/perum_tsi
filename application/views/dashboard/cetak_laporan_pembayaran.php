@@ -44,8 +44,9 @@
         }
 
         .logo {
-            height: 60px;
+            height: 50px;
             margin-right: 5px;
+            border: none;
         }
 
         .report-title {
@@ -139,13 +140,14 @@
 </head>
 
 <body>
+    <br>
     <table class="header-table" style="border: none;">
         <tr>
-            <td class="header-logo">
+            <td class="header-logo" style="border: none;">
                 <img src="<?= base_url('logo_2-removebg-preview.png') ?>" alt="Logo 1" class="logo">
                 <img src="<?= base_url('logo-tsi-removebg-preview.png') ?>" alt="Logo 2" class="logo">
             </td>
-            <td class="header-info">
+            <td class="header-info" style="border: none;">
                 <strong>PAGUYUBAN TAMAN SUKODONO INDAH</strong><br>
                 Alamat: Jl. Taman Sukodono Indah, Kedung, Jumputrejo, Sukodono, Sidoarjo<br>
                 Telepon: 0852-1234-5678<br>
@@ -153,8 +155,12 @@
             </td>
         </tr>
     </table>
+    <br>
+    <hr>
 
-    <h1 class="report-title">Laporan Pembayaran Iuran Pengelolaan Lingkungan</h1>
+    <h1 class="report-title">Laporan Pembayaran Iuran Pengelolaan Lingkungan
+        <?php echo @$koordinator['nama'];?>
+    </h1>
     <div class="table-container">
         <table>
             <thead>
@@ -171,19 +177,20 @@
 
                     <?php
                     $bulan_indonesia = [
-                        1 => 'Jan',
-                        2 => 'Feb',
-                        3 => 'Mar',
-                        4 => 'Apr',
-                        5 => 'Mei',
-                        6 => 'Jun',
-                        7 => 'Jul',
-                        8 => 'Agu',
-                        9 => 'Sep',
-                        10 => 'Okt',
-                        11 => 'Nov',
-                        12 => 'Des'
+                        1  => 'Januari',
+                        2  => 'Februari',
+                        3  => 'Maret',
+                        4  => 'April',
+                        5  => 'Mei',
+                        6  => 'Juni',
+                        7  => 'Juli',
+                        8  => 'Agustus',
+                        9  => 'September',
+                        10 => 'Oktober',
+                        11 => 'November',
+                        12 => 'Desember'
                     ];
+
                     for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++): ?>
                         <th style="width: <?= 50 / $kolom_bulan ?>%; font-weight: bold;">
                             <?= $bulan_indonesia[$i] ?>
