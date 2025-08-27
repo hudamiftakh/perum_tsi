@@ -171,18 +171,13 @@ $this->load->library('encryption');
                 <?php endif; ?>
 
                 <!-- Tombol PDF Dropdown -->
-                <!-- <div class="dropdown">
+                <div class="dropdown">
                     <button class="btn btn-outline-danger dropdown-toggle" type="button" id="pdfDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-file-pdf-o me-1"></i> PDF
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="pdfDropdown">
                         <?php
                         $bulan_arr = [
-                            '01' => 'Januari',
-                            '02' => 'Februari',
-                            '03' => 'Maret',
-                            '04' => 'April',
-                            '05' => 'Mei',
                             '06' => 'Juni',
                             '07' => 'Juli',
                             '08' => 'Agustus',
@@ -193,13 +188,13 @@ $this->load->library('encryption');
                         ];
                         foreach ($bulan_arr as $key => $bulan): ?>
                             <li>
-                                <a class="dropdown-item" href="<?= base_url('warga/laporan-pembayaran-pdf?bulan=' . $key . '&tahun=' . $selected_tahun); ?>" target="_blank">
+                                <a class="dropdown-item" href="<?= base_url('pembayaran/laporan-pembayaran-pdf?bulan=' . $key . '&tahun=' . $selected_tahun.'&id_koordinator='.encrypt_url(@$_REQUEST['id_koordinator'])); ?>" target="_blank">
                                     <?= $bulan . ' ' . $selected_tahun; ?>
                                 </a>
                             </li>
                         <?php endforeach; ?>
                     </ul>
-                </div> -->
+                </div>
             </div>
         </div>
 

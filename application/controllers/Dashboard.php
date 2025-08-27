@@ -1302,9 +1302,141 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		echo json_encode(['status' => 'success', 'message' => 'Password berhasil diupdate']);
 	}
 	public function update_password()  {
+		$this->checkSession();
 		$data['halaman'] = 'dashboard/update_password';
 		$this->load->view('modul', $data);
 	}
+	public function laporan_pdf()
+	{
+
+		$this->checkSession();
+		mb_internal_encoding('UTF-8');
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		// Ambil parameter
+		$id_koordinator = decrypt_url($this->input->get('id_koordinator', TRUE));
+		$keyword        = $this->input->get('keyword', TRUE);
+		$tahun          = $this->input->get('tahun', TRUE);
+
+		if (empty($tahun)) {
+			$tahun = date('Y');
+		}
+
+		// Jika role = koordinator, override id_koordinator dari session
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$id_koordinator = $this->session->userdata('username')['id'];
+		}
+
+		// Build filter
+		$filter = [];
+		if (!empty($id_koordinator)) {
+			$filter[] = "vb.id_koordinator = '" . $this->db->escape_str($id_koordinator) . "'";
+		}
+		if (!empty($keyword)) {
+			$filter[] = "(vb.nama LIKE '%" . $this->db->escape_str($keyword) . "%' 
+                      OR vb.alamat LIKE '%" . $this->db->escape_str($keyword) . "%')";
+		}
+
+		$whereClause = '';
+		if (!empty($filter)) {
+			$whereClause = 'WHERE ' . implode(' AND ', $filter);
+		}
+
+		// Data rumah
+		$rumah = $this->db->query("SELECT vb.* FROM (
+                                    SELECT DISTINCT b.id, b.alamat, b.nama, c.nama as koordinator, b.id_koordinator 
+                                    FROM master_users as a
+                                    LEFT JOIN master_rumah as b ON a.id = id_rumah
+                                    LEFT JOIN master_koordinator_blok as c ON b.id_koordinator = c.id
+                                    ORDER BY b.alamat ASC
+                               ) as vb " . $whereClause)->result_array();
+
+		// Data koordinator
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$koordinator = $this->db->query("SELECT id, nama 
+                                         FROM master_koordinator_blok 
+                                         WHERE id = '" . $this->db->escape_str($id_koordinator) . "'")
+				->result_array();
+		} else {
+			$koordinator = $this->db->query("SELECT id, nama FROM master_koordinator_blok")->result_array();
+		}
+
+		// Filter pembayaran by koordinator
+		$where_koor = [];
+		if (!empty($id_koordinator)) {
+			$where_koor['id_koordinator'] = $id_koordinator;
+		}
+
+		// Bulan & tahun sekarang
+		$bulan_ini = date('m');
+		$tahun_ini = date('Y');
+
+		// Helper function
+		$get_total = function ($via, $bulan = null, $tahun = null) use ($where_koor) {
+			$this_ci = &get_instance();
+			$this_ci->db->select("SUM(mp.jumlah_bayar) as jumlah_bayar");
+			$this_ci->db->from('master_pembayaran mp');
+			$this_ci->db->join('master_users u', 'u.id = mp.user_id', 'left');
+			$this_ci->db->join('master_rumah r', 'r.id = u.id_rumah', 'left');
+			$this_ci->db->where('mp.status', 'verified');
+			$this_ci->db->where('mp.pembayaran_via', $via);
+			if ($bulan) $this_ci->db->where('MONTH(mp.bulan_mulai)', $bulan);
+			if ($tahun) $this_ci->db->where('YEAR(mp.bulan_mulai)', $tahun);
+			if (!empty($where_koor['id_koordinator'])) {
+				$this_ci->db->where('r.id_koordinator', $where_koor['id_koordinator']);
+			}
+			return $this_ci->db->get()->row_array();
+		};
+
+		// Hitung total
+		$jumlah_transfer_bulan_ini_transfer = $get_total('transfer', $bulan_ini, $tahun_ini);
+		$jumlah_transfer_bulan_ini_koordinator = $get_total('koordinator', $bulan_ini, $tahun_ini);
+		$jumlah_transfer_sd_transfer = $get_total('transfer');
+		$jumlah_transfer_sd_koordinator = $get_total('koordinator');
+
+		// Data untuk view
+		$data = [
+			'tahun'               => $tahun,
+			'rumah'               => $rumah,
+			'bulan_ini_koor'      => $jumlah_transfer_bulan_ini_koordinator,
+			'bulan_ini_transfer'  => $jumlah_transfer_bulan_ini_transfer,
+			'bulan_sd_koor'       => $jumlah_transfer_sd_koordinator,
+			'bulan_sd_transfer'   => $jumlah_transfer_sd_transfer,
+			'koordinator'         => $koordinator,
+		];
+		// === Buat PDF ===
+		// return $this->load->view('dashboard/cetak_laporan_pembayaran', $data);
+		// exit;
+		$html = $this->load->view('dashboard/cetak_laporan_pembayaran', $data, true);
+
+		// Normalisasi dash
+		$html = preg_replace('/[‐-‒–—−]/u', '-', $html);
+
+		// Tambahkan meta charset jika belum ada
+		if (stripos($html, '<meta charset') === false) {
+			$html = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />' . $html;
+		}
+
+		// Buat objek PDF
+		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor('Perum TSI');
+		$pdf->SetTitle('Invoice IPL');
+		$pdf->SetMargins(10, 10, 10, true);
+		$pdf->SetAutoPageBreak(TRUE, 10);
+		$pdf->AddPage();
+		$pdf->writeHTML($html, true, false, true, false, '');
+
+		// Output PDF
+		$nama_file = 'laporan_pembayaran_' . date('YmdHis') . '.pdf';
+		if ($this->session->userdata('username')) {
+			$pdf->Output($nama_file, 'I'); // Preview di browser
+		} else {
+			$pdf->Output($nama_file, 'D'); // Download
+		}
+	}
+
 	public function berhasil_dikirim()
 	{
 		echo "<script>alert('Berhasil Dikirim')</script>";
