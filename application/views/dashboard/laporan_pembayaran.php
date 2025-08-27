@@ -240,10 +240,10 @@ $this->load->library('encryption');
                 // $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
                 $bulan_terakhir = ($tahun_terpilih == $tahun_sekarang) ? date('n') : 12;
 
-                for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
+                for ($i = 6; $i <= $bulan_terakhir; $i++): ?>
                     <th class="shrink text-center"><?= $bulan_indonesia[$i] ?></th>
                 <?php endfor; ?>
-                <th>Aksi</th>
+                <th width="1px" nowrap="">Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -281,7 +281,7 @@ $this->load->library('encryption');
                             </div>
                         </div>
                     </td>
-                    <?php for ($i = 1; $i <= $bulan_terakhir; $i++):
+                    <?php for ($i = 6; $i <= $bulan_terakhir; $i++):
                             $currentMonthStr = sprintf('%04d-%02d', $tahun_terpilih, $i);
 
                             // Ambil data pembayaran yang terkait dengan bulan saat ini
@@ -453,7 +453,7 @@ $this->load->library('encryption');
                                                 <select class="form-select" name="bulan" id="bulanCetak<?= $data_bulanan['id']; ?>" required>
                                                     <option value="">-- Pilih Bulan --</option>
                                                     <?php
-                                                    for ($i = 1; $i <= $bulan_terakhir; $i++):
+                                                    for ($i = 6; $i <= $bulan_terakhir; $i++):
                                                         $bulan_value = str_pad($i, 2, '0', STR_PAD_LEFT);
                                                         $bulan_label = $bulan_indonesia[$i];
                                                         // Format database: YYYY-MM-01
@@ -500,7 +500,7 @@ $this->load->library('encryption');
             ?>
             <tr style="background: #e9f7ef; font-weight: bold;">
                 <td colspan="2" class="text-center">TOTAL</td>
-                <?php for ($i = 1; $i <= $bulan_terakhir; $i++): ?>
+                <?php for ($i = 6; $i <= $bulan_terakhir; $i++): ?>
                     <td class="text-center">
                         <?= $total_per_bulan[$i] > 0 ? number_format($total_per_bulan[$i]) : '-'; ?>
                     </td>
