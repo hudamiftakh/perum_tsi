@@ -453,7 +453,11 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
 
                     <div class="mb-3 d-none" id="buktiTransfer">
                         <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
-                        <input type="file" class="form-control" name="bukti" id="bukti" accept="image/*,application/pdf">
+                        <?php if (empty($id_pembayaran_decrypt)): ?>
+                            <input type="file" class="form-control" name="bukti" id="bukti" accept="image/*,application/pdf" required>
+                        <?php else: ?>
+                            <input type="file" class="form-control" name="bukti" id="bukti" accept="image/*,application/pdf">
+                        <?php endif; ?>
                         <div class="info-small">Format: JPG, PNG, atau PDF. Maksimal 5 MB.</div>
                         <?php if (isset($data_update['bukti']) && !empty($data_update['bukti'])): ?>
                             <label class="form-label mt-2">Bukti Sebelumnya:</label><br>
