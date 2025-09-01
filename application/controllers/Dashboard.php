@@ -945,7 +945,28 @@ class Dashboard extends CI_Controller
 			$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
 
 			// Ambil data keluarga berdasarkan id_rumah
-			$keluarga = $this->db->query("SELECT * FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%'")->row_array();
+			// Ambil data keluarga.
+			// Jika ada id_rumah (tidak nol), cari berdasarkan id_rumah.
+			// Jika id_rumah nol atau kosong, cari berdasarkan kecocokan alamat di kolom nomor_rumah
+			// (mengatasi format "Ruha 6| Ruha 7| TSI Blok I-1| TSI Blok II-8").
+			$keluarga = [];
+			if (isset($rumah['id']) && is_numeric($rumah['id']) && (int) $rumah['id'] > 0) {
+				// Gunakan id_rumah hanya jika bukan 0
+				$keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $rumah['id']])->row_array();
+			} else {
+				$alamat = trim($rumah['alamat'] ?? '');
+				if ($alamat !== '') {
+					$al = $this->db->escape_like_str($alamat);
+					$this->db->group_start();
+					// cari apakah alamat muncul di dalam string nomor_rumah (bagian manapun)
+					$this->db->like('nomor_rumah', $al);
+					// juga cek variasi dengan pipe di sisi kiri/kanan untuk memastikan pencarian bagian
+					$this->db->or_like('nomor_rumah', '|' . $al);
+					$this->db->or_like('nomor_rumah', $al . '|');
+					$this->db->group_end();
+					$keluarga = $this->db->get('master_keluarga')->row_array();
+				}
+			}
 
 			$nama = $user['nama'] ?? '';
 			$alamat = $rumah['alamat'] ?? '';
@@ -1422,7 +1443,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->SetFont('dejavusans', '', 10);
 		$pdf->SetCreator(PDF_CREATOR);
 		$pdf->SetAuthor('Perum TSI');
-		$pdf->SetTitle('Invoice IPL');
+		$pdf->SetTitle('Laporan Pembayaran IPL - Paguyuban Taman Sukodono Indah');
 		$pdf->SetMargins(10, 10, 10, true);
 		$pdf->SetAutoPageBreak(TRUE, 10);
 		$pdf->AddPage();

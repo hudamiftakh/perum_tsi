@@ -173,9 +173,7 @@
                     $bulan_terakhir = ($tahun_terpilih == date('Y')) ? date('n') : 12;
                     $bulan_mulai = 6;
                     $kolom_bulan = $bulan_terakhir - $bulan_mulai + 1;
-                    ?>
-
-                    <?php
+                    
                     $bulan_indonesia = [
                         1  => 'Januari',
                         2  => 'Februari',
