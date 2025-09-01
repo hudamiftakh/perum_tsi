@@ -1439,7 +1439,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 
 		// Buat objek PDF
-		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
 		$pdf->SetFont('dejavusans', '', 10);
 		$pdf->SetCreator(PDF_CREATOR);
 		$pdf->SetAuthor('Perum TSI');
