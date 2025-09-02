@@ -454,7 +454,7 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                     <div class="mb-3 d-none" id="buktiTransfer">
                         <label for="bukti" class="form-label">Upload Bukti Pembayaran</label>
                         <?php if (empty($id_pembayaran_decrypt)): ?>
-                            <input type="file" class="form-control" name="bukti" id="bukti" accept="image/*,application/pdf" required>
+                            <input type="file" class="form-control" name="bukti" id="bukti" accept="image/*,application/pdf">
                         <?php else: ?>
                             <input type="file" class="form-control" name="bukti" id="bukti" accept="image/*,application/pdf">
                         <?php endif; ?>
@@ -562,12 +562,13 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
             }
 
             function cekMetodeBayar() {
-                if (metodeSelect.value === "transfer") {
+                const buktiInput = document.getElementById("bukti");
+                if (metodeSelect.value === "transfer" || metodeSelect.value === "transfer_2") {
                     buktiTransfer.classList.remove("d-none");
-                } else if (metodeSelect.value === "transfer_2") {
-                    buktiTransfer.classList.remove("d-none");
-                }else {
+                    if (buktiInput) buktiInput.required = true;
+                } else {
                     buktiTransfer.classList.add("d-none");
+                    if (buktiInput) buktiInput.required = false;
                 }
             }
 

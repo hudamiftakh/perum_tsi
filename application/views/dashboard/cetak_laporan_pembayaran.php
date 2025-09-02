@@ -8,24 +8,28 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 8pt; /* lebih kecil agar muat di halaman PDF */
+            font-size: 8pt;
+            /* lebih kecil agar muat di halaman PDF */
             color: #000;
         }
 
         @page {
-            margin: 12mm; /* sedikit diperkecil untuk menambah area cetak */
+            margin: 12mm;
+            /* sedikit diperkecil untuk menambah area cetak */
         }
 
         /* Using a table for the header layout as TCPDF doesn't support flexbox */
         .header-table {
             width: 100%;
             border: none;
-            margin-bottom: 10px; /* dikurangi */
+            margin-bottom: 10px;
+            /* dikurangi */
         }
 
         .header-table td {
             vertical-align: top;
-            padding-bottom: 6px; /* dikurangi */
+            padding-bottom: 6px;
+            /* dikurangi */
         }
 
         .header-logo {
@@ -39,18 +43,21 @@
         }
 
         .header-info strong {
-            font-size: 10pt; /* dikurangi */
+            font-size: 10pt;
+            /* dikurangi */
         }
 
         .logo {
-            height: 35px; /* diperkecil */
+            height: 35px;
+            /* diperkecil */
             margin-right: 4px;
             border: none;
         }
 
         .report-title {
             text-align: center;
-            font-size: 11pt; /* diperkecil */
+            font-size: 11pt;
+            /* diperkecil */
             font-weight: bold;
             margin: 12px 0 8px 0;
         }
@@ -74,17 +81,20 @@
             width: 100% !important;
             border-collapse: collapse;
             font-size: 8pt;
-            table-layout: fixed; /* paksa tabel mengisi lebar penuh, kolom terdistribusi */
+            table-layout: fixed;
+            /* paksa tabel mengisi lebar penuh, kolom terdistribusi */
         }
 
         /* Override inline width supaya tabel tetap responsif dan mengisi 100% */
         table th,
         table td {
             border: 1px solid #000;
-            padding: 3px; /* dikurangi agar lebih padat */
+            padding: 3px;
+            /* dikurangi agar lebih padat */
             vertical-align: middle;
             text-align: center;
-            white-space: normal !important; /* biarkan wrap jika teks panjang */
+            white-space: normal !important;
+            /* biarkan wrap jika teks panjang */
             word-wrap: break-word;
             width: auto !important;
         }
@@ -169,7 +179,7 @@
     <hr>
 
     <h1 class="report-title">Laporan Pembayaran Iuran Pengelolaan Lingkungan
-        <?php echo @$koordinator['nama'];?>
+        <?php echo @$koordinator['nama']; ?>
     </h1>
     <div class="table-container">
         <table style="width:900px !important;">
@@ -184,7 +194,7 @@
                     $bulan_terakhir = 12;
                     $bulan_mulai = 6;
                     $kolom_bulan = $bulan_terakhir - $bulan_mulai + 1;
-                    
+
                     $bulan_indonesia = [
                         1  => 'Januari',
                         2  => 'Februari',
@@ -208,24 +218,24 @@
                 </tr>
             </thead>
             <tbody>
-    <?php 
-    $no = 1;
+                <?php
+                $no = 1;
 
-    // accumulator total
-    $total_per_bulan = [];
-    $total_transfer_per_bulan = [];
-    $total_koordinator_per_bulan = [];
+                // accumulator total
+                $total_per_bulan = [];
+                $total_transfer_per_bulan = [];
+                $total_koordinator_per_bulan = [];
 
-    foreach ($rumah as $data_bulanan): ?>
-        <tr>
-            <td style="width: 5%;"><?= $no++; ?></td>
-            <td class="nama-rumah" nowrap style="width: 15%;"><?= strtoupper(htmlspecialchars($data_bulanan['nama'])); ?></td>
-            <td style="width: 12%;"><?= htmlspecialchars($data_bulanan['alamat']); ?></td>
+                foreach ($rumah as $data_bulanan): ?>
+                    <tr>
+                        <td style="width: 5%;"><?= $no++; ?></td>
+                        <td class="nama-rumah" nowrap style="width: 15%;"><?= strtoupper(htmlspecialchars($data_bulanan['nama'])); ?></td>
+                        <td style="width: 12%;"><?= htmlspecialchars($data_bulanan['alamat']); ?></td>
 
-            <?php for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++):
-                $currentMonthStr = sprintf('%04d-%02d', $tahun_terpilih, $i);
+                        <?php for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++):
+                            $currentMonthStr = sprintf('%04d-%02d', $tahun_terpilih, $i);
 
-                $data_pembayaran = $this->db->query("
+                            $data_pembayaran = $this->db->query("
                     SELECT a.*, b.*, a.id as id_pembayaran
                     FROM master_pembayaran as a
                     LEFT JOIN master_users as b ON a.user_id = b.id
@@ -235,110 +245,112 @@
                         OR FIND_IN_SET('$currentMonthStr', a.bulan_rapel)
                         OR DATE_FORMAT(a.bulan_mulai, '%Y-%m') = '$currentMonthStr'
                     )
-                    ORDER BY a.status DESC
+                    ORDER BY b.rumah ASC
                 ")->row_array();
-            ?>
-                <td style="width: <?= 50 / $kolom_bulan ?>%;">
-                    <?php if ($data_pembayaran): ?>
-                        <?php if ($data_pembayaran['status'] == 'verified'): ?>
-                            <?php
-                            $bulan_mulai_pembayaran = date('Y-m', strtotime($data_pembayaran['bulan_mulai']));
-                            $bulan_untuk = date('Y-m', strtotime($data_pembayaran['untuk_bulan']));
-                            $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
-                            $is_rapel = ($data_pembayaran['metode'] !== '1_bulan');
+                        ?>
+                            <td style="width: <?= 50 / $kolom_bulan ?>%;">
+                                <?php if ($data_pembayaran): ?>
+                                    <?php if ($data_pembayaran['status'] == 'verified'): ?>
+                                        <?php
+                                        $bulan_mulai_pembayaran = date('Y-m', strtotime($data_pembayaran['bulan_mulai']));
+                                        $bulan_untuk = date('Y-m', strtotime($data_pembayaran['untuk_bulan']));
+                                        $is_bayar_dimuka = ($bulan_mulai_pembayaran < $bulan_untuk);
+                                        $is_rapel = ($data_pembayaran['metode'] !== '1_bulan');
 
-                            // ✅ hanya hitung di bulan mulai
-                            if ($currentMonthStr == $bulan_mulai_pembayaran) {
-                                $jumlah = (float)$data_pembayaran['jumlah_bayar'];
+                                        // ✅ hanya hitung di bulan mulai
+                                        if ($currentMonthStr == $bulan_mulai_pembayaran) {
+                                            $jumlah = (float)$data_pembayaran['jumlah_bayar'];
 
-                                if (!isset($total_per_bulan[$i])) $total_per_bulan[$i] = 0;
-                                $total_per_bulan[$i] += $jumlah;
+                                            if (!isset($total_per_bulan[$i])) $total_per_bulan[$i] = 0;
+                                            $total_per_bulan[$i] += $jumlah;
 
-                                if (stripos($data_pembayaran['pembayaran_via'], 'transfer') !== false) {
-                                    if (!isset($total_transfer_per_bulan[$i])) $total_transfer_per_bulan[$i] = 0;
-                                    $total_transfer_per_bulan[$i] += $jumlah;
-                                }
+                                            if (stripos($data_pembayaran['pembayaran_via'], 'transfer') !== false) {
+                                                if (!isset($total_transfer_per_bulan[$i])) $total_transfer_per_bulan[$i] = 0;
+                                                $total_transfer_per_bulan[$i] += $jumlah;
+                                            }
 
-                                if (stripos($data_pembayaran['pembayaran_via'], 'koordinator') !== false 
-                                    || stripos($data_pembayaran['pembayaran_via'], 'koor') !== false) {
-                                    if (!isset($total_koordinator_per_bulan[$i])) $total_koordinator_per_bulan[$i] = 0;
-                                    $total_koordinator_per_bulan[$i] += $jumlah;
-                                }
-                            }
-                            ?>
+                                            if (
+                                                stripos($data_pembayaran['pembayaran_via'], 'koordinator') !== false
+                                                || stripos($data_pembayaran['pembayaran_via'], 'koor') !== false
+                                            ) {
+                                                if (!isset($total_koordinator_per_bulan[$i])) $total_koordinator_per_bulan[$i] = 0;
+                                                $total_koordinator_per_bulan[$i] += $jumlah;
+                                            }
+                                        }
+                                        ?>
 
-                            <?php if ($currentMonthStr == $bulan_mulai_pembayaran): ?>
-                                <div class="status-cell status-verified">
-                                    <strong><?= number_format($data_pembayaran['jumlah_bayar']); ?></strong>
-                                    <span class="status-date"><?= date('d/m/y', strtotime($data_pembayaran['tanggal_bayar'])); ?></span>
-                                </div>
-                            <?php elseif ($is_bayar_dimuka): ?>
-                                <div class="status-cell status-dimuka"><span>Dimuka</span></div>
-                            <?php elseif ($is_rapel): ?>
-                                <div class="status-cell status-rapel"><span>Rapel</span></div>
-                            <?php endif; ?>
+                                        <?php if ($currentMonthStr == $bulan_mulai_pembayaran): ?>
+                                            <div class="status-cell status-verified">
+                                                <strong><?= number_format($data_pembayaran['jumlah_bayar']); ?></strong>
+                                                <span class="status-date"><?= date('d/m/y', strtotime($data_pembayaran['tanggal_bayar'])); ?></span>
+                                            </div>
+                                        <?php elseif ($is_bayar_dimuka): ?>
+                                            <div class="status-cell status-dimuka"><span>Dimuka</span></div>
+                                        <?php elseif ($is_rapel): ?>
+                                            <div class="status-cell status-rapel"><span>Rapel</span></div>
+                                        <?php endif; ?>
 
-                        <?php elseif ($data_pembayaran['status'] == 'pending'): ?>
-                            <div class="status-cell status-pending"><span>Pending</span></div>
-                        <?php else: ?>
-                            <div class="status-cell status-unpaid"><span>Belum</span></div>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <div class="status-cell status-unpaid"><span>Belum</span></div>
-                    <?php endif; ?>
-                </td>
-            <?php endfor; ?>
-        </tr>
-    <?php endforeach; ?>
+                                    <?php elseif ($data_pembayaran['status'] == 'pending'): ?>
+                                        <div class="status-cell status-pending"><span>Pending</span></div>
+                                    <?php else: ?>
+                                        <div class="status-cell status-unpaid"><span>Belum</span></div>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <div class="status-cell status-unpaid"><span>Belum</span></div>
+                                <?php endif; ?>
+                            </td>
+                        <?php endfor; ?>
+                    </tr>
+                <?php endforeach; ?>
 
-    <!-- Total Pemasukan -->
-    <tr class="total-row">
-        <td colspan="3" style="text-align: right; width: 32%;">Total Pemasukan</td>
-        <?php 
-        $grand_total = 0;
-        for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++): 
-            $total = $total_per_bulan[$i] ?? 0;
-            $grand_total += $total;
-        ?>
-            <td style="width: <?= 50 / $kolom_bulan ?>%; text-align: right;">
-                <?= $total > 0 ? 'Rp ' . number_format($total, 0, ',', '.') : '-' ?>
-            </td>
-        <?php endfor; ?>
-    </tr>
+                <!-- Total Pemasukan -->
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: right; width: 32%;">Total Pemasukan</td>
+                    <?php
+                    $grand_total = 0;
+                    for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++):
+                        $total = $total_per_bulan[$i] ?? 0;
+                        $grand_total += $total;
+                    ?>
+                        <td style="width: <?= 50 / $kolom_bulan ?>%; text-align: right;">
+                            <?= $total > 0 ? 'Rp ' . number_format($total, 0, ',', '.') : '-' ?>
+                        </td>
+                    <?php endfor; ?>
+                </tr>
 
-    <!-- Total Transfer -->
-    <tr class="total-row">
-        <td colspan="3" style="text-align: right; width: 32%;">Total Transfer</td>
-        <?php 
-        $grand_total_transfer = 0;
-        for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++): 
-            $total = $total_transfer_per_bulan[$i] ?? 0;
-            $grand_total_transfer += $total;
-        ?>
-            <td style="width: <?= 50 / $kolom_bulan ?>%; text-align: right;">
-                <?= $total > 0 ? 'Rp ' . number_format($total, 0, ',', '.') : '-' ?>
-            </td>
-        <?php endfor; ?>
-    </tr>
+                <!-- Total Transfer -->
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: right; width: 32%;">Total Transfer</td>
+                    <?php
+                    $grand_total_transfer = 0;
+                    for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++):
+                        $total = $total_transfer_per_bulan[$i] ?? 0;
+                        $grand_total_transfer += $total;
+                    ?>
+                        <td style="width: <?= 50 / $kolom_bulan ?>%; text-align: right;">
+                            <?= $total > 0 ? 'Rp ' . number_format($total, 0, ',', '.') : '-' ?>
+                        </td>
+                    <?php endfor; ?>
+                </tr>
 
-    <!-- Total Koordinator -->
-    <tr class="total-row">
-        <td colspan="3" style="text-align: right; width: 32%;">Total Bayar di Koordinator</td>
-        <?php 
-        $grand_total_koor = 0;
-        for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++): 
-            $total = $total_koordinator_per_bulan[$i] ?? 0;
-            $grand_total_koor += $total;
-        ?>
-            <td style="width: <?= 50 / $kolom_bulan ?>%; text-align: right;">
-                <?= $total > 0 ? 'Rp ' . number_format($total, 0, ',', '.') : '-' ?>
-            </td>
-        <?php endfor; ?>
-    </tr>
+                <!-- Total Koordinator -->
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: right; width: 32%;">Total Bayar di Koordinator</td>
+                    <?php
+                    $grand_total_koor = 0;
+                    for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++):
+                        $total = $total_koordinator_per_bulan[$i] ?? 0;
+                        $grand_total_koor += $total;
+                    ?>
+                        <td style="width: <?= 50 / $kolom_bulan ?>%; text-align: right;">
+                            <?= $total > 0 ? 'Rp ' . number_format($total, 0, ',', '.') : '-' ?>
+                        </td>
+                    <?php endfor; ?>
+                </tr>
 
-    <!-- Grand Total -->
-   
-</tbody>
+                <!-- Grand Total -->
+
+            </tbody>
 
         </table>
     </div>
