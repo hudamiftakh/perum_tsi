@@ -1205,6 +1205,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$data['pembayaran'] = [];
 		}
 
+		
 		// Render view jadi HTML
 		$html = $this->load->view('dashboard/invoice_pdf', $data, true);
 

@@ -83,12 +83,14 @@
 
                     // Query pembayaran: cek bulan_mulai atau bulan ada di bulan_rapel
                     $this->db->where('id_rumah', $id_rumah);
+                    $bln_frmt = date('Y-m', strtotime($bulan_mulai));
                     $this->db->group_start()
                         ->where('bulan_mulai', $bulan_mulai)
                         ->or_where("FIND_IN_SET(DATE_FORMAT('$bulan_mulai', '%Y-%m'), bulan_rapel) >", 0)
-                    ->group_end();
+                        ->or_where('untuk_bulan', $bln_frmt)
+                        ->or_where('untuk_bulan', $bulan_mulai)
+                        ->group_end();
                     $pembayaran = $this->db->get('master_pembayaran')->row_array();
-
                     // Query rumah
                     $this->db->where('id', $id_rumah);
                     $rumah = $this->db->get('master_rumah')->row_array();

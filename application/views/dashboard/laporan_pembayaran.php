@@ -347,10 +347,34 @@ $this->load->library('encryption');
                                             <strong style="cursor:pointer; color: black;"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>">
-                                                <?= number_format($data_pembayaran['jumlah_bayar']); ?>
+                                                <?php
+                                                $cek_data = $this->db->query("
+                                                    SELECT COUNT(*) as total FROM master_pembayaran as a 
+                                                    LEFT JOIN master_users as b ON a.user_id = b.id
+                                                    WHERE MONTH(a.bulan_mulai)='$i'
+                                                    AND YEAR(a.bulan_mulai)='$tahun_terpilih'
+                                                    AND b.id_rumah='" . $data_bulanan['id'] . "'
+                                                ")->row_array();
+
+                                                if ($cek_data['total'] >= 2) {
+                                                      $sum_data = $this->db->query("
+                                                        SELECT SUM(a.jumlah_bayar) as total_bayar FROM master_pembayaran as a 
+                                                        LEFT JOIN master_users as b ON a.user_id = b.id
+                                                        WHERE MONTH(a.bulan_mulai)='$i'
+                                                        AND YEAR(a.bulan_mulai)='$tahun_terpilih'
+                                                        AND b.id_rumah='" . $data_bulanan['id'] . "'
+                                                    ")->row_array();
+                                                    echo number_format($sum_data['total_bayar']);
+                                                }  else {
+                                                    echo number_format($data_pembayaran['jumlah_bayar']);
+                                                }
+                                            ?>
                                             </strong>
                                         <?php elseif ($is_bayar_dimuka || $is_rapel): ?>
-                                            <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex flex-column align-items-center" 
+                                             data-bs-toggle="modal"
+                                            data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>"
+                                            >
                                                 <?php if ($is_bayar_dimuka): ?>
                                                     <span class="text-info fs-6">
                                                         <i class="bi bi-arrow-up-right-circle-fill"></i>
