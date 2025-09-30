@@ -372,7 +372,8 @@ $this->load->library('encryption');
                                             </strong>
                                         <?php elseif ($is_bayar_dimuka || $is_rapel): ?>
                                             <div class="d-flex flex-column align-items-center" 
-                                             data-bs-toggle="modal"
+                                            style="cursor:pointer; color: black;"
+                                            data-bs-toggle="modal"
                                             data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>"
                                             >
                                                 <?php if ($is_bayar_dimuka): ?>
@@ -482,9 +483,101 @@ $this->load->library('encryption');
                                     </div>
 
                                 <?php elseif ($data_pembayaran['status'] == 'pending'): ?>
-                                    <div class="d-flex flex-column align-items-center">
+                                    <div class="d-flex flex-column align-items-center"  
+                                      style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>">
                                         <span>⏳ Pending</span>
                                     </div>
+                                    <div class="modal fade" id="revisiModal<?= $data_bulanan['id'] . '_' . $i; ?>" tabindex="-1" aria-labelledby="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="revisiModalLabel<?= $data_bulanan['id'] . '_' . $i; ?>">Revisi Pembayaran</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <p>
+                                                    <strong style="color: black;"><?= htmlspecialchars($data_bulanan['nama']); ?></strong><br>
+                                                    <span class="text-muted"><?= htmlspecialchars($data_bulanan['alamat']); ?></span>
+                                                </p>
+                                                <p>
+                                                    Nominal: <strong>Rp <?= number_format($data_pembayaran['jumlah_bayar']); ?></strong><br>
+                                                    Bulan Bayar: <strong style="color: <?= ($data_pembayaran['status'] == 'pending') ? 'green' : 'green'; ?>;">
+                                                        <?php
+                                                        $bulan_indonesia = [
+                                                            1 => 'Januari',
+                                                            2 => 'Februari',
+                                                            3 => 'Maret',
+                                                            4 => 'April',
+                                                            5 => 'Mei',
+                                                            6 => 'Juni',
+                                                            7 => 'Juli',
+                                                            8 => 'Agustus',
+                                                            9 => 'September',
+                                                            10 => 'Oktober',
+                                                            11 => 'November',
+                                                            12 => 'Desember'
+                                                        ];
+
+                                                        // Gabungkan semua bulan yang dicakup
+                                                        $all_months_covered = [$data_pembayaran['untuk_bulan']];
+
+                                                        if (!empty($data_pembayaran['bulan_rapel'])) {
+                                                            $all_months_covered = array_merge(
+                                                                $all_months_covered,
+                                                                explode(',', $data_pembayaran['bulan_rapel'])
+                                                            );
+                                                        }
+
+                                                        // Normalisasi semua ke format m-Y
+                                                        $normalized = [];
+                                                        foreach ($all_months_covered as $bln) {
+                                                            $bln = trim($bln);
+                                                            $dt = false;
+
+                                                            // coba beberapa format umum
+                                                            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $bln)) {
+                                                                $dt = DateTime::createFromFormat('Y-m-d', $bln);
+                                                            } elseif (preg_match('/^\d{4}-\d{2}$/', $bln)) {
+                                                                $dt = DateTime::createFromFormat('Y-m', $bln);
+                                                            } elseif (preg_match('/^\d{2}-\d{4}$/', $bln)) {
+                                                                $dt = DateTime::createFromFormat('m-Y', $bln);
+                                                            }
+
+                                                            if ($dt) {
+                                                                $normalized[] = $dt->format('m-Y'); // disamakan ke format m-Y
+                                                            }
+                                                        }
+
+                                                        // Hilangkan duplikat
+                                                        $normalized = array_unique($normalized);
+
+                                                        // Urutkan berdasarkan kronologi
+                                                        usort($normalized, function ($a, $b) {
+                                                            $da = DateTime::createFromFormat('m-Y', $a);
+                                                            $db = DateTime::createFromFormat('m-Y', $b);
+                                                            return $da <=> $db;
+                                                        });
+
+                                                        // Buat teks bulan
+                                                        $bulan_text = [];
+                                                        foreach ($normalized as $bln) {
+                                                            $dt = DateTime::createFromFormat('m-Y', $bln);
+                                                            $bulan_text[] = $bulan_indonesia[(int)$dt->format('n')] . " " . $dt->format('Y');
+                                                        }
+
+                                                        echo implode(', ', $bulan_text);
+
+                                                        ?>
+                                                    </strong>
+                                                </p>
+                                                <a href="<?php echo base_url('pembayaran/' . encrypt_url($data_pembayaran['id_rumah'])) . "/" . encrypt_url($data_pembayaran['id_pembayaran']); ?>" class="btn btn-warning">
+                                                    <i class="bi bi-pencil-square"></i> Revisi
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <?php else: ?>
                                     <div class="d-flex flex-column align-items-center">
                                         <span>❌ Belum</span>
