@@ -84,6 +84,7 @@ $route['pembayaran/(:any)'] = 'dashboard/show_form_pembayaran';
 $route['pembayaran/(:any)/(:any)'] = 'dashboard/show_form_pembayaran';
 $route['proses-pembayaran'] = 'dashboard/save_pembayaran';
 $route['pembayaran-sukses'] = 'dashboard/pembayaran_sukses';
+$route['sinkron-wa'] = 'syncwa/public';
 $route['warga/laporan-pembayaran'] = 'dashboard/laporan_pembayaran';
 // kas
 $route['edit-pengeluaran/(:any)'] = 'kas/form/$1';
