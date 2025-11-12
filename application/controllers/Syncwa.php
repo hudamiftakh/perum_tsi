@@ -3,7 +3,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Syncwa extends CI_Controller
 {
-
     public function __construct()
     {
         error_reporting(0);
@@ -16,7 +15,6 @@ class Syncwa extends CI_Controller
 
     public function public()
     {
-
         // Cek apakah data dengan ID tersebut ada
         $cek = $this->db->get_where('master_pembayaran', ['wa_send' => 'queue'])->row();
         if (!$cek) {
@@ -115,8 +113,10 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
                     $this->db->update('master_pembayaran', ['wa_send' => 'success']); // kembalikan status semula
                     echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA, status tidak diupdate']);
                     return;
+                }else{
+                    $this->db->where('id', $id);
+                    $this->db->update('master_pembayaran', ['wa_send' => 'success']); // kembalikan status semula
                 }
-
                 echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi']);
             } catch (Exception $e) {
                 // Rollback update status jika error
