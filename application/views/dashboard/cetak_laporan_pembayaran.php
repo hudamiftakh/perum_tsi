@@ -190,9 +190,15 @@
                     <th style="width: 12%; font-weight: bold;">Rumah</th>
                     <?php
                     $tahun_terpilih = $this->input->get('tahun') ?: date('Y');
-                    // $bulan_terakhir = ($tahun_terpilih == date('Y')) ? date('n') : 12;
+
+                    // Bulan terakhir (tetap 12, atau aktifkan logika tahun berjalan jika mau)
                     $bulan_terakhir = 12;
-                    $bulan_mulai = 6;
+                    // $bulan_terakhir = ($tahun_terpilih == date('Y')) ? date('n') : 12;
+
+                    // Tentukan bulan mulai berdasarkan tahun
+                    $bulan_mulai = ($tahun_terpilih == 2025) ? 6 : 1;
+
+                    // Hitung jumlah kolom bulan
                     $kolom_bulan = $bulan_terakhir - $bulan_mulai + 1;
 
                     $bulan_indonesia = [
@@ -210,11 +216,13 @@
                         12 => 'Desember'
                     ];
 
-                    for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++): ?>
-                        <th style="width: <?= 50 / $kolom_bulan ?>%; font-weight: bold;">
+                    for ($i = $bulan_mulai; $i <= $bulan_terakhir; $i++):
+                    ?>
+                        <th style="width: <?= 50 / $kolom_bulan ?>%; font-weight: bold;" nowrap>
                             <?= $bulan_indonesia[$i] ?>
                         </th>
                     <?php endfor; ?>
+
                 </tr>
             </thead>
             <tbody>

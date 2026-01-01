@@ -606,7 +606,7 @@ class Dashboard extends CI_Controller
 		// Ambil id_koordinator dari GET atau dari session jika level user adalah koordinator
 		if ($this->session->userdata('username')['role'] === 'koordinator') {
 			$id_koordinator = $this->session->userdata('username')['id'];
-		}else{
+		} else {
 			$id_koordinator = $this->input->get('id_koordinator', TRUE);
 		}
 		$filter = [];
@@ -653,21 +653,36 @@ class Dashboard extends CI_Controller
 		$tahun_ini = date('Y');
 
 		// Helper untuk ambil total pembayaran dengan filter koordinator
-		$get_total = function($via, $bulan = null, $tahun = null) use ($where_koor) {
+		$get_total = function ($via, $bulan = null, $tahun = null) use ($where_koor) {
 			$this_ci = $this;
+
 			$this_ci->db->select("SUM(mp.jumlah_bayar) as jumlah_bayar");
 			$this_ci->db->from('master_pembayaran mp');
 			$this_ci->db->join('master_users u', 'u.id = mp.user_id', 'left');
 			$this_ci->db->join('master_rumah r', 'r.id = u.id_rumah', 'left');
+
 			$this_ci->db->where('mp.status', 'verified');
 			$this_ci->db->where('mp.pembayaran_via', $via);
-			if ($bulan) $this_ci->db->where('MONTH(mp.bulan_mulai)', $bulan);
-			if ($tahun) $this_ci->db->where('YEAR(mp.bulan_mulai)', $tahun);
+
+			if ($bulan && $tahun) {
+				// Tentukan bulan mulai (aturan 2025 mulai Juni)
+				$bulan_mulai = ($tahun == 2025) ? 6 : 1;
+
+				$tanggal_awal  = sprintf('%d-%02d-01', $tahun, $bulan_mulai);
+				$tanggal_akhir = date('Y-m-t', strtotime("$tahun-$bulan-01"));
+
+				$this_ci->db->where('mp.bulan_mulai >=', $tanggal_awal);
+				$this_ci->db->where('mp.bulan_mulai <=', $tanggal_akhir);
+			}
+
 			if (!empty($where_koor['id_koordinator'])) {
 				$this_ci->db->where('r.id_koordinator', $where_koor['id_koordinator']);
 			}
+
 			return $this_ci->db->get()->row_array();
 		};
+
+
 
 		$jumlah_transfer_bulan_ini_transfer = $get_total('transfer', $bulan_ini, $tahun_ini);
 		$jumlah_transfer_bulan_ini_koordinator = $get_total('koordinator', $bulan_ini, $tahun_ini);
@@ -685,7 +700,7 @@ class Dashboard extends CI_Controller
 		$data['halaman'] = 'dashboard/laporan_pembayaran';
 		$this->load->view('modul', $data);
 	}
-	
+
 	public function verifikasi_pembayaran()
 	{
 		$this->checkSession();
@@ -704,7 +719,7 @@ class Dashboard extends CI_Controller
 				'user_id' => $user_id,
 				'MONTH(bulan_mulai)' => date('m', strtotime($bulan_mulai)),
 				'YEAR(bulan_mulai)' => date('Y', strtotime($bulan_mulai))
-		 ])->row();
+			])->row();
 			if ($cek) {
 				$this->session->set_flashdata('error', 'Bulan ini sudah terbayarkan untuk user tersebut.');
 			}
@@ -820,7 +835,7 @@ class Dashboard extends CI_Controller
 		$nama_file_bukti = $bukti_lama;
 
 		// Jika via transfer, lakukan upload
-		if (in_array($pembayaran_via,array('transfer','transfer_2'))) {
+		if (in_array($pembayaran_via, array('transfer', 'transfer_2'))) {
 			// Cek apakah ada file yang diupload
 			if (!empty($_FILES['bukti']['name'])) {
 				$config['upload_path']   = './uploads/bukti/';
@@ -862,16 +877,16 @@ class Dashboard extends CI_Controller
 
 		// Cek apakah pembayaran untuk id_rumah dan bulan_mulai sudah ada
 		$bulan_mulai_db = $bulan_mulai ? $bulan_mulai . '-01' : null;
-	// 	$cek_pembayaran = $this->db->get_where('master_pembayaran', [
-	// 		'id_rumah' => $user_id,
-	// 		'bulan_mulai' => $bulan_mulai_db
-	//  ])->row_array();
-	 
-	// 	if ($cek_pembayaran && empty($id)) {
-	// 		$this->session->set_flashdata('error', 'Pembayaran untuk rumah dan bulan tersebut sudah ada.');
-	// 		redirect('pembayaran');
-	// 		return;
-	// 	}
+		// 	$cek_pembayaran = $this->db->get_where('master_pembayaran', [
+		// 		'id_rumah' => $user_id,
+		// 		'bulan_mulai' => $bulan_mulai_db
+		//  ])->row_array();
+
+		// 	if ($cek_pembayaran && empty($id)) {
+		// 		$this->session->set_flashdata('error', 'Pembayaran untuk rumah dan bulan tersebut sudah ada.');
+		// 		redirect('pembayaran');
+		// 		return;
+		// 	}
 
 		// Ambil data bulan rapel dari POST (array), gabungkan jadi string dipisah koma
 		$bulan_rapel = $this->input->post('bulan_rapel');
@@ -1140,53 +1155,54 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 	public function kirim_ipl()
 	{
-		 	$this->checkSession();
-			$this->load->library('pagination');
+		$this->checkSession();
+		$this->load->library('pagination');
 
-			// Config pagination
-			$config['base_url'] = site_url('pembayaran/kirim_ipl');
-			$config['total_rows'] = $this->db->count_all('log_pengiriman_wa_ipl');
-			$config['per_page'] = 10;
-			$config['uri_segment'] = 3;
+		// Config pagination
+		$config['base_url'] = site_url('pembayaran/kirim_ipl');
+		$config['total_rows'] = $this->db->count_all('log_pengiriman_wa_ipl');
+		$config['per_page'] = 10;
+		$config['uri_segment'] = 3;
 
-			// Styling (Bootstrap 4/5)
-			$config['full_tag_open'] = '<nav><ul class="pagination justify-content-center">';
-			$config['full_tag_close'] = '</ul></nav>';
-			$config['num_tag_open'] = '<li class="page-item">';
-			$config['num_tag_close'] = '</li>';
-			$config['cur_tag_open'] = '<li class="page-item active"><span class="page-link">';
-			$config['cur_tag_close'] = '</span></li>';
-			$config['next_tag_open'] = '<li class="page-item">';
-			$config['next_tag_close'] = '</li>';
-			$config['prev_tag_open'] = '<li class="page-item">';
-			$config['prev_tag_close'] = '</li>';
-			$config['first_tag_open'] = '<li class="page-item">';
-			$config['first_tag_close'] = '</li>';
-			$config['last_tag_open'] = '<li class="page-item">';
-			$config['last_tag_close'] = '</li>';
-			$config['attributes'] = ['class' => 'page-link'];
+		// Styling (Bootstrap 4/5)
+		$config['full_tag_open'] = '<nav><ul class="pagination justify-content-center">';
+		$config['full_tag_close'] = '</ul></nav>';
+		$config['num_tag_open'] = '<li class="page-item">';
+		$config['num_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="page-item active"><span class="page-link">';
+		$config['cur_tag_close'] = '</span></li>';
+		$config['next_tag_open'] = '<li class="page-item">';
+		$config['next_tag_close'] = '</li>';
+		$config['prev_tag_open'] = '<li class="page-item">';
+		$config['prev_tag_close'] = '</li>';
+		$config['first_tag_open'] = '<li class="page-item">';
+		$config['first_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="page-item">';
+		$config['last_tag_close'] = '</li>';
+		$config['attributes'] = ['class' => 'page-link'];
 
-			$this->pagination->initialize($config);
+		$this->pagination->initialize($config);
 
-			$start = $this->uri->segment(3, 0);
+		$start = $this->uri->segment(3, 0);
 
-			// Ambil data log
-			$this->db->order_by('created_at', 'DESC');
-			$logs = $this->db->get('log_pengiriman_wa_ipl', $config['per_page'], $start)->result();
+		// Ambil data log
+		$this->db->order_by('created_at', 'DESC');
+		$logs = $this->db->get('log_pengiriman_wa_ipl', $config['per_page'], $start)->result();
 
-			$data = [
-				'logs' => $logs,
-				'pagination' => $this->pagination->create_links()
-			];
+		$data = [
+			'logs' => $logs,
+			'pagination' => $this->pagination->create_links()
+		];
 
-			$this->load->view('dashboard/kirim_ipl_view', $data);
+		$this->load->view('dashboard/kirim_ipl_view', $data);
 	}
 	public function logout()
 	{
 		$this->session->sess_destroy();
 		redirect('./login');
 	}
-	public function invoice(){
+	public function invoice()
+	{
 		$this->checkSession();
 		$this->load->view('dashboard/invoice_pdf');
 	}
@@ -1205,7 +1221,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$data['pembayaran'] = [];
 		}
 
-		
+
 		// Render view jadi HTML
 		$html = $this->load->view('dashboard/invoice_pdf', $data, true);
 
@@ -1323,7 +1339,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$this->db->where($where)->update($table, ['password' => md5($new_password)]);
 		echo json_encode(['status' => 'success', 'message' => 'Password berhasil diupdate']);
 	}
-	public function update_password()  {
+	public function update_password()
+	{
 		$this->checkSession();
 		$data['halaman'] = 'dashboard/update_password';
 		$this->load->view('modul', $data);
