@@ -179,7 +179,29 @@
     <hr>
 
     <h1 class="report-title">Laporan Pembayaran Iuran Pengelolaan Lingkungan
-        <?php echo @$koordinator['nama']; ?>
+        <?php echo @$koordinator['nama']; ?> <br>
+        <?php
+        function format_indonesia($datetime)
+        {
+            $bulan = [
+                1 => 'Januari',
+                'Februari',
+                'Maret',
+                'April',
+                'Mei',
+                'Juni',
+                'Juli',
+                'Agustus',
+                'September',
+                'Oktober',
+                'November',
+                'Desember'
+            ];
+            $dt = new DateTime($datetime);
+            return $dt->format('d') . ' ' . $bulan[(int)$dt->format('n')] . ' ' . $dt->format('Y H:i');
+        }
+        echo "<i>Tanggal Cetak: " . format_indonesia('now') . "</i>";
+        ?>
     </h1>
     <div class="table-container">
         <table style="width:900px !important;">
