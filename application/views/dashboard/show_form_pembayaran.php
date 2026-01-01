@@ -244,16 +244,16 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
             <div class="card-body">
                 <div class="highlight d-none" id="infoPeriode"></div>
                 <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <?= $this->session->flashdata('success'); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <?= $this->session->flashdata('success'); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 <?php endif; ?>
                 <?php if ($this->session->flashdata('error')): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <?= $this->session->flashdata('error'); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?= $this->session->flashdata('error'); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 <?php endif; ?>
                 <form id="formBayar" method="post" action="<?php echo base_url('proses-pembayaran'); ?>"
                     enctype="multipart/form-data">
@@ -262,14 +262,14 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                         <select class="form-select select2" id="nomorRumah" name="user_id" style="width: 100% !important; height: 100px;" required>
                             <option value="">Pilih Nomor Rumah</option>
                             <?php foreach ($result_rumah as $value) : ?>
-                            <option value="<?php echo $value['id']; ?>" <?= ($value['id'] == $selected_user_id) ? 'selected' : '' ?>>
-                                <?php echo $value['id']; ?> - <?php echo $value['nama'] . " - " . $value['rumah']; ?>
-                            </option>
+                                <option value="<?php echo $value['id']; ?>" <?= ($value['id'] == $selected_user_id) ? 'selected' : '' ?>>
+                                    <?php echo $value['id']; ?> - <?php echo $value['nama'] . " - " . $value['rumah']; ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <?php if (!empty($id_pembayaran_decrypt)): ?>
-                    <input type="hidden" value="<?= $id_pembayaran_decrypt ?>" name="id_pembayaran">
+                        <input type="hidden" value="<?= $id_pembayaran_decrypt ?>" name="id_pembayaran">
                     <?php endif; ?>
                     <div class="mb-3">
                         <br>
@@ -303,22 +303,40 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                             const bulanRapelChecked = <?php echo json_encode($bulan_rapel_checked); ?>;
                             const bulanRapelSelected = "<?php echo $bulan_rapel_selected; ?>";
 
+
+
                             function getBulanPilihan2025() {
-                                const bulan = [
+                                const bulan = [];
+
+                                // 🔹 2025: Juni - Desember
+                                const bulan2025 = [
+                                    'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                                ];
+
+                                bulan2025.forEach((nama, idx) => {
+                                    const monthNumber = idx + 6; // mulai dari bulan 6
+                                    bulan.push({
+                                        value: `2025-${String(monthNumber).padStart(2, '0')}`,
+                                        label: `${nama} 2025`
+                                    });
+                                });
+
+                                // 🔹 2026: Januari - Desember
+                                const bulan2026 = [
                                     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                                     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                                 ];
-                                let options = [];
-                                let tahun = new Date().getFullYear(); // Use current year
-                                for (let i = 0; i < 12; i++) {
-                                    let val = tahun + '-' + String(i + 1).padStart(2, '0');
-                                    options.push({
-                                        value: val,
-                                        label: bulan[i] + ' ' + tahun
+
+                                bulan2026.forEach((nama, idx) => {
+                                    bulan.push({
+                                        value: `2026-${String(idx + 1).padStart(2, '0')}`,
+                                        label: `${nama} 2026`
                                     });
-                                }
-                                return options;
+                                });
+
+                                return bulan;
                             }
+
 
                             function handleMetodeChange() {
                                 const metode = document.getElementById('metode').value;
@@ -480,9 +498,9 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                     <div class="mb-3">
                         <button type="button" class="btn btn-warning w-100 mb-2" id="btnPreview">Preview</button>
                         <?php if (!empty($id)) :  ?>
-                        <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
+                            <button type="submit" class="btn btn-primary w-100">Revisi Isian</button>
                         <?php else : ?>
-                        <button type="submit" class="btn btn-primary w-100">Kirim</button>
+                            <button type="submit" class="btn btn-primary w-100">Kirim</button>
                         <?php endif; ?>
                     </div>
                 </form>
@@ -497,7 +515,7 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body" id="previewContent">
-                                </div>
+                            </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                             </div>
