@@ -178,8 +178,7 @@
     <br>
     <hr>
 
-    <h1 class="report-title">Laporan Pembayaran Iuran Pengelolaan Lingkungan
-        <?php echo @$koordinator['nama']; ?> <br>
+    <h1 class="report-title">Laporan Pembayaran Iuran Pengelolaan Lingkungan Tahun <?= $this->input->get('tahun') ?> <br>
         <?php
         function format_indonesia($datetime)
         {
