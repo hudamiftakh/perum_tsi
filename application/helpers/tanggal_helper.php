@@ -1,13 +1,14 @@
 <?php
-function useraAuthData() {
-	$ci=& get_instance();
-	if(!empty($ci->session->userdata['username'])){
+function useraAuthData()
+{
+	$ci = &get_instance();
+	if (!empty($ci->session->userdata['username'])) {
 		return  $ci->session->userdata['username'];
 	}
 }
 function format_tanggal($waktu)
 {
-	if(empty($waktu)){
+	if (empty($waktu)) {
 		return '-';
 	}
 	$hari_array = array(
@@ -50,7 +51,7 @@ function format_tanggal($waktu)
 
 function format_tanggal_v2($waktu)
 {
-	if(empty($waktu)){
+	if (empty($waktu)) {
 		return '-';
 	}
 	$hari_array = array(
@@ -93,7 +94,7 @@ function format_tanggal_v2($waktu)
 
 function format_tanggal_jam($waktu)
 {
-	if(empty($waktu)){
+	if (empty($waktu)) {
 		return '-';
 	}
 	$hari_array = array(
@@ -198,7 +199,7 @@ function sendWa1($hp, $text)
 	// $djson = json_decode($response,true);
 	// if($djson["status"]){
 	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, "https://wa2.digitalminsajo.sch.id/send-message");
+	curl_setopt($ch, CURLOPT_URL, "https://wa-api-v1.wabot.web.id/send-message");
 	curl_setopt($ch, CURLOPT_POST, 1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, "session=wa1&to=" . $hp . "&text=" . $text . "");
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -215,20 +216,22 @@ function sendWa1($hp, $text)
 			'message' => $text
 		];
 		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => 'https://wa.srv2.wapanels.com/send-message',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'POST',
-			CURLOPT_POSTFIELDS => json_encode($data),
-			CURLOPT_HTTPHEADER => array(
-				'Content-Type: application/json'
-			),
-		)
+		curl_setopt_array(
+			$curl,
+			array(
+				CURLOPT_URL => 'https://wa.srv2.wapanels.com/send-message',
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => '',
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => 'POST',
+				CURLOPT_POSTFIELDS => json_encode($data),
+				CURLOPT_HTTPHEADER => array(
+					'Content-Type: application/json'
+				),
+			)
 		);
 		$response = curl_exec($curl);
 		curl_close($curl);
@@ -243,20 +246,22 @@ function sendWa1($hp, $text)
 				'message' => $text
 			];
 			$curl = curl_init();
-			curl_setopt_array($curl, array(
-				CURLOPT_URL => 'https://wa.minsajo.waserv.my.id/send-message',
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_ENCODING => '',
-				CURLOPT_MAXREDIRS => 10,
-				CURLOPT_TIMEOUT => 0,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				CURLOPT_CUSTOMREQUEST => 'POST',
-				CURLOPT_POSTFIELDS => json_encode($data),
-				CURLOPT_HTTPHEADER => array(
-					'Content-Type: application/json'
-				),
-			)
+			curl_setopt_array(
+				$curl,
+				array(
+					CURLOPT_URL => 'https://wa.minsajo.waserv.my.id/send-message',
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_ENCODING => '',
+					CURLOPT_MAXREDIRS => 10,
+					CURLOPT_TIMEOUT => 0,
+					CURLOPT_FOLLOWLOCATION => true,
+					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					CURLOPT_CUSTOMREQUEST => 'POST',
+					CURLOPT_POSTFIELDS => json_encode($data),
+					CURLOPT_HTTPHEADER => array(
+						'Content-Type: application/json'
+					),
+				)
 			);
 			$response = curl_exec($curl);
 			curl_close($curl);
@@ -264,7 +269,6 @@ function sendWa1($hp, $text)
 			if ($djson3["status"]) {
 				// echo $response;
 			} else {
-
 			}
 		}
 	}
@@ -332,37 +336,39 @@ function generateSecretKey($length = 32)
 }
 
 if (!function_exists('encrypt_url')) {
-    function encrypt_url($data) {
-        $key = 'rahasia2025'; // ganti dengan kunci rahasia kamu
-        $method = 'AES-128-CTR'; // algoritma enkripsi ringan
+	function encrypt_url($data)
+	{
+		$key = 'rahasia2025'; // ganti dengan kunci rahasia kamu
+		$method = 'AES-128-CTR'; // algoritma enkripsi ringan
 
-        $iv_length = openssl_cipher_iv_length($method);
-        $iv = random_bytes($iv_length);
+		$iv_length = openssl_cipher_iv_length($method);
+		$iv = random_bytes($iv_length);
 
-        $encrypted = openssl_encrypt($data, $method, $key, OPENSSL_RAW_DATA, $iv);
-        $result = base64_encode($iv . $encrypted);
+		$encrypted = openssl_encrypt($data, $method, $key, OPENSSL_RAW_DATA, $iv);
+		$result = base64_encode($iv . $encrypted);
 
-        // URL-safe base64
-        return rtrim(strtr($result, '+/', '-_'), '=');
-    }
+		// URL-safe base64
+		return rtrim(strtr($result, '+/', '-_'), '=');
+	}
 }
 
 if (!function_exists('decrypt_url')) {
-    function decrypt_url($data) {
-        $key = 'rahasia2025';
-        $method = 'AES-128-CTR';
+	function decrypt_url($data)
+	{
+		$key = 'rahasia2025';
+		$method = 'AES-128-CTR';
 
-        // Balik ke base64
-        $b64 = strtr($data, '-_', '+/');
-        $b64 .= str_repeat('=', 3 - (strlen($b64) + 3) % 4); // padding
+		// Balik ke base64
+		$b64 = strtr($data, '-_', '+/');
+		$b64 .= str_repeat('=', 3 - (strlen($b64) + 3) % 4); // padding
 
-        $decoded = base64_decode($b64);
-        $iv_length = openssl_cipher_iv_length($method);
-        $iv = substr($decoded, 0, $iv_length);
-        $ciphertext = substr($decoded, $iv_length);
+		$decoded = base64_decode($b64);
+		$iv_length = openssl_cipher_iv_length($method);
+		$iv = substr($decoded, 0, $iv_length);
+		$ciphertext = substr($decoded, $iv_length);
 
-        return openssl_decrypt($ciphertext, $method, $key, OPENSSL_RAW_DATA, $iv);
-    }
+		return openssl_decrypt($ciphertext, $method, $key, OPENSSL_RAW_DATA, $iv);
+	}
 
 	function formatBulanTahun($tanggal)
 	{
@@ -388,5 +394,3 @@ if (!function_exists('decrypt_url')) {
 		return $bulan . ' ' . $tahun;
 	}
 }
-
-?>
