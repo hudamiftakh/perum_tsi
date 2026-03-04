@@ -125,6 +125,45 @@ $card_lunas = $this->db->query("
     $where_koor_card
 ")->row();
 $jumlah_lunas_card = (int)($card_lunas->total ?? 0);
+
+// ============================================
+// TOTAL PER METODE PEMBAYARAN (Transfer vs Koordinator)
+// ============================================
+$bulan_ini_str = date('Y-m');
+$thn_ini = date('Y');
+$bln_ini = date('m');
+
+// Helper query function
+$get_total_via = function ($via, $bulan = null, $tahun = null) use ($where_koor_card) {
+    $CI = &get_instance();
+    $CI->db->select("COALESCE(SUM(a.jumlah_bayar),0) as total");
+    $CI->db->from('master_pembayaran a');
+    $CI->db->join('master_users u', 'u.id = a.user_id', 'left');
+    $CI->db->join('master_rumah b', 'u.id_rumah = b.id', 'left');
+    $CI->db->where('a.status', 'verified');
+    $CI->db->where('a.pembayaran_via', $via);
+
+    if ($bulan && $tahun) {
+        $CI->db->where('MONTH(a.tanggal_bayar)', $bulan);
+        $CI->db->where('YEAR(a.tanggal_bayar)', $tahun);
+    } else if ($tahun) {
+        $CI->db->where('YEAR(a.tanggal_bayar)', $tahun);
+    }
+
+    if (!empty($where_koor_card)) {
+        $CI->db->where('b.id_koordinator', trim(str_replace("AND b.id_koordinator = ", "", str_replace("'", "", $where_koor_card))));
+    }
+
+    return (float)($CI->db->get()->row()->total ?? 0);
+};
+
+// Bulan ini
+$card_koor_bulan_ini = $get_total_via('koordinator', $bln_ini, $thn_ini);
+$card_transfer_bulan_ini = $get_total_via('transfer', $bln_ini, $thn_ini);
+
+// Sampai dengan (akumulasi tahun terpilih)
+$card_koor_sd = $get_total_via('koordinator', null, $selected_tahun);
+$card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
 ?>
 
 <style>
@@ -171,70 +210,64 @@ $jumlah_lunas_card = (int)($card_lunas->total ?? 0);
 
 <h5 class="mb-4 fw-semibold text-center">Rekap Pembayaran Rapel <?= $selected_tahun ?></h5>
 
-<!-- KARTU RINGKASAN -->
+
+<!-- KARTU RINCIAN METODE PEMBAYARAN -->
 <div class="row mb-4">
-    <!-- Total Rumah -->
+    <!-- Total Koordinator SD -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
         <div class="card border border-secondary shadow rounded-4 bg-light">
             <div class="card-body d-flex align-items-start">
-                <i class="bi bi-houses-fill text-primary display-6 me-3"></i>
+                <i class="bi bi-person-badge-fill text-primary display-6 me-3"></i>
                 <div>
-                    <h6 class="mb-1">Total Rumah</h6>
-                    <h5 class="fw-bold text-primary"><?= count($rumah) ?></h5>
-                    <small class="text-muted"><?= $jumlah_lunas_card ?> rumah sudah bayar</small>
+                    <h6 class="mb-1">Total Koordinator</h6>
+                    <h5 class="fw-bold text-primary">Rp <?= number_format($card_koor_sd) ?></h5>
+                    <small class="text-muted">Akumulasi <?= $selected_tahun ?></small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Total IPL -->
+    <!-- Total Transfer SD -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
         <div class="card border border-success shadow rounded-4 bg-light">
             <div class="card-body d-flex align-items-start">
-                <i class="bi bi-calendar-check text-success display-6 me-3"></i>
+                <i class="bi bi-bank2 text-success display-6 me-3"></i>
                 <div>
-                    <h6 class="mb-1">Total IPL</h6>
-                    <h5 class="fw-bold text-success">Rp <?= number_format($grand_total_ipl_card) ?></h5>
-                    <small class="text-muted">Per bulan kewajiban (verified)</small>
+                    <h6 class="mb-1">Total Transfer</h6>
+                    <h5 class="fw-bold text-success">Rp <?= number_format($card_transfer_sd) ?></h5>
+                    <small class="text-muted">Akumulasi <?= $selected_tahun ?></small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Total Kas Masuk -->
+    <!-- Koordinator Bulan Ini -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
         <div class="card border border-warning shadow rounded-4 bg-light">
             <div class="card-body d-flex align-items-start">
-                <i class="bi bi-cash-coin text-warning display-6 me-3"></i>
+                <i class="bi bi-calendar-check text-warning display-6 me-3"></i>
                 <div>
-                    <h6 class="mb-1">Total Kas Masuk</h6>
-                    <h5 class="fw-bold text-warning">Rp <?= number_format($grand_total_kas_card) ?></h5>
-                    <small class="text-muted">Per tanggal bayar <?= $selected_tahun ?></small>
+                    <h6 class="mb-1">Koordinator Bulan Ini</h6>
+                    <h5 class="fw-bold text-warning">Rp <?= number_format($card_koor_bulan_ini) ?></h5>
+                    <small class="text-muted">Periode bulan berjalan</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Cetak PDF -->
-    <!-- <div class="col-12 col-md-6 col-lg-3 mb-3">
+    <!-- Transfer Bulan Ini -->
+    <div class="col-12 col-md-6 col-lg-3 mb-3">
         <div class="card border border-danger shadow rounded-4 bg-light">
             <div class="card-body d-flex align-items-start">
-                <i class="bi bi-file-earmark-pdf text-danger display-6 me-3"></i>
+                <i class="bi bi-cash-coin text-danger display-6 me-3"></i>
                 <div>
-                    <h6 class="mb-1">Cetak PDF</h6>
-                    <div class="d-flex gap-1 flex-wrap mt-1">
-                        <?php for ($mi = $bulan_awal; $mi <= $bulan_akhir; $mi++):
-                            $mk = str_pad($mi, 2, '0', STR_PAD_LEFT); ?>
-                            <a href="<?= base_url('pembayaran/laporan-rekap-rapel-pdf?bulan=' . $mk . '&tahun=' . $selected_tahun . '&id_koordinator=' . encrypt_url($selected_koor)) ?>"
-                                target="_blank" class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size:.72rem;">
-                                <?= $bulan_indo_short[$mi] ?>
-                            </a>
-                        <?php endfor; ?>
-                    </div>
+                    <h6 class="mb-1">Transfer Bulan Ini</h6>
+                    <h5 class="fw-bold text-danger">Rp <?= number_format($card_transfer_bulan_ini) ?></h5>
+                    <small class="text-muted">Periode bulan berjalan</small>
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
 </div>
 
 <!-- FORM FILTER — sama persis laporan_pembayaran.php -->
