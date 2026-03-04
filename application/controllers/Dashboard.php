@@ -14,6 +14,44 @@ class Dashboard extends CI_Controller
 		$this->load->model('M_Datatables');
 	}
 
+	public function hook_web()
+	{
+		header('Content-Type: application/json');
+
+		try {
+			// Ambil JSON
+			$raw = file_get_contents("php://input");
+			$data = json_decode($raw, true);
+
+			if (!$data) {
+				echo json_encode([
+					'status' => false,
+					'message' => 'Invalid JSON'
+				]);
+				return;
+			}
+
+			$insert = [
+				'hook'       => json_encode($data),
+				'created_at' => date('Y-m-d H:i:s')
+			];
+
+			$this->db->insert('master_hook', $insert);
+
+			echo json_encode([
+				'status' => true,
+				'message' => 'Webhook received'
+			]);
+		} catch (Exception $e) {
+			echo json_encode([
+				'status' => false,
+				'error' => $e->getMessage()
+			]);
+		}
+
+		exit;
+	}
+
 	public function index()
 	{
 		// var_dump($this->session->userdata['username']);
