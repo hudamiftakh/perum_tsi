@@ -70,12 +70,11 @@
         table th,
         table td {
             border: 1px solid #000;
-            padding: 3px;
+            padding: 3px 2px;
             vertical-align: middle;
             text-align: center;
             white-space: normal !important;
             word-wrap: break-word;
-            width: auto !important;
         }
 
         table thead th {
@@ -83,7 +82,8 @@
             color: #fff;
             text-align: center;
             white-space: nowrap;
-            font-size: 8pt;
+            padding: 4px 2px;
+            font-weight: bold;
         }
 
         .nama-rumah {
@@ -126,21 +126,7 @@
 
         .status-date {
             font-size: 6pt;
-            display: block;
             margin-top: 2px;
-        }
-
-        .total-row td {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            font-size: 8pt;
-        }
-
-        .total-kas-row td {
-            background-color: #fff3e0;
-            color: #bf360c;
-            font-weight: bold;
-            font-size: 8pt;
         }
     </style>
 </head>
@@ -193,9 +179,9 @@
         12 => 'Des'
     ];
 
-    // Rentang bulan — selalu mulai Januari
+    // Rentang bulan — selalu tampilkan 12 bulan penuh
     $bulan_awal_pdf  = 1;
-    $bulan_akhir_pdf = ($tahun == (int)date('Y')) ? (int)date('n') : 12;
+    $bulan_akhir_pdf = 12;
     $kolom_bulan     = $bulan_akhir_pdf - $bulan_awal_pdf + 1;
 
     // DEBUG — hapus setelah fix
@@ -233,11 +219,11 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width:<?= $lebar_no ?>%; font-size:7pt;">No</th>
-                    <th style="width:<?= $lebar_nama ?>%; font-size:7pt;">Nama</th>
-                    <th style="width:<?= $lebar_rumah ?>%; font-size:7pt;">Rumah</th>
+                    <th style="width:<?= $lebar_no ?>%; font-size:<?= $font_cell ?>; padding:4px 2px;">No</th>
+                    <th style="width:<?= $lebar_nama ?>%; font-size:<?= $font_cell ?>; padding:4px 2px;">Nama</th>
+                    <th style="width:<?= $lebar_rumah ?>%; font-size:<?= $font_cell ?>; padding:4px 2px;">Rumah</th>
                     <?php for ($i = $bulan_awal_pdf; $i <= $bulan_akhir_pdf; $i++): ?>
-                        <th style="width:<?= $lebar_bulan_pct ?>%; font-size:7pt;" nowrap>
+                        <th style="width:<?= $lebar_bulan_pct ?>%; font-size:<?= $font_cell ?>; padding:4px 2px;" nowrap>
                             <?= $bulan_indo_short[$i] ?>
                         </th>
                     <?php endfor; ?>
@@ -287,7 +273,15 @@
                                 $tgl_label = !empty($dp['tanggal_bayar']) ? date('d/m/y', strtotime($dp['tanggal_bayar'])) : '';
 
                                 // Total IPL: hanya verified, per bulan kewajiban
-                                $total_ipl_bulan[$i] += (float)$dp['jumlah_bayar'];
+                                // Untuk rapel, bagi rata jumlah_bayar sesuai jumlah bulan
+                                $ipl_amount = (float)$dp['jumlah_bayar'];
+                                if (!empty($dp['bulan_rapel'])) {
+                                    $rapel_count = count(explode(',', $dp['bulan_rapel']));
+                                    if ($rapel_count > 1) {
+                                        $ipl_amount = $ipl_amount / $rapel_count;
+                                    }
+                                }
+                                $total_ipl_bulan[$i] += $ipl_amount;
 
                                 // Total Kas Masuk: berdasar tanggal_bayar — anti double-count via pay_key
                                 if (!empty($dp['tanggal_bayar'])) {
@@ -304,20 +298,6 @@
                                 }
                             } elseif ($dp && $dp['status'] == 'pending') {
                                 $tgl_label = !empty($dp['tanggal_bayar']) ? date('d/m/y', strtotime($dp['tanggal_bayar'])) : '';
-
-                                // Pending juga masuk total_tgl_bayar jika punya tanggal_bayar
-                                if (!empty($dp['tanggal_bayar'])) {
-                                    $pay_key = $id_rumah . '_' . $dp['id_pembayaran'];
-                                    if (!in_array($pay_key, $counted_ids_pdf)) {
-                                        $counted_ids_pdf[] = $pay_key;
-                                        $ts_bayar    = strtotime($dp['tanggal_bayar']);
-                                        $bln_bayar_i = (int)date('n', $ts_bayar);
-                                        $thn_bayar   = (int)date('Y', $ts_bayar);
-                                        if ($thn_bayar == $tahun && $bln_bayar_i >= $bulan_awal_pdf && $bln_bayar_i <= $bulan_akhir_pdf) {
-                                            $total_tgl_bayar[$bln_bayar_i] += (float)$dp['jumlah_bayar'];
-                                        }
-                                    }
-                                }
                             }
                         ?>
                             <td style="width:<?= $lebar_bulan_pct ?>%;">
@@ -327,14 +307,14 @@
                                     <?php if ($is_rapel): ?>
                                         <div class="status-cell status-rapel">
                                             <span>Rapel</span>
-                                            <span class="status-date"><?= $tgl_label ?></span>
+                                            <br><span class="status-date"><?= $tgl_label ?></span>
                                         </div>
                                     <?php elseif ($is_dimuka): ?>
                                         <div class="status-cell status-dimuka"><span>Dimuka</span></div>
                                     <?php else: ?>
                                         <div class="status-cell status-verified">
                                             <strong><?= number_format($dp['jumlah_bayar']) ?></strong>
-                                            <span class="status-date"><?= $tgl_label ?></span>
+                                            <br><span class="status-date"><?= $tgl_label ?></span>
                                         </div>
                                     <?php endif; ?>
                                 <?php elseif ($dp['status'] == 'pending'): ?>
@@ -348,27 +328,27 @@
                 <?php endforeach; ?>
 
                 <!-- Row 1: Total IPL per bulan kewajiban -->
-                <tr class="total-row">
-                    <td style="font-size:6pt;"></td>
-                    <td style="text-align:right; font-size:6.5pt; font-weight:bold;">TOTAL IPL<br><span style="font-weight:normal; font-size:5.5pt;">per bulan kewajiban</span></td>
-                    <td style="font-size:6pt;"></td>
+                <tr>
+                    <td style="background-color:#f2f2f2; color:#000; font-size:6pt; font-weight:bold; width:<?= $lebar_no ?>%;"></td>
+                    <td style="background-color:#f2f2f2; color:#000; text-align:right; font-size:7pt; font-weight:bold; width:<?= $lebar_nama ?>%;">TOTAL IPL<br><span style="font-weight:normal; font-size:5.5pt;">per bulan kewajiban</span></td>
+                    <td style="background-color:#f2f2f2; color:#000; font-size:6pt; font-weight:bold; width:<?= $lebar_rumah ?>%;"></td>
                     <?php for ($i = $bulan_awal_pdf; $i <= $bulan_akhir_pdf; $i++): ?>
-                        <td style="text-align:center; font-size:6.5pt; font-weight:bold;">
+                        <td style="background-color:#f2f2f2; color:#000; text-align:center; font-size:7pt; font-weight:bold; width:<?= $lebar_bulan_pct ?>%;">
                             <?= $total_ipl_bulan[$i] > 0 ? number_format($total_ipl_bulan[$i]) : '-' ?>
                         </td>
                     <?php endfor; ?>
                 </tr>
 
                 <!-- Row 2: Total Kas Masuk berdasarkan tanggal_bayar aktual -->
-                <tr class="total-kas-row">
-                    <td style="font-size:6pt;"></td>
-                    <td style="text-align:right; font-size:6.5pt; font-weight:bold;">Total Kas Masuk<br><span style="font-weight:normal; font-size:5.5pt;">per tanggal bayar</span></td>
-                    <td style="font-size:6pt;"></td>
+                <tr>
+                    <td style="background-color:#fff3e0; color:#bf360c; font-size:6pt; font-weight:bold; width:<?= $lebar_no ?>%;"></td>
+                    <td style="background-color:#fff3e0; color:#bf360c; text-align:right; font-size:7pt; font-weight:bold; width:<?= $lebar_nama ?>%;">Total Kas Masuk<br><span style="font-weight:normal; font-size:5.5pt;">per tanggal bayar</span></td>
+                    <td style="background-color:#fff3e0; color:#bf360c; font-size:6pt; font-weight:bold; width:<?= $lebar_rumah ?>%;"></td>
                     <?php for ($i = $bulan_awal_pdf; $i <= $bulan_akhir_pdf; $i++): ?>
-                        <td style="text-align:center; font-size:6.5pt; font-weight:bold;">
+                        <td style="background-color:#fff3e0; color:#bf360c; text-align:center; font-size:7pt; font-weight:bold; width:<?= $lebar_bulan_pct ?>%;">
                             <?php if ($total_tgl_bayar[$i] > 0): ?>
                                 <?= number_format($total_tgl_bayar[$i]) ?>
-                                <span style="display:block; font-size:5.5pt; font-weight:normal; color:#bf360c;"><?= $bulan_indo_short[$i] ?></span>
+                                <br><span style="font-size:5.5pt; font-weight:normal; color:#bf360c;"><?= $bulan_indo_short[$i] ?></span>
                             <?php else: ?>
                                 -
                             <?php endif; ?>

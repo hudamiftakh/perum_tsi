@@ -437,8 +437,16 @@ $jumlah_lunas_card = (int)($card_lunas->total ?? 0);
                             elseif ($is_dimuka)  $cell_class = 'bg-info-subtle text-info';
                             else                 $cell_class = 'bg-success-subtle text-success';
 
-                            // TOTAL IPL: dihitung per bulan kewajiban (boleh terhitung per kolom)
-                            $total_ipl_bulan[$i] += (float)$dp['jumlah_bayar'];
+                            // TOTAL IPL: dihitung per bulan kewajiban
+                            // Untuk rapel, bagi rata jumlah_bayar sesuai jumlah bulan rapel
+                            $ipl_amount = (float)$dp['jumlah_bayar'];
+                            if (!empty($dp['bulan_rapel'])) {
+                                $rapel_count = count(explode(',', $dp['bulan_rapel']));
+                                if ($rapel_count > 1) {
+                                    $ipl_amount = $ipl_amount / $rapel_count;
+                                }
+                            }
+                            $total_ipl_bulan[$i] += $ipl_amount;
 
                             // TOTAL TGL BAYAR: hanya dihitung SEKALI per ID payment
                             // Kasus 1 - Rapel   : bayar Maret untuk Jan+Feb → masuk ke kolom Maret
@@ -486,8 +494,16 @@ $jumlah_lunas_card = (int)($card_lunas->total ?? 0);
                                         <strong style="font-size:.8rem;"><?= number_format($dp['jumlah_bayar']) ?></strong>
                                         <small style="color:#888; font-size:.68rem;"><?= !empty($dp['tanggal_bayar']) ? date('d/m/y', strtotime($dp['tanggal_bayar'])) : '' ?></small>
                                     <?php elseif ($is_rapel): ?>
+                                        <?php
+                                        $bulan_indo_s = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                        $bayar_bulan = !empty($dp['tanggal_bayar']) ? (int)date('n', strtotime($dp['tanggal_bayar'])) : 0;
+                                        $bayar_label = ($bayar_bulan > 0 && $bayar_bulan != $i) ? 'Bayar: ' . $bulan_indo_s[$bayar_bulan] : '';
+                                        ?>
                                         <span class="text-primary fs-6"><i class="bi bi-arrow-repeat"></i></span>
                                         <small style="font-size:.7rem; color:#4527a0; font-weight:600;">Rapel</small>
+                                        <?php if ($bayar_label): ?>
+                                            <small style="font-size:.62rem; color:#e65100; font-weight:600;"><?= $bayar_label ?></small>
+                                        <?php endif; ?>
                                         <small style="color:#888; font-size:.65rem;"><?= !empty($dp['tanggal_bayar']) ? date('d/m/y', strtotime($dp['tanggal_bayar'])) : '' ?></small>
                                     <?php elseif ($is_dimuka): ?>
                                         <span class="text-info fs-6"><i class="bi bi-arrow-up-right-circle-fill"></i></span>
@@ -580,9 +596,21 @@ $jumlah_lunas_card = (int)($card_lunas->total ?? 0);
                                 </div>
 
                             <?php elseif ($dp['status'] == 'pending'): ?>
+                                <?php
+                                $is_rapel_p = !empty($dp['bulan_rapel']);
+                                $bulan_indo_s2 = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                $bayar_bulan_p = !empty($dp['tanggal_bayar']) ? (int)date('n', strtotime($dp['tanggal_bayar'])) : 0;
+                                $bayar_label_p = ($is_rapel_p && $bayar_bulan_p > 0 && $bayar_bulan_p != $i) ? 'Bayar: ' . $bulan_indo_s2[$bayar_bulan_p] : '';
+                                ?>
                                 <div class="d-flex flex-column align-items-center" style="cursor:pointer;"
                                     data-bs-toggle="modal" data-bs-target="#<?= $modal_id ?>">
                                     <span style="font-size:.75rem;">⏳ Pending</span>
+                                    <?php if ($is_rapel_p): ?>
+                                        <small style="font-size:.65rem; color:#4527a0; font-weight:600;">Rapel</small>
+                                    <?php endif; ?>
+                                    <?php if ($bayar_label_p): ?>
+                                        <small style="font-size:.62rem; color:#e65100; font-weight:600;"><?= $bayar_label_p ?></small>
+                                    <?php endif; ?>
                                     <small style="color:#888; font-size:.65rem;"><?= !empty($dp['tanggal_bayar']) ? date('d/m/y', strtotime($dp['tanggal_bayar'])) : '' ?></small>
                                 </div>
                                 <!-- Modal pending -->
@@ -729,18 +757,4 @@ $jumlah_lunas_card = (int)($card_lunas->total ?? 0);
 
         </tbody>
     </table>
-</div>
-
-<div class="d-flex gap-3 flex-wrap mb-2">
-    <span style="font-size:.78rem;"><span style="background:#eaf7ec;padding:2px 8px;border:1px solid #b2dfdb;border-radius:4px;">✅ Verified Normal</span></span>
-    <span style="font-size:.78rem;"><span style="background:#f0f0ff;padding:2px 8px;border:1px solid #c5cae9;border-radius:4px;"><i class="bi bi-arrow-repeat text-primary"></i> Rapel</span></span>
-    <span style="font-size:.78rem;"><span style="background:#e8f4fd;padding:2px 8px;border:1px solid #bee3f8;border-radius:4px;"><i class="bi bi-arrow-up-right-circle-fill text-info"></i> Bayar Dimuka</span></span>
-    <span style="font-size:.78rem;"><span style="background:#fff8e1;padding:2px 8px;border:1px solid #ffe082;border-radius:4px;">⏳ Pending</span></span>
-    <span style="font-size:.78rem;"><span style="background:#ffebeb;padding:2px 8px;border:1px solid #ffcdd2;border-radius:4px;">❌ Belum Bayar</span></span>
-</div>
-<div class="text-muted" style="font-size:.78rem;">
-    <i class="bi bi-info-circle me-1"></i>
-    <strong>Total IPL</strong>: dihitung berdasarkan bulan IPL (sama dengan laporan biasa). &nbsp;|&nbsp;
-    <strong>Total Tgl Bayar</strong>: uang yang benar-benar masuk di bulan tersebut — angka ini berguna untuk rekap kas rapel/bayar belakang.
-    Klik cell untuk melihat detail dan melakukan revisi.
 </div>

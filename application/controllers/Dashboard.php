@@ -609,24 +609,37 @@ class Dashboard extends CI_Controller
 	{
 		$this->checkSession();
 		$tanggal = $this->input->post('tanggal');
-		$id_rumah = $this->input->post('id_rumah'); // bisa juga dari session
+		$id_rumah = $this->input->post('id_rumah');
 
 		$bulan = date('m', strtotime($tanggal));
 		$tahun = date('Y', strtotime($tanggal));
+		$bulan_str = $tahun . '-' . $bulan; // e.g. "2026-03"
 
+		// Cek 1: Pembayaran 1 bulan biasa — cek untuk_bulan
 		$data_pembayaran = $this->db->query("
 			SELECT a.id as id_pembayaran, a.id_rumah FROM master_pembayaran AS a
 			LEFT JOIN master_users AS b ON a.user_id = b.id
-			WHERE MONTH(a.bulan_mulai) = '$bulan'
-			AND YEAR(a.bulan_mulai) = '$tahun'
-			AND b.id_rumah = '$id_rumah'
-		")->row_array();
+			WHERE DATE_FORMAT(a.untuk_bulan, '%Y-%m') = ?
+			AND b.id_rumah = ?
+			LIMIT 1
+		", array($bulan_str, $id_rumah))->row_array();
+
+		// Cek 2: Bulan ini mungkin ter-cover oleh rapel — cek bulan_rapel
+		if (!$data_pembayaran) {
+			$data_pembayaran = $this->db->query("
+				SELECT a.id as id_pembayaran, a.id_rumah FROM master_pembayaran AS a
+				LEFT JOIN master_users AS b ON a.user_id = b.id
+				WHERE FIND_IN_SET(?, a.bulan_rapel) > 0
+				AND b.id_rumah = ?
+				LIMIT 1
+			", array($bulan_str, $id_rumah))->row_array();
+		}
 
 		if ($data_pembayaran) {
 			echo json_encode([
 				'sudah_dibayar' => true,
 				'id_rumah' => encrypt_url($id_rumah),
-				'id_pembayaran' => encrypt_url($data_pembayaran['id_pembayaran']) // ID dari `master_pembayaran`
+				'id_pembayaran' => encrypt_url($data_pembayaran['id_pembayaran'])
 			]);
 		} else {
 			echo json_encode(['sudah_dibayar' => false]);
