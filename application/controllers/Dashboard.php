@@ -1383,6 +1383,118 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$data['halaman'] = 'dashboard/update_password';
 		$this->load->view('modul', $data);
 	}
+	/**
+	 * Halaman Laporan Rekap Pembayaran (web, bukan PDF)
+	 * Total berdasarkan tanggal_bayar aktual — support rapel & bayar belakang
+	 */
+	public function laporan_rekap_rapel()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/laporan_rekap_rapel';
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * Laporan Rekap Pembayaran (Termasuk Rapel & Bayar Belakang)
+	 * Total dihitung berdasarkan tanggal_bayar, bukan bulan_mulai
+	 * PDF output menggunakan TCPDF
+	 */
+	public function laporan_rekap_rapel_pdf()
+	{
+		$this->checkSession();
+		mb_internal_encoding('UTF-8');
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		// Ambil parameter
+		$id_koordinator = decrypt_url($this->input->get('id_koordinator', TRUE));
+		$bulan          = $this->input->get('bulan', TRUE);  // format: 01-12
+		$tahun          = $this->input->get('tahun', TRUE);
+
+		if (empty($bulan)) {
+			$bulan = date('m');
+		}
+		if (empty($tahun)) {
+			$tahun = date('Y');
+		}
+
+		// Jika role = koordinator, override id_koordinator dari session
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$id_koordinator = $this->session->userdata('username')['id'];
+		}
+
+		// Build filter WHERE untuk data rumah
+		$filter = [];
+		if (!empty($id_koordinator)) {
+			$filter[] = "vb.id_koordinator = '" . $this->db->escape_str($id_koordinator) . "'";
+		}
+		$whereClause = '';
+		if (!empty($filter)) {
+			$whereClause = 'WHERE ' . implode(' AND ', $filter);
+		}
+
+		// Data rumah
+		$rumah = $this->db->query("SELECT vb.* FROM (
+                                    SELECT DISTINCT b.id, b.alamat, b.nama, c.nama as koordinator, b.id_koordinator
+                                    FROM master_users as a
+                                    LEFT JOIN master_rumah as b ON a.id_rumah = b.id
+                                    LEFT JOIN master_koordinator_blok as c ON b.id_koordinator = c.id
+                                    ORDER BY b.alamat ASC
+                               ) as vb " . $whereClause)->result_array();
+
+		// Data koordinator
+		$koordinator_filter = [];
+		if (!empty($id_koordinator)) {
+			$koordinator_filter = $this->db->query("SELECT id, nama FROM master_koordinator_blok WHERE id = '" . $this->db->escape_str($id_koordinator) . "'")->row_array();
+		}
+
+		$bulan_indonesia_map = [
+			'01' => 'Januari',
+			'02' => 'Februari',
+			'03' => 'Maret',
+			'04' => 'April',
+			'05' => 'Mei',
+			'06' => 'Juni',
+			'07' => 'Juli',
+			'08' => 'Agustus',
+			'09' => 'September',
+			'10' => 'Oktober',
+			'11' => 'November',
+			'12' => 'Desember'
+		];
+		$nama_bulan_periode = $bulan_indonesia_map[str_pad($bulan, 2, '0', STR_PAD_LEFT)] ?? $bulan;
+
+		$data = [
+			'rumah'                  => $rumah,
+			'bulan'                  => (int)$bulan,
+			'tahun'                  => $tahun,
+			'nama_bulan_periode'     => $nama_bulan_periode,
+			'koordinator_filter'     => $koordinator_filter,
+			'id_koordinator_filter'  => $id_koordinator,
+		];
+
+		$html = $this->load->view('dashboard/cetak_laporan_rekap_rapel', $data, true);
+
+		// Normalisasi karakter khusus
+		$html = preg_replace('/[‐-‒–—−]/u', '-', $html);
+		if (stripos($html, '<meta charset') === false) {
+			$html = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />' . $html;
+		}
+
+		// Buat PDF
+		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetFont('dejavusans', '', 9);
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor('Perum TSI');
+		$pdf->SetTitle('Laporan Rekap Pembayaran IPL ' . $nama_bulan_periode . ' ' . $tahun);
+		$pdf->SetMargins(10, 10, 10, true);
+		$pdf->SetAutoPageBreak(TRUE, 10);
+		$pdf->AddPage();
+		$pdf->writeHTML($html, true, false, true, false, '');
+
+		$nama_file = 'laporan_rekap_rapel_' . $tahun . '_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '_' . date('His') . '.pdf';
+		$pdf->Output($nama_file, 'I');
+	}
+
 	public function laporan_pdf()
 	{
 

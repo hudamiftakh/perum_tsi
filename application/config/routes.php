@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 
 
@@ -78,6 +78,8 @@ $route['pembayaran'] = 'dashboard/show_form_pembayaran';
 $route['pembayaran/kirim_ipl'] = 'dashboard/kirim_ipl';
 $route['pembayaran/verifikasi-pembayaran'] = 'dashboard/verifikasi_pembayaran';
 $route['pembayaran/laporan-pembayaran-pdf'] = 'dashboard/laporan_pdf';
+$route['pembayaran/laporan-rekap-rapel-pdf'] = 'dashboard/laporan_rekap_rapel_pdf';
+$route['laporan-rekap-rapel'] = 'dashboard/laporan_rekap_rapel';
 $route['pembayaran/kirim_ipl/(:any)'] = 'dashboard/kirim_ipl/$1';
 $route['pembayaran/laporan-pembayaran'] = 'dashboard/laporan_pembayaran';
 $route['pembayaran/(:any)'] = 'dashboard/show_form_pembayaran';
