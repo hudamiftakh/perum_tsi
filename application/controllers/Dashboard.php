@@ -1408,6 +1408,87 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 
 	/**
+	 * Halaman Analisis Pembayaran
+	 * Fitur: Tunggakan, Grafik Tren, Rekap Tahunan
+	 */
+	public function analisis_pembayaran()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/analisis_pembayaran';
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * Halaman Setting
+	 * Edit nama user dan nama pemilik rumah
+	 */
+	public function setting()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/setting';
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * Update nama user (admin/koordinator)
+	 */
+	public function update_user()
+	{
+		$this->checkSession();
+
+		$id = $this->input->post('user_id', true);
+		$table = $this->input->post('user_table', true);
+		$nama = trim($this->input->post('nama', true));
+
+		// Validasi tabel
+		$allowed_tables = ['master_admin', 'master_koordinator_blok'];
+		if (!in_array($table, $allowed_tables) || empty($id) || empty($nama)) {
+			$this->session->set_flashdata('error', 'Data tidak valid.');
+			redirect('setting');
+			return;
+		}
+
+		$this->db->where('id', $id);
+		$this->db->update($table, ['nama' => $nama]);
+
+		if ($this->db->affected_rows() >= 0) {
+			$this->session->set_flashdata('success', 'Nama user berhasil diperbarui.');
+		} else {
+			$this->session->set_flashdata('error', 'Gagal memperbarui nama user.');
+		}
+
+		redirect('setting');
+	}
+
+	/**
+	 * Update nama pemilik rumah
+	 */
+	public function update_rumah()
+	{
+		$this->checkSession();
+
+		$id = $this->input->post('rumah_id', true);
+		$nama = trim($this->input->post('nama', true));
+
+		if (empty($id)) {
+			$this->session->set_flashdata('error', 'ID rumah tidak valid.');
+			redirect('setting');
+			return;
+		}
+
+		$this->db->where('id', $id);
+		$this->db->update('master_rumah', ['nama' => $nama]);
+
+		if ($this->db->affected_rows() >= 0) {
+			$this->session->set_flashdata('success', 'Nama pemilik rumah berhasil diperbarui.');
+		} else {
+			$this->session->set_flashdata('error', 'Gagal memperbarui nama pemilik rumah.');
+		}
+
+		redirect('setting');
+	}
+
+	/**
 	 * Laporan Rekap Pembayaran (Termasuk Rapel & Bayar Belakang)
 	 * Total dihitung berdasarkan tanggal_bayar, bukan bulan_mulai
 	 * PDF output menggunakan TCPDF

@@ -125,6 +125,15 @@
                             <span class="hide-menu">Rekap Pembayaran</span>
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('analisis-pembayaran') ?>"
+                            class="sidebar-link <?php echo ($menu == 'analisis-pembayaran') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Analisis Pembayaran</span>
+                        </a>
+                    </li>
 
                 </ul>
             </li>
@@ -238,10 +247,27 @@
                             <span class="hide-menu">Rekap Pembayaran</span>
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('analisis-pembayaran') ?>"
+                            class="sidebar-link <?php echo ($menu == 'analisis-pembayaran') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Analisis Pembayaran</span>
+                        </a>
+                    </li>
 
                 </ul>
             </li>
         <?php endif; ?>
+        <li class="sidebar-item">
+            <a class="sidebar-link sidebar-link <?php echo ($menu == 'setting') ? 'active' : ''; ?>" href="<?php echo base_url('setting') ?>" aria-expanded="false">
+                <span class="rounded-3">
+                    <i class="ti ti-settings"></i>
+                </span>
+                <span class="hide-menu"> Pengaturan</span>
+            </a>
+        </li>
         <li class="sidebar-item">
             <a class="sidebar-link sidebar-link" href="<?php echo base_url() ?>dashboard/update_password" aria-expanded="false">
                 <span class="rounded-3">
