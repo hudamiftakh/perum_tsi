@@ -145,7 +145,7 @@ $this->load->library('encryption');
         </div>
 
         <!-- Tombol Aksi -->
-        <div class="col-12 col-md-5">
+        <div class="col-12">
             <div class="d-flex flex-wrap gap-2 justify-content-start">
                 <!-- Tombol Cari -->
                 <button class="btn btn-success" type="submit">
@@ -169,6 +169,12 @@ $this->load->library('encryption');
                         <i class="fa fa-bell me-1"></i> Kirim Peringatan
                     </a>
                 <?php endif; ?>
+
+                <!-- Tombol Laporan Rekap Rapel -->
+                <a href="<?= base_url('laporan-rekap-rapel?bulan=' . date('m') . '&tahun=' . $selected_tahun . (!empty($_REQUEST['id_koordinator']) ? '&id_koordinator=' . $_REQUEST['id_koordinator'] : '')); ?>"
+                    class="btn btn-outline-primary">
+                    <i class="bi bi-bar-chart-fill me-1"></i> Rekap Rapel
+                </a>
 
                 <!-- Tombol PDF Dropdown -->
                 <div class="dropdown">
@@ -215,7 +221,50 @@ $this->load->library('encryption');
                             </li>
                         <?php endforeach; ?>
                     </ul>
+                </div>
 
+                <!-- Tombol Rekap Rapel PDF Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="rekapRapelDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-file-earmark-bar-graph me-1"></i> Rekap Rapel
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="rekapRapelDropdown">
+                        <li>
+                            <h6 class="dropdown-header">Laporan Rekap per Tgl Bayar</h6>
+                        </li>
+                        <?php
+                        $all_months_rekap = [
+                            '01' => 'Januari',
+                            '02' => 'Februari',
+                            '03' => 'Maret',
+                            '04' => 'April',
+                            '05' => 'Mei',
+                            '06' => 'Juni',
+                            '07' => 'Juli',
+                            '08' => 'Agustus',
+                            '09' => 'September',
+                            '10' => 'Oktober',
+                            '11' => 'November',
+                            '12' => 'Desember'
+                        ];
+                        $start_month_rekap = ($selected_tahun == 2025) ? '06' : '01';
+                        foreach ($all_months_rekap as $key_r => $bulan_r):
+                            if ($key_r < $start_month_rekap) continue;
+                        ?>
+                            <li>
+                                <a class="dropdown-item"
+                                    href="<?= base_url(
+                                                'pembayaran/laporan-rekap-rapel-pdf?bulan=' . $key_r .
+                                                    '&tahun=' . $selected_tahun .
+                                                    '&id_koordinator=' . encrypt_url(@$_REQUEST['id_koordinator'])
+                                            ); ?>"
+                                    target="_blank">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>
+                                    <?= $bulan_r . ' ' . $selected_tahun; ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -305,6 +354,9 @@ $this->load->library('encryption');
                         $currentMonthStr = sprintf('%04d-%02d', $tahun_terpilih, $i);
 
                         // Ambil data pembayaran yang terkait dengan bulan saat ini
+                        // FIX: DATE_FORMAT(bulan_mulai) hanya dipakai jika BUKAN rapel
+                        // Tanpa fix ini, kasus Bp Roni (bayar Maret untuk Jan+Feb) akan
+                        // menampilkan Maret sebagai "pending/rapel" padahal belum dibayar
                         $data_pembayaran = $this->db->query("
                                 SELECT a.*, b.*, a.id as id_pembayaran 
                                 FROM master_pembayaran as a 
@@ -313,7 +365,10 @@ $this->load->library('encryption');
                                 AND (
                                     a.untuk_bulan = '$currentMonthStr' 
                                     OR FIND_IN_SET('$currentMonthStr', a.bulan_rapel)
-                                    OR DATE_FORMAT(a.bulan_mulai, '%Y-%m') = '$currentMonthStr'
+                                    OR (
+                                        DATE_FORMAT(a.bulan_mulai, '%Y-%m') = '$currentMonthStr'
+                                        AND (a.bulan_rapel IS NULL OR a.bulan_rapel = '')
+                                    )
                                 )
                                 ORDER BY a.status DESC
                             ")->row_array();
