@@ -1104,6 +1104,97 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			echo json_encode(['status' => 'error', 'message' => 'Gagal memperbarui data']);
 		}
 	}
+	
+	public function act_verifikasi_pembayaran_all()
+	{
+		$this->checkSession();
+		$ids = $this->input->post('ids');
+		$aksi = $this->input->post('aksi');
+
+		if (empty($ids) || !is_array($ids)) {
+			echo json_encode(['status' => 'error', 'message' => 'Tidak ada data yang dipilih']);
+			return;
+		}
+
+		$statusBaru = ($aksi === 'verified') ? 'verified' : 'rejected';
+		$berhasil = 0;
+		$gagal = 0;
+
+		$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
+
+		foreach ($ids as $id) {
+			$cek = $this->db->get_where('master_pembayaran', ['id' => $id])->row();
+			if (!$cek || $cek->status == $statusBaru) {
+				$gagal++;
+				continue;
+			}
+
+			// Lakukan update status
+			$this->db->where('id', $id);
+			$update = $this->db->update('master_pembayaran', ['status' => $statusBaru]);
+
+			if ($update && $statusBaru === 'verified') {
+				// Kirim WA
+				$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
+				$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
+				$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
+
+				$keluarga = [];
+				if (isset($rumah['id']) && is_numeric($rumah['id']) && (int) $rumah['id'] > 0) {
+					$keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $rumah['id']])->row_array();
+				} else {
+					$alamat = trim($rumah['alamat'] ?? '');
+					if ($alamat !== '') {
+						$al = $this->db->escape_like_str($alamat);
+						$this->db->group_start();
+						$this->db->like('nomor_rumah', $al);
+						$this->db->or_like('nomor_rumah', '|' . $al);
+						$this->db->or_like('nomor_rumah', $al . '|');
+						$this->db->group_end();
+						$keluarga = $this->db->get('master_keluarga')->row_array();
+					}
+				}
+
+				$nama = $user['nama'] ?? '';
+				$no_hp = $keluarga['no_hp'] ?? '';
+
+				if (empty($no_hp)) {
+					$keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+					$no_hp = $keluarga_alt['no_hp'] ?? '';
+				}
+
+				if (!empty($no_hp)) {
+					$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
+					$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
+					$text = "📥 Konfirmasi Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nTerima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "** yang telah kami terima. 🙏\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah diterima\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nPembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nJika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
+					
+					$post_data = [
+						'session' => 'wa2',
+						'to' => hp($no_hp),
+						'text' => $text
+					];
+
+					try {
+						$ch = curl_init($wa_url);
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+						curl_setopt($ch, CURLOPT_POST, true);
+						curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Timeout to avoid too much blocking on batch processing
+						@curl_exec($ch);
+						@curl_close($ch);
+					} catch (Exception $e) {
+						// Ignored, proceed to next
+					}
+				}
+				$berhasil++;
+			} else {
+				if ($update) $berhasil++;
+			}
+		}
+
+		echo json_encode(['status' => 'success', 'message' => "Berhasil memproses $berhasil pembayaran."]);
+	}
+
 	public function ajaxSendWaBatch()
 	{
 		$this->checkSession();

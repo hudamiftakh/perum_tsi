@@ -206,10 +206,18 @@ $this->load->library('encryption');
         /* Tinggi checkbox */
     }
 
-    #submitBtn {
+    .submitBtnBatch {
         display: none;
     }
 </style>
+<div class="mb-3 text-end text-md-start d-flex gap-2 align-items-center">
+    <button type="button" class="btn btn-success fw-bold px-4 py-2 shadow-sm submitBtnBatch" onclick="handleBatchVerifikasi('verified')" style="border-radius: 20px; display: none;">
+        <i class="bi bi-check2-all me-1"></i> Verifikasi Terpilih
+    </button>
+    <button type="button" class="btn btn-danger fw-bold px-4 py-2 shadow-sm submitBtnBatch" onclick="handleBatchVerifikasi('rejected')" style="border-radius: 20px; display: none;">
+        <i class="bi bi-x-circle me-1"></i> Tolak Terpilih
+    </button>
+</div>
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover" id="laporanTable">
         <thead
@@ -370,7 +378,15 @@ $this->load->library('encryption');
             </tr>
         </tfoot>
     </table>
-    <!-- <button id="submitBtn" type="submit" class="btn btn-success">Verifikasi Semua</button> -->
+    </table>
+    <div class="mt-3 mb-4 text-start d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-success fw-bold px-4 py-2 shadow-sm submitBtnBatch" onclick="handleBatchVerifikasi('verified')" style="display:none; border-radius: 20px;">
+            <i class="bi bi-check2-all me-1"></i> Verifikasi Terpilih
+        </button>
+        <button type="button" class="btn btn-danger fw-bold px-4 py-2 shadow-sm submitBtnBatch" onclick="handleBatchVerifikasi('rejected')" style="display:none; border-radius: 20px;">
+            <i class="bi bi-x-circle me-1"></i> Tolak Terpilih
+        </button>
+    </div>
 </div>
 <!-- </div>
 </div> -->
@@ -379,18 +395,20 @@ $this->load->library('encryption');
     // Ketika checkbox #checkAll diklik
     const checkAll = document.getElementById('checkAll');
     const checkboxes = document.querySelectorAll('.checkItem');
-    const submitBtn = document.getElementById('submitBtn');
+    const submitBtns = document.querySelectorAll('.submitBtnBatch');
 
     // Fungsi cek apakah ada checkbox yang dicentang
-    function toggleSubmitBtn() {
+    function toggleSubmitBtns() {
         const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-        submitBtn.style.display = anyChecked ? 'inline-block' : 'none';
+        submitBtns.forEach(btn => {
+            btn.style.display = anyChecked ? 'inline-block' : 'none';
+        });
     }
 
     // Event ketika klik checkbox "Pilih Semua"
     checkAll.addEventListener('change', function() {
         checkboxes.forEach(cb => cb.checked = this.checked);
-        toggleSubmitBtn();
+        toggleSubmitBtns();
     });
 
     // Event ketika klik checkbox item satu per satu
@@ -398,7 +416,7 @@ $this->load->library('encryption');
         cb.addEventListener('change', function() {
             // Jika semua item sudah dicentang, centang juga checkAll
             checkAll.checked = Array.from(checkboxes).every(cb => cb.checked);
-            toggleSubmitBtn();
+            toggleSubmitBtns();
         });
     });
 
@@ -489,6 +507,68 @@ $this->load->library('encryption');
                             'Terjadi kesalahan saat menghapus data.',
                             'error'
                         );
+                    }
+                });
+            }
+        });
+    }
+
+    function handleBatchVerifikasi(aksi) {
+        const checkboxes = document.querySelectorAll('.checkItem:checked');
+        if (checkboxes.length === 0) {
+            Swal.fire('Peringatan', 'Pilih minimal satu data untuk diverifikasi', 'warning');
+            return;
+        }
+
+        let ids = [];
+        checkboxes.forEach(cb => ids.push(cb.value));
+
+        let teksKonfirmasi = aksi === 'verified' 
+            ? 'Yakin ingin memverifikasi ' + ids.length + ' data terpilih?' 
+            : 'Yakin ingin MENOLAK ' + ids.length + ' data terpilih?';
+
+        let teksTombol = aksi === 'verified' ? 'Ya, Verifikasi!' : 'Ya, Tolak!';
+        let btnColor = aksi === 'verified' ? '#198754' : '#dc3545';
+
+        Swal.fire({
+            title: teksKonfirmasi,
+            text: "Tindakan ini akan mengupdate semua data yang dicentang. Pastikan sudah benar.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: btnColor,
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: teksTombol
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Memproses Data...',
+                    text: 'Sedang mengirim notifikasi WA dan mengubah status...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+
+                $.ajax({
+                    url: '<?= base_url("dashboard/act_verifikasi_pembayaran_all") ?>',
+                    method: 'POST',
+                    data: { ids: ids, aksi: aksi },
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.status === 'success') {
+                            Swal.fire({
+                                title: 'Selesai!',
+                                text: response.message,
+                                icon: 'success'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Peringatan', response.message, 'warning');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Gagal!', 'Terjadi kesalahan jaringan atau server saat memproses.', 'error');
                     }
                 });
             }
