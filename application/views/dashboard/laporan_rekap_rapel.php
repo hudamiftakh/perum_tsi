@@ -449,6 +449,7 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
                             OR (
                                 DATE_FORMAT(a.bulan_mulai, '%Y-%m') = '$currentMonthStr'
                                 AND (a.bulan_rapel IS NULL OR a.bulan_rapel = '')
+                                AND (a.untuk_bulan IS NULL OR a.untuk_bulan = '' OR a.untuk_bulan = '0000-00-00')
                             )
                         )
                         ORDER BY a.status DESC
