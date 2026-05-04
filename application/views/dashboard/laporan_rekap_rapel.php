@@ -624,6 +624,10 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
                                                     class="btn btn-warning">
                                                     <i class="bi bi-pencil-square"></i> Revisi
                                                 </a>
+                                                <a href="<?= base_url('download_invoice/' . encrypt_url($dp['id_pembayaran'])) ?>"
+                                                    class="btn btn-primary" target="_blank">
+                                                    <i class="bi bi-printer"></i> Cetak Kitir
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -732,6 +736,46 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
                         <a href="<?= base_url('pembayaran/' . encrypt_url($id_rumah)) ?>" class="btn btn-success btn-sm mb-1">
                             <i class="bi bi-cash-coin"></i> Bayar
                         </a>
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#kitirModal<?= $id_rumah; ?>">
+                            <i class="bi bi-printer"></i> Cetak Kitir
+                        </button>
+
+                        <!-- Modal Cetak Kitir -->
+                        <div class="modal fade" id="kitirModal<?= $id_rumah; ?>" tabindex="-1" aria-labelledby="kitirModalLabel<?= $id_rumah; ?>" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form action="<?= base_url('dashboard/download_invoice'); ?>" method="get" target="_blank">
+                                    <div class="modal-content text-start fw-normal">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="kitirModalLabel<?= $id_rumah; ?>">Cetak Kitir Pembayaran</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="id_rumah" value="<?= $id_rumah; ?>">
+                                            <div class="mb-3">
+                                                <label for="bulanCetak<?= $id_rumah; ?>" class="form-label">Pilih Bulan</label>
+                                                <select class="form-select" name="bulan" id="bulanCetak<?= $id_rumah; ?>" required>
+                                                    <option value="">-- Pilih Bulan --</option>
+                                                    <?php
+                                                    $start_m = ($selected_tahun == 2025) ? 6 : 1;
+                                                    for ($m = $start_m; $m <= $bulan_akhir; $m++):
+                                                        $bulan_value = str_pad($m, 2, '0', STR_PAD_LEFT);
+                                                        $bulan_label = $bulan_indo_full[$bulan_value];
+                                                        $tanggal_format = $selected_tahun . '-' . $bulan_value . '-01';
+                                                    ?>
+                                                        <option value="<?= $tanggal_format; ?>"><?= $bulan_label . ' ' . $selected_tahun; ?></option>
+                                                    <?php endfor; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-printer"></i> Cetak
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
