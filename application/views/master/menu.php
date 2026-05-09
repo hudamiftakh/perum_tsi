@@ -147,7 +147,7 @@
                 </ul>
             </li>
             <li class="sidebar-item">
-                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('log-login', 'log-verifikasi'))) ? 'active' : ''; ?>"
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('log-login', 'log-verifikasi', 'log-koordinator'))) ? 'active' : ''; ?>"
                     href="javascript:void(0)" aria-expanded="false">
                     <span class="d-flex">
                         <i class="ti ti-history"></i>
@@ -155,7 +155,7 @@
                     <span class="hide-menu">Log Aktivitas</span>
                 </a>
                 <ul aria-expanded="false"
-                    class="collapse first-level <?php echo (in_array($menu, array('log-login', 'log-verifikasi'))) ? 'in' : ''; ?>">
+                    class="collapse first-level <?php echo (in_array($menu, array('log-login', 'log-verifikasi', 'log-koordinator'))) ? 'in' : ''; ?>">
                     <li class="sidebar-item">
                         <a href="<?php echo base_url('log-login') ?>"
                             class="sidebar-link <?php echo ($menu == 'log-login') ? 'active' : ''; ?>">
@@ -172,6 +172,15 @@
                                 <i class="ti ti-circle"></i>
                             </div>
                             <span class="hide-menu">Log Verifikasi</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('log-koordinator') ?>"
+                            class="sidebar-link <?php echo ($menu == 'log-koordinator') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Log Koordinator</span>
                         </a>
                     </li>
                 </ul>

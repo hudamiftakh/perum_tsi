@@ -84,6 +84,7 @@ $route['analisis-pembayaran'] = 'dashboard/analisis_pembayaran';
 // Log
 $route['log-login'] = 'dashboard/log_login';
 $route['log-verifikasi'] = 'dashboard/log_verifikasi';
+$route['log-koordinator'] = 'dashboard/log_koordinator';
 $route['profil-warga'] = 'dashboard/profil_warga';
 $route['ajax-profil-warga'] = 'dashboard/ajax_profil_warga';
 $route['surat-teguran-pdf'] = 'dashboard/surat_teguran_pdf';

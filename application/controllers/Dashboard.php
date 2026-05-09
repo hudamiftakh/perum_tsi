@@ -2198,6 +2198,93 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 	}
 
+	/**
+	 * Halaman Log Laporan Koordinator
+	 * Menampilkan koordinator yang rajin entry dan yang tidak
+	 */
+	public function log_koordinator()
+	{
+		$this->checkSession();
+
+		// Filter bulan & tahun
+		$bulan = $this->input->get('bulan') ?: date('m');
+		$tahun = $this->input->get('tahun') ?: date('Y');
+
+		// Semua koordinator
+		$koordinator_all = $this->db->query("SELECT id, nama, username FROM master_koordinator_blok ORDER BY nama ASC")->result_array();
+
+		// Hitung entry per koordinator bulan ini
+		$entry_data = $this->db->query("
+			SELECT r.id_koordinator,
+				   COUNT(p.id) as total_entry,
+				   SUM(p.jumlah_bayar) as total_nominal,
+				   MAX(p.created_at) as last_entry,
+				   SUM(CASE WHEN p.status='verified' THEN 1 ELSE 0 END) as verified,
+				   SUM(CASE WHEN p.status='pending' THEN 1 ELSE 0 END) as pending,
+				   SUM(CASE WHEN p.status='rejected' THEN 1 ELSE 0 END) as rejected
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON u.id = p.user_id
+			LEFT JOIN master_rumah r ON r.id = u.id_rumah
+			WHERE MONTH(p.created_at) = ?
+			AND YEAR(p.created_at) = ?
+			AND p.pembayaran_via = 'koordinator'
+			GROUP BY r.id_koordinator
+		", [$bulan, $tahun])->result_array();
+
+		// Index by id_koordinator
+		$entry_map = [];
+		foreach ($entry_data as $e) {
+			$entry_map[$e['id_koordinator']] = $e;
+		}
+
+		// Hitung jumlah rumah per koordinator
+		$rumah_data = $this->db->query("SELECT id_koordinator, COUNT(*) as jml_rumah FROM master_rumah WHERE id_koordinator IS NOT NULL GROUP BY id_koordinator")->result_array();
+		$rumah_map = [];
+		foreach ($rumah_data as $rd) {
+			$rumah_map[$rd['id_koordinator']] = $rd['jml_rumah'];
+		}
+
+		// Gabungkan data
+		$result = [];
+		foreach ($koordinator_all as $k) {
+			$kid = $k['id'];
+			$entry = $entry_map[$kid] ?? null;
+			$result[] = [
+				'id' => $kid,
+				'nama' => $k['nama'],
+				'username' => $k['username'],
+				'jml_rumah' => $rumah_map[$kid] ?? 0,
+				'total_entry' => $entry['total_entry'] ?? 0,
+				'total_nominal' => $entry['total_nominal'] ?? 0,
+				'last_entry' => $entry['last_entry'] ?? null,
+				'verified' => $entry['verified'] ?? 0,
+				'pending' => $entry['pending'] ?? 0,
+				'rejected' => $entry['rejected'] ?? 0,
+			];
+		}
+
+		// Hitung total entry semua bulan per koordinator (untuk chart)
+		$trend_data = $this->db->query("
+			SELECT r.id_koordinator,
+				   DATE_FORMAT(p.created_at, '%Y-%m') as bulan,
+				   COUNT(p.id) as total
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON u.id = p.user_id
+			LEFT JOIN master_rumah r ON r.id = u.id_rumah
+			WHERE YEAR(p.created_at) = ?
+			AND p.pembayaran_via = 'koordinator'
+			GROUP BY r.id_koordinator, DATE_FORMAT(p.created_at, '%Y-%m')
+			ORDER BY bulan ASC
+		", [$tahun])->result_array();
+
+		$data['koordinator_list'] = $result;
+		$data['trend_data'] = $trend_data;
+		$data['bulan_filter'] = $bulan;
+		$data['tahun_filter'] = $tahun;
+		$data['halaman'] = 'dashboard/log_koordinator';
+		$this->load->view('modul', $data);
+	}
+
 	public function checkSession()
 	{
 		if (empty($this->session->userdata['username'])) {
