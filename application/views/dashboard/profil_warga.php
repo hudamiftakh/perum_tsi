@@ -132,51 +132,6 @@ if ($Auth['role'] === 'koordinator') {
         </div>
     </div>
 
-    <!-- Filter -->
-    <div class="mb-4 p-4 border rounded-4 shadow-sm" style="background: #f8fafc; border-color: #e2e8f0 !important;">
-        <div class="d-flex flex-wrap align-items-end gap-3">
-            <div style="min-width: 120px; flex: 1;">
-                <label class="form-label fw-bold text-dark small">Tahun</label>
-                <select id="filterTahun" class="form-select border-0 shadow-sm">
-                    <?php for ($y = $tahun_sekarang; $y >= 2025; $y--): ?>
-                        <option value="<?= $y ?>" <?= $selected_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
-                    <?php endfor; ?>
-                </select>
-            </div>
-            <div style="min-width: 150px; flex: 1;">
-                <label class="form-label fw-bold text-dark small">Sampai Bulan</label>
-                <select id="filterBulan" class="form-select border-0 shadow-sm">
-                    <?php 
-                    $bulans = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
-                    foreach($bulans as $num => $nama): 
-                        $sel = ($num == (int)date('n')) ? 'selected' : '';
-                    ?>
-                        <option value="<?= $num ?>" <?= $sel ?>><?= $nama ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <?php if ($Auth['role'] !== 'koordinator'): ?>
-            <div style="min-width: 180px; flex: 1;">
-                <label class="form-label fw-bold text-dark small">Koordinator</label>
-                <select id="filterKoor" class="form-select border-0 shadow-sm">
-                    <option value="">Semua Koordinator</option>
-                    <?php foreach ($koordinator_list as $k): ?>
-                        <option value="<?= $k['id'] ?>" <?= $selected_koor == $k['id'] ? 'selected' : '' ?>><?= htmlspecialchars($k['nama']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <?php endif; ?>
-            <div class="d-flex gap-2">
-                <button id="btnFilter" class="btn btn-success btn-filter shadow-sm">
-                    <i class="ti ti-search me-1"></i> Filter
-                </button>
-                <button id="btnReset" class="btn btn-outline-secondary btn-filter shadow-sm">
-                    <i class="ti ti-refresh me-1"></i> Reset
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Stats -->
     <div class="row mb-4">
         <div class="col-6 col-lg-3 mb-3">
@@ -221,6 +176,51 @@ if ($Auth['role'] === 'koordinator') {
                     <h3 class="fw-bold mb-0" id="statDimuka">-</h3>
                     <span class="text-muted small fw-semibold">Bayar Di Muka</span>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section (Moved below stats) -->
+    <div class="mb-4 p-4 border rounded-4 shadow-sm" style="background: #f1f5f9; border: 1px solid #cbd5e1 !important;">
+        <div class="d-flex flex-wrap align-items-end gap-3">
+            <div style="min-width: 120px; flex: 1;">
+                <label class="form-label fw-bold text-slate-700 small">Tahun</label>
+                <select id="filterTahun" class="form-select">
+                    <?php for ($y = $tahun_sekarang; $y >= 2025; $y--): ?>
+                        <option value="<?= $y ?>" <?= $selected_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+            <div style="min-width: 150px; flex: 1;">
+                <label class="form-label fw-bold text-slate-700 small">Sampai Bulan</label>
+                <select id="filterBulan" class="form-select">
+                    <?php 
+                    $bulans = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+                    foreach($bulans as $num => $nama): 
+                        $sel = ($num == (int)date('n')) ? 'selected' : '';
+                    ?>
+                        <option value="<?= $num ?>" <?= $sel ?>><?= $nama ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php if ($Auth['role'] !== 'koordinator'): ?>
+            <div style="min-width: 180px; flex: 1;">
+                <label class="form-label fw-bold text-slate-700 small">Koordinator</label>
+                <select id="filterKoor" class="form-select">
+                    <option value="">Semua Koordinator</option>
+                    <?php foreach ($koordinator_list as $k): ?>
+                        <option value="<?= $k['id'] ?>" <?= $selected_koor == $k['id'] ? 'selected' : '' ?>><?= htmlspecialchars($k['nama']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php endif; ?>
+            <div class="d-flex gap-2">
+                <button id="btnFilter" class="btn btn-primary btn-filter shadow-sm" style="background: var(--primary-gradient); border:none;">
+                    <i class="ti ti-search me-1"></i> Filter
+                </button>
+                <button id="btnReset" class="btn btn-white btn-filter shadow-sm border text-secondary">
+                    <i class="ti ti-refresh me-1"></i> Reset
+                </button>
             </div>
         </div>
     </div>

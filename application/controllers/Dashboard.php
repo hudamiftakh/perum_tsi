@@ -2145,85 +2145,102 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			ORDER BY r.alamat ASC
 		")->result_array();
 
-		// Pembayaran per rumah
-		$pembayaran_per_rumah = $this->db->query("
-			SELECT u.id_rumah,
-				GROUP_CONCAT(DISTINCT
-					CASE WHEN p.bulan_rapel IS NOT NULL AND p.bulan_rapel != '' THEN p.bulan_rapel ELSE NULL END
-					SEPARATOR ','
-				) as all_rapel,
-				GROUP_CONCAT(DISTINCT
-					CASE WHEN p.bulan_rapel IS NULL OR p.bulan_rapel = '' THEN DATE_FORMAT(COALESCE(p.untuk_bulan, p.bulan_mulai), '%Y-%m') ELSE NULL END
-					SEPARATOR ','
-				) as bulan_list,
-				MAX(p.tanggal_bayar) as terakhir_bayar,
-				SUM(p.jumlah_bayar) as total_bayar
+		// Pembayaran per rumah (Gunakan logika Rekap Rapel)
+		$pembayaran_raw = $this->db->query("
+			SELECT 
+				u.id_rumah,
+				p.untuk_bulan,
+				p.bulan_rapel,
+				DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym,
+				p.status
 			FROM master_pembayaran p
 			LEFT JOIN master_users u ON p.user_id = u.id
 			LEFT JOIN master_rumah r ON u.id_rumah = r.id
 			WHERE p.status IN ('verified','pending')
-			AND YEAR(COALESCE(p.untuk_bulan, p.bulan_mulai)) = $tahun
+			AND (
+				YEAR(p.untuk_bulan) = $tahun 
+				OR YEAR(p.bulan_mulai) = $tahun
+				OR p.bulan_rapel LIKE '%$tahun%'
+			)
 			$where_koor
-			GROUP BY u.id_rumah
 		")->result_array();
 
-		$pay_map = [];
-		foreach ($pembayaran_per_rumah as $p) {
-			$bulan_set = [];
-			if (!empty($p['bulan_list'])) {
-				foreach (explode(',', $p['bulan_list']) as $bl) $bulan_set[trim($bl)] = true;
+		$lunas_map = [];
+		foreach ($pembayaran_raw as $p) {
+			$idr = $p['id_rumah'];
+			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
+
+			// Kriteria 1: untuk_bulan
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') {
+				$ym = date('Y-m', strtotime($p['untuk_bulan']));
+				$lunas_map[$idr][$ym] = true;
 			}
-			if (!empty($p['all_rapel'])) {
-				foreach (explode(',', $p['all_rapel']) as $bl) $bulan_set[trim($bl)] = true;
-			}
-			$count = 0; $bulan_max = 0;
-			foreach ($bulan_set as $bl => $v) {
-				if (strpos($bl, "$tahun-") === 0) {
-					$count++;
-					$bln_num = (int)substr($bl, 5, 2);
-					if ($bln_num > $bulan_max) $bulan_max = $bln_num;
+
+			// Kriteria 2: bulan_rapel
+			if (!empty($p['bulan_rapel'])) {
+				foreach (explode(',', $p['bulan_rapel']) as $br) {
+					$br = trim($br);
+					if ($br) $lunas_map[$idr][$br] = true;
 				}
 			}
-			$pay_map[$p['id_rumah']] = [
-				'jumlah_bulan' => $count, 'bulan_max' => $bulan_max,
-				'terakhir_bayar' => $p['terakhir_bayar'], 'total_bayar' => $p['total_bayar'],
-			];
+
+			// Kriteria 3: bulan_mulai (jika untuk_bulan & rapel kosong)
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
+				$lunas_map[$idr][$p['bulan_mulai_ym']] = true;
+			}
 		}
 
 		$menunggak = []; $rajin = []; $dimuka = [];
 
 		foreach ($all_rumah as $r) {
-			$info = $pay_map[$r['id']] ?? null;
-			$jml = $info ? $info['jumlah_bulan'] : 0;
-			$bmax = $info ? $info['bulan_max'] : 0;
-			$tunggakan = $total_bulan_wajib - $jml;
+			$idr = $r['id'];
+			$tunggak_names = [];
+			$jumlah_bayar = 0;
 
-			$base = [
-				'id' => $r['id'], 'alamat' => $r['alamat'], 'nama' => $r['nama'],
-				'no_hp' => $r['no_hp'], 'koordinator' => $r['koordinator'],
-				'jumlah_bulan_bayar' => $jml, 'total_bayar' => $info ? $info['total_bayar'] : 0,
-				'terakhir_bayar' => $info ? $info['terakhir_bayar'] : null,
-			];
+			// Cek setiap bulan wajib
+			for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_ipl; $m++) {
+				$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+				if (isset($lunas_map[$idr][$key])) {
+					$jumlah_bayar++;
+				} else {
+					$tunggak_names[] = $bulan_indo[$m];
+				}
+			}
 
-			if ($jml < $total_bulan_wajib) {
-				$base['tunggakan'] = $tunggakan;
-				$base['status_tunggak'] = $jml == 0 ? 'Belum bayar sama sekali' : 'Tunggak '.$tunggakan.' bulan';
-				$base['level'] = ($jml == 0 || $tunggakan >= 3) ? 'danger' : 'warning';
-				$menunggak[] = $base;
-			}
-			if ($jml >= $total_bulan_wajib && $jml > 0) {
-				$rajin[] = $base;
-			}
-			if ($bmax > $bulan_akhir_ipl) {
-				$base['bulan_dimuka'] = $bmax - $bulan_akhir_ipl;
-				$base['bayar_sampai'] = ($bulan_indo[$bmax] ?? $bmax) . ' ' . $tahun;
-				$dimuka[] = $base;
+			$r['jumlah_bulan_bayar'] = $jumlah_bayar;
+			$r['tunggakan'] = count($tunggak_names);
+			$r['bulan_tunggak_list'] = implode(', ', $tunggak_names);
+			$r['status_tunggak'] = $r['tunggakan'] > 0 ? ($r['tunggakan'] >= 3 ? 'Surat Teguran' : 'Peringatan') : 'Lunas';
+			$r['level'] = $r['tunggakan'] >= 3 ? 'danger' : ($r['tunggakan'] > 0 ? 'warning' : 'success');
+
+			if ($r['tunggakan'] > 0) {
+				$menunggak[] = $r;
+			} else {
+				// Cek Bayar di Muka (Ada lunas untuk bulan > bulan_akhir_ipl atau tahun depan)
+				$is_dimuka = false;
+				$dimuka_count = 0;
+				if (isset($lunas_map[$idr])) {
+					foreach ($lunas_map[$idr] as $ym => $val) {
+						$ym_parts = explode('-', $ym);
+						if ($ym_parts[0] > $tahun || ($ym_parts[0] == $tahun && (int)$ym_parts[1] > $bulan_akhir_ipl)) {
+							$is_dimuka = true;
+							$dimuka_count++;
+						}
+					}
+				}
+
+				if ($is_dimuka) {
+					$r['bulan_dimuka'] = $dimuka_count;
+					$dimuka[] = $r;
+				} else {
+					$rajin[] = $r;
+				}
 			}
 		}
 
 		usort($menunggak, function($a,$b){ return $b['tunggakan'] - $a['tunggakan']; });
 		usort($rajin, function($a,$b){ return $b['jumlah_bulan_bayar'] - $a['jumlah_bulan_bayar']; });
-		usort($dimuka, function($a,$b){ return $b['bulan_dimuka'] - $a['bulan_dimuka']; });
+		usort($dimuka, function($a,$b){ return ($b['bulan_dimuka'] ?? 0) - ($a['bulan_dimuka'] ?? 0); });
 
 		echo json_encode([
 			'stats' => [
@@ -2561,23 +2578,47 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$filepath = FCPATH . 'assets/temp_pdf/' . $filename;
 		if (!is_dir(FCPATH . 'assets/temp_pdf/')) mkdir(FCPATH . 'assets/temp_pdf/', 0777, true);
 		
-		// Hitung detail untuk pesan
-		$pembayaran = $this->db->query("
+		// 2. Ambil data pembayaran warga (Verified & Pending)
+		$pembayaran_raw = $this->db->query("
 			SELECT 
-				GROUP_CONCAT(DISTINCT CASE WHEN p.bulan_rapel IS NOT NULL AND p.bulan_rapel != '' THEN p.bulan_rapel ELSE NULL END SEPARATOR ',') as all_rapel,
-				GROUP_CONCAT(DISTINCT CASE WHEN p.bulan_rapel IS NULL OR p.bulan_rapel = '' THEN DATE_FORMAT(COALESCE(p.untuk_bulan, p.bulan_mulai), '%Y-%m') ELSE NULL END SEPARATOR ',') as bulan_list
-			FROM master_pembayaran p
-			LEFT JOIN master_users u ON p.user_id = u.id
-			WHERE u.id_rumah = ? AND p.status IN ('verified','pending')
-			AND YEAR(COALESCE(p.untuk_bulan, p.bulan_mulai)) = ?
-		", [$id_rumah, $tahun])->row_array();
+				u.id_rumah,
+				a.untuk_bulan,
+				a.bulan_rapel,
+				DATE_FORMAT(a.bulan_mulai, '%Y-%m') as bulan_mulai_ym,
+				a.status
+			FROM master_pembayaran a
+			LEFT JOIN master_users u ON a.user_id = u.id
+			WHERE a.status IN ('verified', 'pending')
+			AND (
+				YEAR(a.untuk_bulan) = $tahun 
+				OR YEAR(a.bulan_mulai) = $tahun
+				OR a.bulan_rapel LIKE '%$tahun%'
+			)
+		")->result_array();
 
-		$bulan_lunas = [];
-		if (!empty($pembayaran['bulan_list'])) {
-			foreach (explode(',', $pembayaran['bulan_list']) as $bl) $bulan_lunas[trim($bl)] = true;
-		}
-		if (!empty($pembayaran['all_rapel'])) {
-			foreach (explode(',', $pembayaran['all_rapel']) as $bl) $bulan_lunas[trim($bl)] = true;
+		$lunas_map = [];
+		foreach ($pembayaran_raw as $p) {
+			$idr = $p['id_rumah'];
+			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
+
+			// Kriteria 1: untuk_bulan
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00') {
+				$ym = date('Y-m', strtotime($p['untuk_bulan']));
+				$lunas_map[$idr][$ym] = true;
+			}
+
+			// Kriteria 2: bulan_rapel
+			if (!empty($p['bulan_rapel'])) {
+				foreach (explode(',', $p['bulan_rapel']) as $br) {
+					$br = trim($br);
+					if ($br) $lunas_map[$idr][$br] = true;
+				}
+			}
+
+			// Kriteria 3: bulan_mulai (jika untuk_bulan & rapel kosong)
+			if (empty($p['untuk_bulan']) && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
+				$lunas_map[$idr][$p['bulan_mulai_ym']] = true;
+			}
 		}
 
 		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
