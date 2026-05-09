@@ -229,6 +229,35 @@
     </form>
 </div>
 
+    <!-- Auto Sync WA Trigger -->
+<script>
+$(document).ready(function() {
+    // Fungsi untuk memicu pengiriman WA di antrian
+    function triggerSyncWA() {
+        $.ajax({
+            url: '<?= base_url("syncwa/public") ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                // Jika masih ada antrian (status success dari syncwa), panggil lagi sampai habis
+                if(res.status === 'success' || res.message.includes('terkirim')) {
+                    setTimeout(triggerSyncWA, 2000); // Tunggu 2 detik lalu proses antrian berikutnya
+                }
+            },
+            error: function() {
+                // Jika error (mungkin internet putus), coba lagi nanti
+                setTimeout(triggerSyncWA, 30000); 
+            }
+        });
+    }
+
+    // Jalankan pemicu otomatis saat dashboard dibuka
+    triggerSyncWA();
+});
+</script>
+</body>
+</html>
+
     <style>
         .filter-bar input[type="date"]::-webkit-input-placeholder { color: #198754; }
         .filter-bar input[type="date"]::-moz-placeholder { color: #198754; }

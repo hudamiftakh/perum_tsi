@@ -13,6 +13,18 @@ class Dashboard extends CI_Controller
 		$this->load->library('pagination');
 		$this->load->model('M_Datatables');
 
+		// Auto Create Table Log Teguran jika belum ada
+		$this->db->query("CREATE TABLE IF NOT EXISTS log_teguran (
+			id INT AUTO_INCREMENT PRIMARY KEY, 
+			id_rumah INT, 
+			tgl_kirim DATETIME, 
+			dikirim_ke VARCHAR(20), 
+			status VARCHAR(20), 
+			nominal INT,
+			bulan_tunggak TEXT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)");
+
 		// Auto-create tabel log_login jika belum ada
 		$this->_create_log_tables();
 	}
@@ -1133,20 +1145,9 @@ Pengurus Paguyuban TSI
 Perumahan Taman Sukodono Indah
 _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
 
-				$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
-				$wa_post_data = [
-					'session' => 'wa2',
-					'to' => hp($wa_no_hp),
-					'text' => $wa_text
-				];
-
-				$ch = curl_init($wa_url);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($wa_post_data));
-				curl_setopt($ch, CURLOPT_POST, true);
-				curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-				@curl_exec($ch);
-				@curl_close($ch);
+				$this->load->helper('wa');
+				$res = send_wa($wa_no_hp, $wa_text);
+				$wa_status = (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) ? 'success' : 'failed';
 			}
 		} catch (Exception $e) {
 			// Gagal kirim WA tidak menggagalkan proses simpan
@@ -1165,300 +1166,80 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	public function act_verifikasi_pembayaran()
 	{
 		$this->checkSession();
-		// Ambil ID dari POST
 		$id = $this->input->post('id');
 		$aksi = $this->input->post('aksi');
 
-		// Validasi ID
-		if (empty($id) || !is_numeric($id)) {
-			echo json_encode(['status' => 'error', 'message' => 'ID tidak valid']);
-			return;
-		}
-
-		// Cek apakah data dengan ID tersebut ada
 		$cek = $this->db->get_where('master_pembayaran', ['id' => $id])->row();
 		if (!$cek) {
 			echo json_encode(['status' => 'error', 'message' => 'Data tidak ditemukan']);
 			return;
 		}
 
-		// Lakukan update status
 		$statusBaru = $aksi === 'verified' ? 'verified' : 'rejected';
 		$this->db->where('id', $id);
 		$update = $this->db->update('master_pembayaran', ['status' => $statusBaru]);
 
 		if ($update) {
-			// Ambil data pembayaran & user
 			$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
 			$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
 			$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
-
-			// Ambil data keluarga berdasarkan id_rumah
-			// Ambil data keluarga.
-			// Jika ada id_rumah (tidak nol), cari berdasarkan id_rumah.
-			// Jika id_rumah nol atau kosong, cari berdasarkan kecocokan alamat di kolom nomor_rumah
-			// (mengatasi format "Ruha 6| Ruha 7| TSI Blok I-1| TSI Blok II-8").
-			$keluarga = [];
-			if (isset($rumah['id']) && is_numeric($rumah['id']) && (int) $rumah['id'] > 0) {
-				// Gunakan id_rumah hanya jika bukan 0
-				$keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $rumah['id']])->row_array();
-			} else {
-				$alamat = trim($rumah['alamat'] ?? '');
-				if ($alamat !== '') {
-					$al = $this->db->escape_like_str($alamat);
-					$this->db->group_start();
-					// cari apakah alamat muncul di dalam string nomor_rumah (bagian manapun)
-					$this->db->like('nomor_rumah', $al);
-					// juga cek variasi dengan pipe di sisi kiri/kanan untuk memastikan pencarian bagian
-					$this->db->or_like('nomor_rumah', '|' . $al);
-					$this->db->or_like('nomor_rumah', $al . '|');
-					$this->db->group_end();
-					$keluarga = $this->db->get('master_keluarga')->row_array();
-				}
-			}
-
+			$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+			
 			$nama = $user['nama'] ?? '';
-			$alamat = $rumah['alamat'] ?? '';
 			$no_hp = $keluarga['no_hp'] ?? '';
-
-			// Validasi nomor HP, jika kosong ambil dari master_keluarga lain yang cocok
-			if (empty($no_hp)) {
-				$keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-				$no_hp = $keluarga_alt['no_hp'] ?? '';
-			}
-
 			$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
-
-			// Buat link pembayaran terenkripsi
 			$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
 
-			$text = "✅ Pembayaran IPL Telah Divalidasi
+			$text = "✅ Pembayaran IPL Telah Divalidasi\n\nAssalamu'alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nPembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah divalidasi\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nSilakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.\n\nTerima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
 
-Assalamu'alaikum/Salam sejahtera Bapak/Ibu *$nama*,
-
-Pembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅
-💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "
-📄 Bukti: Sudah divalidasi
-🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "
-📑 Kitir Pembayaran: $link
-
-Silakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.
-
-Terima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.
-
-Hormat kami,
-Pengurus Paguyuban TSI
-Perumahan Taman Sukodono Indah
-_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
-		// Siapkan data log verifikasi
 			$log_data = [
-				'pembayaran_id' => $id,
-				'aksi' => $statusBaru,
-				'status_sebelum' => $cek->status,
-				'status_sesudah' => $statusBaru,
-				'warga_nama' => $nama,
-				'warga_alamat' => $alamat,
-				'bulan_bayar' => $pembayaran['bulan_mulai'],
-				'jumlah_bayar' => $pembayaran['jumlah_bayar'],
-				'pembayaran_via' => $pembayaran['pembayaran_via'],
-				'tanggal_bayar' => $pembayaran['tanggal_bayar'],
-				'wa_no_tujuan' => hp($no_hp),
+				'pembayaran_id' => $id, 'aksi' => $aksi, 'status_sebelum' => $cek->status, 'status_sesudah' => $statusBaru,
+				'warga_nama' => $nama, 'warga_alamat' => $rumah['alamat'], 'bulan_bayar' => $pembayaran['bulan_mulai'],
+				'jumlah_bayar' => $pembayaran['jumlah_bayar'], 'pembayaran_via' => $pembayaran['pembayaran_via'],
+				'tanggal_bayar' => $pembayaran['tanggal_bayar'], 'wa_no_tujuan' => hp($no_hp),
 			];
 
-			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
-			$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
-			$post_data = [
-				'session' => 'wa2',
-				'to' => hp($no_hp),
-				'text' => $text
-			];
+			// Tandai untuk dikirim via antrian (agar simpan jadi cepat/instan)
+			$this->db->where('id', $id);
+			$this->db->update('master_pembayaran', ['wa_send' => 'queue']);
 
-			if (empty($no_hp)) {
-				// Tidak ada nomor HP, skip kirim WA
-				$log_data['wa_status'] = 'skipped';
-				$log_data['wa_error'] = 'Nomor HP warga tidak ditemukan';
-				$this->_insert_log_verifikasi($log_data);
-				echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi (WA tidak terkirim: No HP kosong)']);
-				return;
-			}
-
-			// Kirim POST (gunakan CURL) dengan error handling
-			try {
-				$ch = curl_init($wa_url);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
-				curl_setopt($ch, CURLOPT_POST, true);
-				$response = curl_exec($ch);
-				$curl_error = curl_error($ch);
-				curl_close($ch);
-
-				if ($response === false || !empty($curl_error)) {
-					// WA gagal kirim
-					$log_data['wa_status'] = 'failed';
-					$log_data['wa_response'] = $response ?: null;
-					$log_data['wa_error'] = $curl_error ?: 'CURL response false';
-					$this->_insert_log_verifikasi($log_data);
-
-					// Jika gagal kirim WA, rollback update status
-					$this->db->where('id', $id);
-					$this->db->update('master_pembayaran', ['status' => $cek->status]); // kembalikan status semula
-					echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA, status tidak diupdate']);
-					return;
-				}
-
-				// WA berhasil kirim
-				$log_data['wa_status'] = 'success';
-				$log_data['wa_response'] = $response;
-				$this->_insert_log_verifikasi($log_data);
-
-				echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi']);
-			} catch (Exception $e) {
-				// WA exception
-				$log_data['wa_status'] = 'failed';
-				$log_data['wa_error'] = 'Exception: ' . $e->getMessage();
-				$this->_insert_log_verifikasi($log_data);
-
-				// Rollback update status jika error
-				$this->db->where('id', $id);
-				$this->db->update('master_pembayaran', ['status' => $cek->status]);
-				echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA: ' . $e->getMessage()]);
-			}
+			echo json_encode(['status' => 'success', 'message' => 'Data berhasil disimpan dan notifikasi WA masuk antrian']);
 		} else {
 			echo json_encode(['status' => 'error', 'message' => 'Gagal memperbarui data']);
 		}
 	}
-	
+
 	public function act_verifikasi_pembayaran_all()
 	{
 		$this->checkSession();
 		$ids = $this->input->post('ids');
 		$aksi = $this->input->post('aksi');
-
-		if (empty($ids) || !is_array($ids)) {
-			echo json_encode(['status' => 'error', 'message' => 'Tidak ada data yang dipilih']);
-			return;
-		}
+		if (empty($ids) || !is_array($ids)) { echo json_encode(['status' => 'error', 'message' => 'Tidak ada data']); return; }
 
 		$statusBaru = ($aksi === 'verified') ? 'verified' : 'rejected';
-		$berhasil = 0;
-		$gagal = 0;
-
-		$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
+		$this->load->helper('wa');
 
 		foreach ($ids as $id) {
 			$cek = $this->db->get_where('master_pembayaran', ['id' => $id])->row();
-			if (!$cek || $cek->status == $statusBaru) {
-				$gagal++;
-				continue;
-			}
+			if (!$cek || $cek->status == $statusBaru) continue;
 
-			// Lakukan update status
 			$this->db->where('id', $id);
-			$update = $this->db->update('master_pembayaran', ['status' => $statusBaru]);
-
-			if ($update && $statusBaru === 'verified') {
-				// Kirim WA
+			if ($this->db->update('master_pembayaran', ['status' => $statusBaru])) {
 				$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
 				$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
 				$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
-
-				$keluarga = [];
-				if (isset($rumah['id']) && is_numeric($rumah['id']) && (int) $rumah['id'] > 0) {
-					$keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $rumah['id']])->row_array();
-				} else {
-					$alamat = trim($rumah['alamat'] ?? '');
-					if ($alamat !== '') {
-						$al = $this->db->escape_like_str($alamat);
-						$this->db->group_start();
-						$this->db->like('nomor_rumah', $al);
-						$this->db->or_like('nomor_rumah', '|' . $al);
-						$this->db->or_like('nomor_rumah', $al . '|');
-						$this->db->group_end();
-						$keluarga = $this->db->get('master_keluarga')->row_array();
-					}
-				}
-
-				$nama = $user['nama'] ?? '';
+				$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+				
 				$no_hp = $keluarga['no_hp'] ?? '';
-
-				if (empty($no_hp)) {
-					$keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-					$no_hp = $keluarga_alt['no_hp'] ?? '';
-				}
-
 				if (!empty($no_hp)) {
 					$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 					$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
-					$text = "✅ Pembayaran IPL Telah Divalidasi\n\nAssalamu'alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nPembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah divalidasi\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nSilakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.\n\nTerima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
-					
-					// Siapkan log data batch
-					$batch_log = [
-						'pembayaran_id' => $id,
-						'aksi' => $statusBaru,
-						'status_sebelum' => $cek->status,
-						'status_sesudah' => $statusBaru,
-						'warga_nama' => $nama,
-						'warga_alamat' => $rumah['alamat'] ?? '',
-						'bulan_bayar' => $pembayaran['bulan_mulai'],
-						'jumlah_bayar' => $pembayaran['jumlah_bayar'],
-						'pembayaran_via' => $pembayaran['pembayaran_via'],
-						'tanggal_bayar' => $pembayaran['tanggal_bayar'],
-						'wa_no_tujuan' => hp($no_hp),
-					];
-
-					$post_data = [
-						'session' => 'wa2',
-						'to' => hp($no_hp),
-						'text' => $text
-					];
-
-					try {
-						$ch = curl_init($wa_url);
-						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-						curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
-						curl_setopt($ch, CURLOPT_POST, true);
-						curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-						$wa_response = curl_exec($ch);
-						$wa_error = curl_error($ch);
-						@curl_close($ch);
-
-						if ($wa_response === false || !empty($wa_error)) {
-							$batch_log['wa_status'] = 'failed';
-							$batch_log['wa_response'] = $wa_response ?: null;
-							$batch_log['wa_error'] = $wa_error ?: 'CURL response false';
-						} else {
-							$batch_log['wa_status'] = 'success';
-							$batch_log['wa_response'] = $wa_response;
-						}
-					} catch (Exception $e) {
-						$batch_log['wa_status'] = 'failed';
-						$batch_log['wa_error'] = 'Exception: ' . $e->getMessage();
-					}
-					$this->_insert_log_verifikasi($batch_log);
-				} else {
-					// No HP kosong, log as skipped
-					$this->_insert_log_verifikasi([
-						'pembayaran_id' => $id,
-						'aksi' => $statusBaru,
-						'status_sebelum' => $cek->status,
-						'status_sesudah' => $statusBaru,
-						'warga_nama' => $nama,
-						'warga_alamat' => $rumah['alamat'] ?? '',
-						'bulan_bayar' => $pembayaran['bulan_mulai'],
-						'jumlah_bayar' => $pembayaran['jumlah_bayar'],
-						'pembayaran_via' => $pembayaran['pembayaran_via'],
-						'tanggal_bayar' => $pembayaran['tanggal_bayar'],
-						'wa_status' => 'skipped',
-						'wa_error' => 'Nomor HP warga tidak ditemukan',
-					]);
+					$text = "✅ Pembayaran IPL Telah Divalidasi\n\nAssalamu'alaikum/Salam sejahtera Bapak/Ibu *".$user['nama']."*,\n\nPembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah divalidasi\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nSilakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.\n\nTerima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
+					send_wa($no_hp, $text);
 				}
-				$berhasil++;
-			} else {
-				if ($update) $berhasil++;
 			}
 		}
-
-		echo json_encode(['status' => 'success', 'message' => "Berhasil memproses $berhasil pembayaran."]);
+		echo json_encode(['status' => 'success', 'message' => 'Data terpilih berhasil diproses']);
 	}
 
 	public function ajaxSendWaBatch()
@@ -1512,23 +1293,10 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 			$no_hp = hp($row['no_hp']);
 			$status = 'Gagal';
-
 			if (!empty($no_hp)) {
-				$post_data = [
-					'session' => 'wa2',
-					'to' => $no_hp,
-					'text' => $text
-				];
-
-				$ch = curl_init($wa_url);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
-				curl_setopt($ch, CURLOPT_POST, true);
-				$response = curl_exec($ch);
-				$error = curl_error($ch);
-				curl_close($ch);
-
-				if ($response !== false && empty($error)) {
+				$this->load->helper('wa');
+				$res = send_wa($no_hp, $text);
+				if (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) {
 					$status = 'Berhasil';
 				}
 			}
@@ -2406,8 +2174,26 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$res = send_wa_doc($no_hp, $media_url, $filename, $caption);
 
 		if (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) {
+			// Catat Log
+			$this->db->insert('log_teguran', [
+				'id_rumah' => $id_rumah,
+				'tgl_kirim' => date('Y-m-d H:i:s'),
+				'dikirim_ke' => $no_hp,
+				'status' => 'success',
+				'nominal' => $total_rupiah,
+				'bulan_tunggak' => $list_bulan_str
+			]);
 			echo json_encode(['status' => 'success', 'message' => 'Surat teguran berhasil dikirim sebagai lampiran dokumen.']);
 		} else {
+			// Catat Gagal
+			$this->db->insert('log_teguran', [
+				'id_rumah' => $id_rumah,
+				'tgl_kirim' => date('Y-m-d H:i:s'),
+				'dikirim_ke' => $no_hp,
+				'status' => 'failed',
+				'nominal' => $total_rupiah,
+				'bulan_tunggak' => $list_bulan_str
+			]);
 			echo json_encode(['status' => 'error', 'message' => 'Gagal kirim dokumen WA: ' . ($res['message'] ?? 'Error API')]);
 		}
 	}
