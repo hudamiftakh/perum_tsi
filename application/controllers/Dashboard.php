@@ -2106,8 +2106,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$this->checkSession();
 		header('Content-Type: application/json');
 
-		$tahun = $this->input->get('tahun', true) ?: date('Y');
-		$tahun = (int)$tahun;
+		$tahun = (int)($this->input->get('tahun', true) ?: date('Y'));
 		$bulan_filter = $this->input->get('bulan', true);
 		$tahun_sekarang = (int)date('Y');
 		$bulan_sekarang = (int)date('n');
@@ -2122,16 +2121,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$where_koor = !empty($selected_koor) ? "AND r.id_koordinator = '".$this->db->escape_str($selected_koor)."'" : '';
 
 		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
-		
-		// Gunakan bulan dari filter jika ada, jika tidak gunakan bulan sekarang (untuk tahun berjalan) atau Desember (untuk tahun lalu)
-		if (!empty($bulan_filter)) {
-			$bulan_akhir_ipl = (int)$bulan_filter;
-		} else {
-			$bulan_akhir_ipl = ($tahun == $tahun_sekarang) ? $bulan_sekarang : 12;
-		}
-		
-		$total_bulan_wajib = $bulan_akhir_ipl - $bulan_mulai_ipl + 1;
-		if ($total_bulan_wajib < 1) $total_bulan_wajib = 1;
+		$bulan_akhir_ipl = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == $tahun_sekarang) ? $bulan_sekarang : 12);
+		$total_bulan_wajib = max(1, $bulan_akhir_ipl - $bulan_mulai_ipl + 1);
 
 		// Semua rumah
 		$all_rumah = $this->db->query("
@@ -2145,23 +2136,14 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			ORDER BY r.alamat ASC
 		")->result_array();
 
-		// Pembayaran per rumah (Gunakan logika Rekap Rapel)
+		// Pembayaran (Verified & Pending)
 		$pembayaran_raw = $this->db->query("
-			SELECT 
-				u.id_rumah,
-				p.untuk_bulan,
-				p.bulan_rapel,
-				DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym,
-				p.status
+			SELECT u.id_rumah, p.untuk_bulan, p.bulan_rapel, DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym, p.status
 			FROM master_pembayaran p
 			LEFT JOIN master_users u ON p.user_id = u.id
 			LEFT JOIN master_rumah r ON u.id_rumah = r.id
 			WHERE p.status IN ('verified','pending')
-			AND (
-				YEAR(p.untuk_bulan) = $tahun 
-				OR YEAR(p.bulan_mulai) = $tahun
-				OR p.bulan_rapel LIKE '%$tahun%'
-			)
+			AND (YEAR(p.untuk_bulan) = $tahun OR YEAR(p.bulan_mulai) = $tahun OR p.bulan_rapel LIKE '%$tahun%')
 			$where_koor
 		")->result_array();
 
@@ -2169,25 +2151,11 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		foreach ($pembayaran_raw as $p) {
 			$idr = $p['id_rumah'];
 			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
-
-			// Kriteria 1: untuk_bulan
-			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') {
-				$ym = date('Y-m', strtotime($p['untuk_bulan']));
-				$lunas_map[$idr][$ym] = true;
-			}
-
-			// Kriteria 2: bulan_rapel
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') $lunas_map[$idr][date('Y-m', strtotime($p['untuk_bulan']))] = true;
 			if (!empty($p['bulan_rapel'])) {
-				foreach (explode(',', $p['bulan_rapel']) as $br) {
-					$br = trim($br);
-					if ($br) $lunas_map[$idr][$br] = true;
-				}
+				foreach (explode(',', $p['bulan_rapel']) as $br) if (trim($br)) $lunas_map[$idr][trim($br)] = true;
 			}
-
-			// Kriteria 3: bulan_mulai (jika untuk_bulan & rapel kosong)
-			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
-				$lunas_map[$idr][$p['bulan_mulai_ym']] = true;
-			}
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00' || $p['untuk_bulan'] == '') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) $lunas_map[$idr][$p['bulan_mulai_ym']] = true;
 		}
 
 		$menunggak = []; $rajin = []; $dimuka = [];
@@ -2197,14 +2165,10 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$tunggak_names = [];
 			$jumlah_bayar = 0;
 
-			// Cek setiap bulan wajib
 			for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_ipl; $m++) {
 				$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
-				if (isset($lunas_map[$idr][$key])) {
-					$jumlah_bayar++;
-				} else {
-					$tunggak_names[] = $bulan_indo[$m];
-				}
+				if (isset($lunas_map[$idr][$key])) $jumlah_bayar++;
+				else $tunggak_names[] = $bulan_indo[$m];
 			}
 
 			$r['jumlah_bulan_bayar'] = $jumlah_bayar;
@@ -2216,25 +2180,17 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			if ($r['tunggakan'] > 0) {
 				$menunggak[] = $r;
 			} else {
-				// Cek Bayar di Muka (Ada lunas untuk bulan > bulan_akhir_ipl atau tahun depan)
-				$is_dimuka = false;
-				$dimuka_count = 0;
+				$is_dimuka = false; $dm_count = 0;
 				if (isset($lunas_map[$idr])) {
 					foreach ($lunas_map[$idr] as $ym => $val) {
-						$ym_parts = explode('-', $ym);
-						if ($ym_parts[0] > $tahun || ($ym_parts[0] == $tahun && (int)$ym_parts[1] > $bulan_akhir_ipl)) {
-							$is_dimuka = true;
-							$dimuka_count++;
+						$p = explode('-', $ym);
+						if ($p[0] > $tahun || ($p[0] == $tahun && (int)$p[1] > $bulan_akhir_ipl)) {
+							$is_dimuka = true; $dm_count++;
 						}
 					}
 				}
-
-				if ($is_dimuka) {
-					$r['bulan_dimuka'] = $dimuka_count;
-					$dimuka[] = $r;
-				} else {
-					$rajin[] = $r;
-				}
+				if ($is_dimuka) { $r['bulan_dimuka'] = $dm_count; $dimuka[] = $r; }
+				else { $rajin[] = $r; }
 			}
 		}
 
@@ -2242,19 +2198,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		usort($rajin, function($a,$b){ return $b['jumlah_bulan_bayar'] - $a['jumlah_bulan_bayar']; });
 		usort($dimuka, function($a,$b){ return ($b['bulan_dimuka'] ?? 0) - ($a['bulan_dimuka'] ?? 0); });
 
-		echo json_encode([
-			'stats' => [
-				'total' => count($all_rumah),
-				'menunggak' => count($menunggak),
-				'rajin' => count($rajin),
-				'dimuka' => count($dimuka),
-			],
-			'total_bulan_wajib' => $total_bulan_wajib,
-			'periode' => $bulan_indo[$bulan_mulai_ipl] . ' - ' . $bulan_indo[$bulan_akhir_ipl],
-			'menunggak' => $menunggak,
-			'rajin' => $rajin,
-			'dimuka' => $dimuka,
-		]);
+		echo json_encode(['stats' => ['total'=>count($all_rumah), 'menunggak'=>count($menunggak), 'rajin'=>count($rajin), 'dimuka'=>count($dimuka)], 'total_bulan_wajib'=>$total_bulan_wajib, 'periode'=>$bulan_indo[$bulan_mulai_ipl].' - '.$bulan_indo[$bulan_akhir_ipl], 'menunggak'=>$menunggak, 'rajin'=>$rajin, 'dimuka'=>$dimuka]);
 	}
 
 	/**
@@ -2267,153 +2211,70 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
 
 		$id_rumah = $this->input->get('id_rumah', true);
-		$tahun = $this->input->get('tahun', true) ?: date('Y');
+		$tahun = (int)($this->input->get('tahun', true) ?: date('Y'));
 		$bulan_filter = $this->input->get('bulan', true);
 
-		if (empty($id_rumah)) {
-			show_error('ID Rumah tidak valid');
-			return;
-		}
+		if (empty($id_rumah)) { show_error('ID Rumah tidak valid'); return; }
 
-		// Data rumah & warga
 		$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
 		if (!$rumah) { show_error('Data rumah tidak ditemukan'); return; }
-
 		$user = $this->db->get_where('master_users', ['id_rumah' => $id_rumah])->row_array();
 		$nama = $user['nama'] ?? $rumah['nama'] ?? '-';
 		$alamat = $rumah['alamat'] ?? '-';
 
-		// IPL dimulai Juni 2025
+		// Logika Tunggakan (Sinkron)
 		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
-		
-		// Penentuan bulan akhir perhitungan
-		if (!empty($bulan_filter)) {
-			$bulan_akhir = (int)$bulan_filter;
-		} else {
-			$bulan_akhir = ($tahun == (int)date('Y')) ? (int)date('n') : 12;
-		}
-		
-		$total_bulan_wajib = $bulan_akhir - $bulan_mulai_ipl + 1;
-
+		$bulan_akhir = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == (int)date('Y')) ? (int)date('n') : 12);
 		$bulan_indo = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
 
-		// Cari bulan yang sudah dibayar
-		$paid_months = $this->db->query("
-			SELECT DISTINCT
-				CASE WHEN p.bulan_rapel IS NOT NULL AND p.bulan_rapel != '' THEN p.bulan_rapel
-				ELSE DATE_FORMAT(COALESCE(p.untuk_bulan, p.bulan_mulai), '%Y-%m') END as bulan_bayar
-			FROM master_pembayaran p
-			LEFT JOIN master_users u ON p.user_id = u.id
-			WHERE u.id_rumah = ? AND p.status IN ('verified','pending')
-			AND YEAR(COALESCE(p.untuk_bulan, p.bulan_mulai)) = ?
-		", [$id_rumah, $tahun])->result_array();
-
-		$paid_set = [];
-		foreach ($paid_months as $pm) {
-			$vals = explode(',', $pm['bulan_bayar']);
-			foreach ($vals as $v) { $paid_set[trim($v)] = true; }
+		$p_raw = $this->db->query("SELECT untuk_bulan, bulan_rapel, DATE_FORMAT(bulan_mulai, '%Y-%m') as bulan_mulai_ym FROM master_pembayaran WHERE user_id IN (SELECT id FROM master_users WHERE id_rumah = ?) AND status IN ('verified', 'pending') AND (YEAR(untuk_bulan) = ? OR YEAR(bulan_mulai) = ? OR bulan_rapel LIKE ?)", [$id_rumah, $tahun, $tahun, '%'.$tahun.'%'])->result_array();
+		$paid = [];
+		foreach ($p_raw as $p) {
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') $paid[date('Y-m', strtotime($p['untuk_bulan']))] = true;
+			if (!empty($p['bulan_rapel'])) { foreach (explode(',', $p['bulan_rapel']) as $br) if (trim($br)) $paid[trim($br)] = true; }
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00' || $p['untuk_bulan'] == '') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) $paid[$p['bulan_mulai_ym']] = true;
 		}
 
-		// Hitung bulan tunggak
-		$bulan_tunggak = [];
+		$tunggak_list = [];
 		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir; $m++) {
-			$key = sprintf('%04d-%02d', $tahun, $m);
-			if (!isset($paid_set[$key])) {
-				$bulan_tunggak[] = $bulan_indo[$m] . ' ' . $tahun;
-			}
+			$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+			if (!isset($paid[$key])) $tunggak_list[] = $bulan_indo[$m] . ' ' . $tahun;
 		}
 
-		$jml_tunggak = count($bulan_tunggak);
-		if ($jml_tunggak == 0) {
-			show_error('Warga ini tidak memiliki tunggakan di tahun ' . $tahun);
-			return;
-		}
+		$jml_tunggak = count($tunggak_list);
+		if ($jml_tunggak == 0) { show_error('Warga ini tidak memiliki tunggakan.'); return; }
+		$total_tunggakan = $jml_tunggak * 125000;
+		$list_bulan_str = implode(', ', $tunggak_list);
 
-		$nominal_per_bulan = 125000;
-		$total_tunggakan = $jml_tunggak * $nominal_per_bulan;
-		$bulan_mulai_tunggak = $bulan_tunggak[0] ?? '-';
-
-		// PDF
 		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-		$pdf->SetCreator('Perum TSI');
-		$pdf->SetAuthor('Paguyuban Perum TSI');
-		$pdf->SetTitle('Surat Teguran IPL');
-		$pdf->setPrintHeader(false);
-		$pdf->setPrintFooter(false);
-		$pdf->SetMargins(25, 15, 25);
-		$pdf->SetAutoPageBreak(true, 20);
-		$pdf->AddPage();
+		$pdf->SetCreator('Perum TSI'); $pdf->SetTitle('Surat Teguran IPL');
+		$pdf->setPrintHeader(false); $pdf->setPrintFooter(false);
+		$pdf->SetMargins(25, 15, 25); $pdf->AddPage();
 
-		$lm = 25; // left margin
-		$rm = 185; // right edge
-		$cw = $rm - $lm; // content width = 160
-
-		// === HEADER ===
+		$lm = 25; $rm = 185; $cw = $rm - $lm;
 		$logo = FCPATH . 'logo-tsi.png';
-		if (file_exists($logo)) {
-			$pdf->Image($logo, $lm, 15, 20, 20, 'PNG');
-		}
+		if (file_exists($logo)) $pdf->Image($logo, $lm, 15, 20, 20, 'PNG');
 
-		// Header text - positioned to the right of logo
-		$hx = $lm + 23; // start after logo
-		$hw = $cw - 23; // remaining width
-		$pdf->SetXY($hx, 16);
-		$pdf->SetFont('dejavusans', 'B', 12);
-		$pdf->SetTextColor(30, 120, 180);
-		$pdf->Cell($hw, 6, 'PAGUYUBAN WARGA PERUMAHAN', 0, 1, 'C');
-		$pdf->SetX($hx);
-		$pdf->Cell($hw, 6, 'TAMAN SUKODONO INDAH', 0, 1, 'C');
-		$pdf->SetX($hx);
-		$pdf->SetFont('dejavusans', '', 9);
-		$pdf->SetTextColor(80, 80, 80);
-		$pdf->Cell($hw, 5, 'Ds. Jumputrejo, Kec. Sukodono, Kab. Sidoarjo, 61258.', 0, 1, 'C');
+		$pdf->SetXY($lm + 23, 16);
+		$pdf->SetFont('dejavusans', 'B', 12); $pdf->SetTextColor(30, 120, 180);
+		$pdf->Cell($cw - 23, 6, 'PAGUYUBAN WARGA PERUMAHAN', 0, 1, 'C');
+		$pdf->SetX($lm + 23); $pdf->Cell($cw - 23, 6, 'TAMAN SUKODONO INDAH', 0, 1, 'C');
+		$pdf->SetX($lm + 23); $pdf->SetFont('dejavusans', '', 9); $pdf->SetTextColor(80, 80, 80);
+		$pdf->Cell($cw - 23, 5, 'Ds. Jumputrejo, Kec. Sukodono, Kab. Sidoarjo, 61258.', 0, 1, 'C');
 
-		// Garis header
-		$pdf->SetY(38);
-		$pdf->SetDrawColor(30, 120, 180);
-		$pdf->SetLineWidth(0.8);
-		$pdf->Line($lm, 38, $rm, 38);
-		$pdf->SetLineWidth(0.2);
-		$pdf->Line($lm, 39.2, $rm, 39.2);
+		$pdf->SetY(38); $pdf->SetDrawColor(30, 120, 180); $pdf->SetLineWidth(0.8); $pdf->Line($lm, 38, $rm, 38);
 
-		// === NOMOR & TANGGAL ===
-		$pdf->Ln(6);
-		$pdf->SetTextColor(0, 0, 0);
-		$pdf->SetFont('dejavusans', '', 10);
-
-		// Nomor Surat Otomatis
-		$nomor_rumah_pad = str_pad($id_rumah, 3, '0', STR_PAD_LEFT);
-		$bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-		$no_surat = $nomor_rumah_pad . '/TGR-IPL/TSI/' . $bulan_romawi[(int)date('n')] . '/' . date('Y');
-
-		$tgl_surat = date('d') . ' ' . $bulan_indo[(int)date('n')] . ' ' . date('Y');
-
+		$pdf->Ln(6); $pdf->SetTextColor(0); $pdf->SetFont('dejavusans', '', 10);
+		$no_surat = str_pad($id_rumah, 3, '0', STR_PAD_LEFT) . '/TGR-IPL/TSI/' . ['', 'I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'][(int)date('n')] . '/' . date('Y');
 		$pdf->Cell(90, 6, 'Nomor  : ' . $no_surat, 0, 0, 'L');
-		$pdf->Cell($cw - 90, 6, 'Sidoarjo, ' . $tgl_surat, 0, 1, 'R');
+		$pdf->Cell($cw - 90, 6, 'Sidoarjo, ' . date('d') . ' ' . $bulan_indo[(int)date('n')] . ' ' . date('Y'), 0, 1, 'R');
 		$pdf->Cell(0, 6, 'Perihal : Teguran Pembayaran IPL', 0, 1, 'L');
 
-		// === SALAM PEMBUKA ===
-		$pdf->Ln(6);
-		$pdf->Cell(0, 6, 'Assalamu\'alaikum Wr. Wb.', 0, 1);
-		$pdf->Ln(3);
-		$pdf->Cell(0, 6, 'Yang terhormat Bapak/Ibu warga Perumahan Taman Sukodono Indah.', 0, 1);
+		$pdf->Ln(6); $pdf->Cell(0, 6, 'Assalamu\'alaikum Wr. Wb.', 0, 1);
+		$pdf->Ln(3); $pdf->Cell(0, 6, 'Yang terhormat Bapak/Ibu warga Perumahan Taman Sukodono Indah.', 0, 1);
 
-		// === DATA WARGA ===
-		$pdf->Ln(3);
-		$lbl_w = 50; // label width
-		$pdf->Cell(10, 6, '', 0, 0); // indent
-		$pdf->Cell($lbl_w, 6, 'Nama', 0, 0);
-		$pdf->Cell(5, 6, ':', 0, 0);
-		$pdf->SetFont('dejavusans', 'B', 10);
-		$pdf->Cell(0, 6, $nama, 0, 1);
-
-		$pdf->SetFont('dejavusans', '', 10);
-		$pdf->Cell(10, 6, '', 0, 0); // indent
-		$pdf->Cell($lbl_w, 6, 'Alamat TSI', 0, 0);
-		$pdf->Cell(5, 6, ':', 0, 0);
-		$pdf->SetFont('dejavusans', 'B', 10);
-		$pdf->Cell(0, 6, $alamat, 0, 1);
-		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Ln(3); $pdf->Cell(10, 6, '', 0, 0); $pdf->Cell(50, 6, 'Nama', 0, 0); $pdf->Cell(5, 6, ':', 0, 0); $pdf->SetFont('dejavusans', 'B', 10); $pdf->Cell(0, 6, $nama, 0, 1);
+		$pdf->SetFont('dejavusans', '', 10); $pdf->Cell(10, 6, '', 0, 0); $pdf->Cell(50, 6, 'Alamat TSI', 0, 0); $pdf->Cell(5, 6, ':', 0, 0); $pdf->SetFont('dejavusans', 'B', 10); $pdf->Cell(0, 6, $alamat, 0, 1);
 
 		// === ISI SURAT ===
 		$pdf->Ln(4);
@@ -2433,7 +2294,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->Cell(10, 6, '', 0, 0);
 		$pdf->Cell($lbl_d, 6, 'Perhitungan mulai bulan', 0, 0);
 		$pdf->Cell(5, 6, ':', 0, 0);
-		$pdf->Cell(0, 6, 'Bulan ' . $bulan_mulai_tunggak, 0, 1);
+		$pdf->Cell(0, 6, 'Bulan ' . ($tunggak_list[0] ?? '-'), 0, 1);
 
 		$pdf->Cell(10, 6, '', 0, 0);
 		$pdf->Cell($lbl_d, 6, 'Jumlah bulan tunggak', 0, 0);
@@ -2443,69 +2304,29 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->Cell(10, 6, '', 0, 0);
 		$pdf->Cell($lbl_d, 6, 'Dengan nominal', 0, 0);
 		$pdf->Cell(5, 6, ':', 0, 0);
-		$pdf->Cell(0, 6, 'Rp ' . number_format($nominal_per_bulan, 0, ',', '.') . ',- / bulan', 0, 1);
+		$pdf->Cell(0, 6, 'Rp 125.000,- / bulan', 0, 1);
 
 		// Daftar bulan yang belum dibayar
 		$pdf->Cell(10, 6, '', 0, 0);
 		$pdf->Cell($lbl_d, 6, 'Bulan belum dibayar', 0, 0);
 		$pdf->Cell(5, 6, ':', 0, 0);
-		$daftar_bulan = implode(', ', $bulan_tunggak);
-		$pdf->MultiCell(0, 6, $daftar_bulan, 0, 'L');
+		$pdf->MultiCell(0, 6, $list_bulan_str, 0, 'L');
 
-		// === PENUTUP ===
-		$pdf->Ln(4);
-		$pdf->MultiCell(0, 6, 'Dan apabila Bapak/Ibu telah membayar iuran IPL sebelum surat pemberitahuan ini diterima, kami mohon konfirmasi melalui Koordinator Blok atau Bendahara kami.', 0, 'J');
-		$pdf->Ln(2);
-		$pdf->Cell(0, 6, 'Demikian surat ini kami sampaikan. Atas perhatiannya kami ucapkan terima kasih.', 0, 1);
-		$pdf->Ln(2);
-		$pdf->Cell(0, 6, 'Wassalamu\'alaikum Wr. Wb.', 0, 1);
+		$pdf->Ln(4); $pdf->MultiCell(0, 6, 'Dan apabila Bapak/Ibu telah membayar iuran IPL sebelum surat pemberitahuan ini diterima, kami mohon konfirmasi melalui Koordinator Blok atau Bendahara kami.', 0, 'J');
+		$pdf->Ln(4); $pdf->Cell(0, 6, 'Demikian surat ini kami sampaikan. Atas perhatiannya kami ucapkan terima kasih.', 0, 1);
+		$pdf->Ln(2); $pdf->Cell(0, 6, 'Wassalamu\'alaikum Wr. Wb.', 0, 1);
 
-		// === TANDA TANGAN ===
-		$pdf->Ln(10);
-		$ttd_y = $pdf->GetY();
-		$col_w = $cw / 2;
-		$stamp_w = 40;
-		$stamp_h = 16;
-
-		// Baris 1: Jabatan Atas
-		$pdf->SetXY($lm, $ttd_y);
-		$pdf->SetFont('dejavusans', '', 10);
-		$pdf->Cell($col_w, 5, 'Bidang Lingkungan TSI', 0, 0, 'C');
-		$pdf->Cell($col_w, 5, 'Bendahara TSI', 0, 1, 'C');
-
-		// TTE Atas (Kiri & Kanan)
-		$pdf->Ln(2);
-		$curr_y = $pdf->GetY();
-		$pdf->SetDrawColor(0, 128, 0);
-		$pdf->SetTextColor(0, 128, 0);
-		$pdf->SetLineWidth(0.3);
-
-		// TTE Kiri (Bidang Lingkungan)
-		$x_kiri = $lm + ($col_w - $stamp_w) / 2;
-		$pdf->RoundedRect($x_kiri, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
-		$pdf->SetXY($x_kiri, $curr_y + 2);
-		$pdf->SetFont('dejavusans', 'B', 7);
-		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
-		$pdf->SetX($x_kiri);
-		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
-		$pdf->SetX($x_kiri);
-		$pdf->SetFont('dejavusans', '', 6);
-		$pdf->Cell($stamp_w, 3, date('d/m/Y H:i'), 0, 0, 'C');
-
-		// TTE Kanan (Bendahara)
-		$x_kanan = $lm + $col_w + ($col_w - $stamp_w) / 2;
-		$pdf->RoundedRect($x_kanan, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
-		$pdf->SetXY($x_kanan, $curr_y + 2);
-		$pdf->SetFont('dejavusans', 'B', 7);
-		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
-		$pdf->SetX($x_kanan);
-		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
-		$pdf->SetX($x_kanan);
-		$pdf->SetFont('dejavusans', '', 6);
-		$pdf->Cell($stamp_w, 3, date('d/m/Y H:i'), 0, 1, 'C');
+		$pdf->Ln(10); $ttd_y = $pdf->GetY(); $col_w = $cw / 2; $stamp_w = 40; $stamp_h = 16;
+		$pdf->SetFont('dejavusans', '', 10); $pdf->SetXY($lm, $ttd_y); $pdf->Cell($col_w, 5, 'Bidang Lingkungan TSI', 0, 0, 'C'); $pdf->Cell($col_w, 5, 'Bendahara TSI', 0, 1, 'C');
+		
+		$pdf->Ln(2); $curr_y = $pdf->GetY(); $pdf->SetDrawColor(0, 128, 0); $pdf->SetTextColor(0, 128, 0); $pdf->SetLineWidth(0.3);
+		$xk = $lm + ($col_w - $stamp_w) / 2; $pdf->RoundedRect($xk, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+		$pdf->SetXY($xk, $curr_y + 2); $pdf->SetFont('dejavusans', 'B', 7); $pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C'); $pdf->SetX($xk); $pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		$xn = $lm + $col_w + ($col_w - $stamp_w) / 2; $pdf->RoundedRect($xn, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+		$pdf->SetXY($xn, $curr_y + 2); $pdf->SetFont('dejavusans', 'B', 7); $pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C'); $pdf->SetX($xn); $pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
 
 		// Nama TTD Atas
-		$pdf->Ln(2);
+		$pdf->Ln(17); // Jarak dikurangi agar lebih pas
 		$pdf->SetTextColor(0, 0, 0);
 		$pdf->SetX($lm);
 		$pdf->SetFont('dejavusans', 'BU', 10);
@@ -2513,35 +2334,25 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->Cell($col_w, 5, 'Dhani Kispananto', 0, 1, 'C');
 
 		// === BAGIAN BAWAH (KETUA DENGAN TTE) ===
-		$pdf->Ln(6);
+		$pdf->Ln(7);
 		$pdf->SetFont('dejavusans', '', 10);
-		$pdf->Cell(0, 5, 'Mengetahui', 0, 1, 'C');
-		$pdf->Cell(0, 5, 'Ketua Paguyuban TSI', 0, 1, 'C');
+		$pdf->Cell(0, 5, 'Mengetahui, Ketua Paguyuban TSI', 0, 1, 'C');
 
 		// TTE Stamp di tengah bawah
 		$pdf->Ln(2);
-		$stamp_y = $pdf->GetY();
-		$stamp_x = $lm + ($cw - $stamp_w) / 2;
-
+		$sy = $pdf->GetY();
+		$sx = $lm + ($cw - $stamp_w) / 2;
 		$pdf->SetDrawColor(0, 128, 0);
 		$pdf->SetTextColor(0, 128, 0);
-		$pdf->RoundedRect($stamp_x, $stamp_y, $stamp_w, $stamp_h, 2, '1111', 'D');
-
-		$pdf->SetXY($stamp_x, $stamp_y + 2);
+		$pdf->RoundedRect($sx, $sy, $stamp_w, $stamp_h, 2, '1111', 'D');
+		$pdf->SetXY($sx, $sy+2);
 		$pdf->SetFont('dejavusans', 'B', 7);
 		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
-		$pdf->SetX($stamp_x);
+		$pdf->SetX($sx);
 		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
-		$pdf->SetX($stamp_x);
-		$pdf->SetFont('dejavusans', '', 6);
-		$pdf->Cell($stamp_w, 3, date('d/m/Y H:i'), 0, 1, 'C');
 
-		// Reset warna
-		$pdf->SetTextColor(0, 0, 0);
-		$pdf->SetDrawColor(0, 0, 0);
-
-		// Nama Ketua di paling bawah
-		$pdf->SetY($stamp_y + $stamp_h + 2);
+		$pdf->Ln(11); // Jarak dikurangi agar lebih pas
+		$pdf->SetTextColor(0);
 		$pdf->SetFont('dejavusans', 'BU', 10);
 		$pdf->Cell(0, 5, 'Mulyono', 0, 1, 'C');
 
@@ -2555,74 +2366,13 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	{
 		$this->checkSession();
 		$id_rumah = $this->input->get('id_rumah', true);
-		$tahun = $this->input->get('tahun', true) ?: date('Y');
+		$tahun = (int)($this->input->get('tahun', true) ?: date('Y'));
 		$bulan_filter = $this->input->get('bulan', true);
 
-		// 1. Generate PDF ke dalam string atau file temporer
-		ob_start();
-		$this->surat_teguran_pdf(true); // mode internal (output ke file)
-		$pdf_content = ob_get_clean();
-
-		// Cari nomor HP
+		// Ambil data untuk pesan
 		$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
 		$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
 		$no_hp = $keluarga['no_hp'] ?? '';
-
-		if (empty($no_hp)) {
-			echo json_encode(['status' => 'error', 'message' => 'Nomor WhatsApp tidak ditemukan.']);
-			return;
-		}
-
-		// Simpan file sementara untuk dikirim
-		$filename = 'Teguran_' . str_replace(' ', '_', $rumah['alamat']) . '.pdf';
-		$filepath = FCPATH . 'assets/temp_pdf/' . $filename;
-		if (!is_dir(FCPATH . 'assets/temp_pdf/')) mkdir(FCPATH . 'assets/temp_pdf/', 0777, true);
-		
-		// 2. Ambil data pembayaran warga (Verified & Pending)
-		$pembayaran_raw = $this->db->query("
-			SELECT 
-				u.id_rumah,
-				a.untuk_bulan,
-				a.bulan_rapel,
-				DATE_FORMAT(a.bulan_mulai, '%Y-%m') as bulan_mulai_ym,
-				a.status
-			FROM master_pembayaran a
-			LEFT JOIN master_users u ON a.user_id = u.id
-			WHERE a.status IN ('verified', 'pending')
-			AND (
-				YEAR(a.untuk_bulan) = $tahun 
-				OR YEAR(a.bulan_mulai) = $tahun
-				OR a.bulan_rapel LIKE '%$tahun%'
-			)
-		")->result_array();
-
-		$lunas_map = [];
-		foreach ($pembayaran_raw as $p) {
-			$idr = $p['id_rumah'];
-			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
-
-			// Kriteria 1: untuk_bulan
-			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00') {
-				$ym = date('Y-m', strtotime($p['untuk_bulan']));
-				$lunas_map[$idr][$ym] = true;
-			}
-
-			// Kriteria 2: bulan_rapel
-			if (!empty($p['bulan_rapel'])) {
-				foreach (explode(',', $p['bulan_rapel']) as $br) {
-					$br = trim($br);
-					if ($br) $lunas_map[$idr][$br] = true;
-				}
-			}
-
-			// Kriteria 3: bulan_mulai (jika untuk_bulan & rapel kosong)
-			if (empty($p['untuk_bulan']) && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
-				$lunas_map[$idr][$p['bulan_mulai_ym']] = true;
-			}
-		}
-
-		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
-		$bulan_akhir_hitung = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == (int)date('Y')) ? (int)date('n') : 12);
 		$bulan_indo = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
 
 		$tunggak_names = [];
@@ -2632,7 +2382,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 		
 		$jml_tunggak = count($tunggak_names);
-		$total_rupiah = $jml_tunggak * 150000;
+		$total_rupiah = $jml_tunggak * 125000;
 		$list_bulan_str = implode(', ', $tunggak_names);
 
 		$link_download = base_url('dashboard/surat_teguran_pdf?id_rumah='.$id_rumah.'&tahun='.$tahun.'&bulan='.$bulan_filter);
