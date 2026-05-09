@@ -79,6 +79,15 @@
                 </ul>
             </li>
             <li class="sidebar-item">
+                <a class="sidebar-link <?php echo ($menu == 'profil-warga') ? 'active' : ''; ?>"
+                    href="<?php echo base_url('profil-warga') ?>" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-chart-bar"></i>
+                    </span>
+                    <span class="hide-menu">Profil Kepatuhan</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
                 <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('pembayaran'))) ? 'active' : ''; ?>"
                     href="javascript:void(0)" aria-expanded="false">
                     <span class="d-flex">
@@ -135,6 +144,36 @@
                         </a>
                     </li>
 
+                </ul>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('log-login', 'log-verifikasi'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-history"></i>
+                    </span>
+                    <span class="hide-menu">Log Aktivitas</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('log-login', 'log-verifikasi'))) ? 'in' : ''; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('log-login') ?>"
+                            class="sidebar-link <?php echo ($menu == 'log-login') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Log Login</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('log-verifikasi') ?>"
+                            class="sidebar-link <?php echo ($menu == 'log-verifikasi') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Log Verifikasi</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
             <li class="sidebar-item">
@@ -197,6 +236,15 @@
                         </a>
                     </li> -->
                 </ul>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link <?php echo ($menu == 'profil-warga') ? 'active' : ''; ?>"
+                    href="<?php echo base_url('profil-warga') ?>" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-chart-bar"></i>
+                    </span>
+                    <span class="hide-menu">Profil Kepatuhan</span>
+                </a>
             </li>
             <li class="sidebar-item">
                 <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('pembayaran'))) ? 'active' : ''; ?>"

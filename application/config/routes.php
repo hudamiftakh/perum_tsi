@@ -81,6 +81,12 @@ $route['pembayaran/laporan-pembayaran-pdf'] = 'dashboard/laporan_pdf';
 $route['pembayaran/laporan-rekap-rapel-pdf'] = 'dashboard/laporan_rekap_rapel_pdf';
 $route['laporan-rekap-rapel'] = 'dashboard/laporan_rekap_rapel';
 $route['analisis-pembayaran'] = 'dashboard/analisis_pembayaran';
+// Log
+$route['log-login'] = 'dashboard/log_login';
+$route['log-verifikasi'] = 'dashboard/log_verifikasi';
+$route['profil-warga'] = 'dashboard/profil_warga';
+$route['ajax-profil-warga'] = 'dashboard/ajax_profil_warga';
+$route['surat-teguran-pdf'] = 'dashboard/surat_teguran_pdf';
 $route['setting'] = 'dashboard/setting';
 $route['setting/update-user'] = 'dashboard/update_user';
 $route['setting/update-rumah'] = 'dashboard/update_rumah';

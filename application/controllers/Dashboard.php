@@ -12,6 +12,110 @@ class Dashboard extends CI_Controller
 		$this->load->library('session');
 		$this->load->library('pagination');
 		$this->load->model('M_Datatables');
+
+		// Auto-create tabel log_login jika belum ada
+		$this->_create_log_tables();
+	}
+
+	/**
+	 * Auto-create tabel log_login dan log_verifikasi jika belum ada
+	 */
+	private function _create_log_tables()
+	{
+		// Tabel log_login
+		if (!$this->db->table_exists('log_login')) {
+			$this->db->query("
+				CREATE TABLE `log_login` (
+					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+					`username` VARCHAR(100) DEFAULT NULL COMMENT 'Username yang diinput',
+					`nama` VARCHAR(255) DEFAULT NULL COMMENT 'Nama user jika login berhasil',
+					`role` VARCHAR(50) DEFAULT NULL COMMENT 'Role: admin/koordinator/bendahara',
+					`user_id` INT(11) DEFAULT NULL COMMENT 'ID user di tabel master',
+					`status` ENUM('success','failed') NOT NULL DEFAULT 'failed' COMMENT 'Hasil login',
+					`ip_address` VARCHAR(45) DEFAULT NULL COMMENT 'IP address client',
+					`user_agent` TEXT DEFAULT NULL COMMENT 'Browser/device info',
+					`keterangan` VARCHAR(500) DEFAULT NULL COMMENT 'Catatan tambahan',
+					`login_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Waktu login',
+					PRIMARY KEY (`id`),
+					KEY `idx_login_at` (`login_at`),
+					KEY `idx_username` (`username`),
+					KEY `idx_status` (`status`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Log semua aktivitas login (berhasil/gagal)'
+			");
+		}
+
+		// Tabel log_verifikasi
+		if (!$this->db->table_exists('log_verifikasi')) {
+			$this->db->query("
+				CREATE TABLE `log_verifikasi` (
+					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+					`pembayaran_id` INT(11) DEFAULT NULL COMMENT 'ID di master_pembayaran',
+					`admin_id` INT(11) DEFAULT NULL COMMENT 'ID admin/verifikator',
+					`admin_username` VARCHAR(100) DEFAULT NULL,
+					`admin_nama` VARCHAR(255) DEFAULT NULL,
+					`admin_role` VARCHAR(50) DEFAULT NULL,
+					`aksi` VARCHAR(50) DEFAULT NULL COMMENT 'verified/rejected',
+					`status_sebelum` VARCHAR(50) DEFAULT NULL COMMENT 'Status sebelum aksi',
+					`status_sesudah` VARCHAR(50) DEFAULT NULL COMMENT 'Status sesudah aksi',
+					`warga_nama` VARCHAR(255) DEFAULT NULL,
+					`warga_alamat` VARCHAR(255) DEFAULT NULL,
+					`bulan_bayar` DATE DEFAULT NULL,
+					`jumlah_bayar` DECIMAL(15,2) DEFAULT 0,
+					`pembayaran_via` VARCHAR(50) DEFAULT NULL COMMENT 'koordinator/transfer',
+					`tanggal_bayar` DATE DEFAULT NULL,
+					`wa_status` VARCHAR(20) DEFAULT NULL COMMENT 'success/failed/skipped',
+					`wa_no_tujuan` VARCHAR(20) DEFAULT NULL COMMENT 'Nomor HP tujuan WA',
+					`wa_response` TEXT DEFAULT NULL COMMENT 'Response dari WA gateway',
+					`wa_error` TEXT DEFAULT NULL COMMENT 'Error message jika WA gagal',
+					`ip_address` VARCHAR(45) DEFAULT NULL,
+					`user_agent` TEXT DEFAULT NULL,
+					`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					PRIMARY KEY (`id`),
+					KEY `idx_created_at` (`created_at`),
+					KEY `idx_pembayaran_id` (`pembayaran_id`),
+					KEY `idx_aksi` (`aksi`),
+					KEY `idx_wa_status` (`wa_status`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Log semua aktivitas verifikasi pembayaran + status kirim WA'
+			");
+		}
+	}
+
+	/**
+	 * Helper: Insert log verifikasi
+	 */
+	private function _insert_log_verifikasi($data)
+	{
+		$session = $this->session->userdata('username');
+		$log = array_merge([
+			'admin_id' => $session['id'] ?? null,
+			'admin_username' => $session['username'] ?? null,
+			'admin_nama' => $session['nama'] ?? null,
+			'admin_role' => $session['role'] ?? null,
+			'ip_address' => $this->input->ip_address(),
+			'user_agent' => $this->input->user_agent(),
+			'created_at' => date('Y-m-d H:i:s'),
+		], $data);
+		$this->db->insert('log_verifikasi', $log);
+	}
+
+	/**
+	 * Halaman Log Login
+	 */
+	public function log_login()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/log_login';
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * Halaman Log Verifikasi
+	 */
+	public function log_verifikasi()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/log_verifikasi';
+		$this->load->view('modul', $data);
 	}
 
 	public function hook_web()
@@ -968,8 +1072,87 @@ class Dashboard extends CI_Controller
 		} else {
 			$this->db->insert('master_pembayaran', $data_pembayaran);
 			$data_pembayaran['pembayaran_id'] = $this->db->insert_id();
-			// $pembayaran_id = $this->db->insert_id();
 		}
+
+		// =============================================
+		// Kirim notifikasi WA ke warga saat koordinator entry
+		// Pesan tanpa link kitir (kitir menunggu proses validasi)
+		// =============================================
+		try {
+			$pembayaran_id = $data_pembayaran['pembayaran_id'];
+			$wa_user = $this->db->get_where('master_users', ['id' => $user_id])->row_array();
+			$wa_rumah = $this->db->get_where('master_rumah', ['id' => $wa_user['id_rumah'] ?? 0])->row_array();
+
+			// Ambil data keluarga untuk nomor HP
+			$wa_keluarga = [];
+			if (isset($wa_rumah['id']) && is_numeric($wa_rumah['id']) && (int) $wa_rumah['id'] > 0) {
+				$wa_keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $wa_rumah['id']])->row_array();
+			} else {
+				$wa_alamat_cari = trim($wa_rumah['alamat'] ?? '');
+				if ($wa_alamat_cari !== '') {
+					$al = $this->db->escape_like_str($wa_alamat_cari);
+					$this->db->group_start();
+					$this->db->like('nomor_rumah', $al);
+					$this->db->or_like('nomor_rumah', '|' . $al);
+					$this->db->or_like('nomor_rumah', $al . '|');
+					$this->db->group_end();
+					$wa_keluarga = $this->db->get('master_keluarga')->row_array();
+				}
+			}
+
+			$wa_nama = $wa_user['nama'] ?? '';
+			$wa_no_hp = $wa_keluarga['no_hp'] ?? '';
+
+			// Validasi nomor HP, jika kosong ambil dari master_keluarga lain yang cocok
+			if (empty($wa_no_hp) && !empty($wa_rumah['alamat'])) {
+				$wa_keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($wa_rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+				$wa_no_hp = $wa_keluarga_alt['no_hp'] ?? '';
+			}
+
+			if (!empty($wa_no_hp)) {
+				$wa_bulan = date('F Y', strtotime($bulan_mulai_db));
+				$wa_metode_text = ($pembayaran_via === 'koordinator') ? 'Koordinator' : 'Transfer';
+
+				$wa_text = "📥 Konfirmasi Pembayaran IPL
+
+Assalamu'alaikum/Salam sejahtera Bapak/Ibu *$wa_nama*,
+
+Terima kasih kami ucapkan atas pembayaran IPL bulan *$wa_bulan* sebesar *Rp" . number_format($jumlah_bayar, 0, ',', '.') . "* yang telah kami terima. 🙏
+💳 Tanggal Bayar: " . date('d-m-Y', strtotime($tanggal_bayar)) . "
+🔄 Metode Pembayaran: $wa_metode_text
+📋 Status: Menunggu validasi
+
+Pembayaran Bapak/Ibu sedang dalam proses validasi oleh pengurus. Bukti kitir pembayaran akan dikirimkan setelah proses validasi selesai.
+
+Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.
+
+Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
+
+Hormat kami,
+Pengurus Paguyuban TSI
+Perumahan Taman Sukodono Indah
+_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
+
+				$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
+				$wa_post_data = [
+					'session' => 'wa2',
+					'to' => hp($wa_no_hp),
+					'text' => $wa_text
+				];
+
+				$ch = curl_init($wa_url);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($wa_post_data));
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+				@curl_exec($ch);
+				@curl_close($ch);
+			}
+		} catch (Exception $e) {
+			// Gagal kirim WA tidak menggagalkan proses simpan
+			log_message('error', 'Gagal kirim WA saat entry koordinator: ' . $e->getMessage());
+		}
+
 		$this->session->set_flashdata('success', 'Pembayaran berhasil disimpan');
 		redirect('pembayaran-sukses?data=' . urlencode(json_encode($data_pembayaran)));
 	}
@@ -1049,24 +1232,39 @@ class Dashboard extends CI_Controller
 			// Buat link pembayaran terenkripsi
 			$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
 
-			$text = "📥 Konfirmasi Pembayaran IPL
+			$text = "✅ Pembayaran IPL Telah Divalidasi
 
-Assalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,
+Assalamu'alaikum/Salam sejahtera Bapak/Ibu *$nama*,
 
-Terima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "** yang telah kami terima. 🙏
+Pembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅
 💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "
-📄 Bukti: Sudah diterima
+📄 Bukti: Sudah divalidasi
 🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "
 📑 Kitir Pembayaran: $link
 
-Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.
+Silakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.
 
-Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
+Terima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.
 
 Hormat kami,
 Pengurus Paguyuban TSI
 Perumahan Taman Sukodono Indah
 _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
+		// Siapkan data log verifikasi
+			$log_data = [
+				'pembayaran_id' => $id,
+				'aksi' => $statusBaru,
+				'status_sebelum' => $cek->status,
+				'status_sesudah' => $statusBaru,
+				'warga_nama' => $nama,
+				'warga_alamat' => $alamat,
+				'bulan_bayar' => $pembayaran['bulan_mulai'],
+				'jumlah_bayar' => $pembayaran['jumlah_bayar'],
+				'pembayaran_via' => $pembayaran['pembayaran_via'],
+				'tanggal_bayar' => $pembayaran['tanggal_bayar'],
+				'wa_no_tujuan' => hp($no_hp),
+			];
+
 			// Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
 			$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
 			$post_data = [
@@ -1074,6 +1272,15 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				'to' => hp($no_hp),
 				'text' => $text
 			];
+
+			if (empty($no_hp)) {
+				// Tidak ada nomor HP, skip kirim WA
+				$log_data['wa_status'] = 'skipped';
+				$log_data['wa_error'] = 'Nomor HP warga tidak ditemukan';
+				$this->_insert_log_verifikasi($log_data);
+				echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi (WA tidak terkirim: No HP kosong)']);
+				return;
+			}
 
 			// Kirim POST (gunakan CURL) dengan error handling
 			try {
@@ -1086,6 +1293,12 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				curl_close($ch);
 
 				if ($response === false || !empty($curl_error)) {
+					// WA gagal kirim
+					$log_data['wa_status'] = 'failed';
+					$log_data['wa_response'] = $response ?: null;
+					$log_data['wa_error'] = $curl_error ?: 'CURL response false';
+					$this->_insert_log_verifikasi($log_data);
+
 					// Jika gagal kirim WA, rollback update status
 					$this->db->where('id', $id);
 					$this->db->update('master_pembayaran', ['status' => $cek->status]); // kembalikan status semula
@@ -1093,8 +1306,18 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 					return;
 				}
 
+				// WA berhasil kirim
+				$log_data['wa_status'] = 'success';
+				$log_data['wa_response'] = $response;
+				$this->_insert_log_verifikasi($log_data);
+
 				echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi']);
 			} catch (Exception $e) {
+				// WA exception
+				$log_data['wa_status'] = 'failed';
+				$log_data['wa_error'] = 'Exception: ' . $e->getMessage();
+				$this->_insert_log_verifikasi($log_data);
+
 				// Rollback update status jika error
 				$this->db->where('id', $id);
 				$this->db->update('master_pembayaran', ['status' => $cek->status]);
@@ -1166,8 +1389,23 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				if (!empty($no_hp)) {
 					$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 					$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
-					$text = "📥 Konfirmasi Pembayaran IPL\n\nAssalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nTerima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "** yang telah kami terima. 🙏\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah diterima\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nPembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nJika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
+					$text = "✅ Pembayaran IPL Telah Divalidasi\n\nAssalamu'alaikum/Salam sejahtera Bapak/Ibu *$nama*,\n\nPembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah divalidasi\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nSilakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.\n\nTerima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
 					
+					// Siapkan log data batch
+					$batch_log = [
+						'pembayaran_id' => $id,
+						'aksi' => $statusBaru,
+						'status_sebelum' => $cek->status,
+						'status_sesudah' => $statusBaru,
+						'warga_nama' => $nama,
+						'warga_alamat' => $rumah['alamat'] ?? '',
+						'bulan_bayar' => $pembayaran['bulan_mulai'],
+						'jumlah_bayar' => $pembayaran['jumlah_bayar'],
+						'pembayaran_via' => $pembayaran['pembayaran_via'],
+						'tanggal_bayar' => $pembayaran['tanggal_bayar'],
+						'wa_no_tujuan' => hp($no_hp),
+					];
+
 					$post_data = [
 						'session' => 'wa2',
 						'to' => hp($no_hp),
@@ -1179,12 +1417,40 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 						curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
 						curl_setopt($ch, CURLOPT_POST, true);
-						curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Timeout to avoid too much blocking on batch processing
-						@curl_exec($ch);
+						curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+						$wa_response = curl_exec($ch);
+						$wa_error = curl_error($ch);
 						@curl_close($ch);
+
+						if ($wa_response === false || !empty($wa_error)) {
+							$batch_log['wa_status'] = 'failed';
+							$batch_log['wa_response'] = $wa_response ?: null;
+							$batch_log['wa_error'] = $wa_error ?: 'CURL response false';
+						} else {
+							$batch_log['wa_status'] = 'success';
+							$batch_log['wa_response'] = $wa_response;
+						}
 					} catch (Exception $e) {
-						// Ignored, proceed to next
+						$batch_log['wa_status'] = 'failed';
+						$batch_log['wa_error'] = 'Exception: ' . $e->getMessage();
 					}
+					$this->_insert_log_verifikasi($batch_log);
+				} else {
+					// No HP kosong, log as skipped
+					$this->_insert_log_verifikasi([
+						'pembayaran_id' => $id,
+						'aksi' => $statusBaru,
+						'status_sebelum' => $cek->status,
+						'status_sesudah' => $statusBaru,
+						'warga_nama' => $nama,
+						'warga_alamat' => $rumah['alamat'] ?? '',
+						'bulan_bayar' => $pembayaran['bulan_mulai'],
+						'jumlah_bayar' => $pembayaran['jumlah_bayar'],
+						'pembayaran_via' => $pembayaran['pembayaran_via'],
+						'tanggal_bayar' => $pembayaran['tanggal_bayar'],
+						'wa_status' => 'skipped',
+						'wa_error' => 'Nomor HP warga tidak ditemukan',
+					]);
 				}
 				$berhasil++;
 			} else {
@@ -1819,6 +2085,541 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	public function gagal()
 	{
 		echo "<script>alert('Gagal disimpan')</script>";
+	}
+
+	/**
+	 * Halaman Profil Kepatuhan Warga
+	 * Tab: Menunggak, Rajin Bayar, Bayar Di Muka
+	 */
+	public function profil_warga()
+	{
+		$this->checkSession();
+		$data['halaman'] = 'dashboard/profil_warga';
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * AJAX Endpoint: Data Profil Kepatuhan Warga
+	 */
+	public function ajax_profil_warga()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$tahun = $this->input->get('tahun', true) ?: date('Y');
+		$tahun = (int)$tahun;
+		$bulan_filter = $this->input->get('bulan', true);
+		$tahun_sekarang = (int)date('Y');
+		$bulan_sekarang = (int)date('n');
+
+		$bulan_indo = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$selected_koor = $this->session->userdata('username')['id'];
+		} else {
+			$selected_koor = $this->input->get('id_koordinator', true);
+		}
+		$where_koor = !empty($selected_koor) ? "AND r.id_koordinator = '".$this->db->escape_str($selected_koor)."'" : '';
+
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		
+		// Gunakan bulan dari filter jika ada, jika tidak gunakan bulan sekarang (untuk tahun berjalan) atau Desember (untuk tahun lalu)
+		if (!empty($bulan_filter)) {
+			$bulan_akhir_ipl = (int)$bulan_filter;
+		} else {
+			$bulan_akhir_ipl = ($tahun == $tahun_sekarang) ? $bulan_sekarang : 12;
+		}
+		
+		$total_bulan_wajib = $bulan_akhir_ipl - $bulan_mulai_ipl + 1;
+		if ($total_bulan_wajib < 1) $total_bulan_wajib = 1;
+
+		// Semua rumah
+		$all_rumah = $this->db->query("
+			SELECT r.id, r.alamat, r.nama, MAX(kl.no_hp) as no_hp, MAX(k.nama) as koordinator
+			FROM master_users u
+			LEFT JOIN master_rumah r ON u.id_rumah = r.id
+			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah = r.alamat AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			WHERE r.id IS NOT NULL $where_koor
+			GROUP BY r.id, r.alamat, r.nama, r.id_koordinator
+			ORDER BY r.alamat ASC
+		")->result_array();
+
+		// Pembayaran per rumah
+		$pembayaran_per_rumah = $this->db->query("
+			SELECT u.id_rumah,
+				GROUP_CONCAT(DISTINCT
+					CASE WHEN p.bulan_rapel IS NOT NULL AND p.bulan_rapel != '' THEN p.bulan_rapel ELSE NULL END
+					SEPARATOR ','
+				) as all_rapel,
+				GROUP_CONCAT(DISTINCT
+					CASE WHEN p.bulan_rapel IS NULL OR p.bulan_rapel = '' THEN DATE_FORMAT(COALESCE(p.untuk_bulan, p.bulan_mulai), '%Y-%m') ELSE NULL END
+					SEPARATOR ','
+				) as bulan_list,
+				MAX(p.tanggal_bayar) as terakhir_bayar,
+				SUM(p.jumlah_bayar) as total_bayar
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			LEFT JOIN master_rumah r ON u.id_rumah = r.id
+			WHERE p.status IN ('verified','pending')
+			AND YEAR(COALESCE(p.untuk_bulan, p.bulan_mulai)) = $tahun
+			$where_koor
+			GROUP BY u.id_rumah
+		")->result_array();
+
+		$pay_map = [];
+		foreach ($pembayaran_per_rumah as $p) {
+			$bulan_set = [];
+			if (!empty($p['bulan_list'])) {
+				foreach (explode(',', $p['bulan_list']) as $bl) $bulan_set[trim($bl)] = true;
+			}
+			if (!empty($p['all_rapel'])) {
+				foreach (explode(',', $p['all_rapel']) as $bl) $bulan_set[trim($bl)] = true;
+			}
+			$count = 0; $bulan_max = 0;
+			foreach ($bulan_set as $bl => $v) {
+				if (strpos($bl, "$tahun-") === 0) {
+					$count++;
+					$bln_num = (int)substr($bl, 5, 2);
+					if ($bln_num > $bulan_max) $bulan_max = $bln_num;
+				}
+			}
+			$pay_map[$p['id_rumah']] = [
+				'jumlah_bulan' => $count, 'bulan_max' => $bulan_max,
+				'terakhir_bayar' => $p['terakhir_bayar'], 'total_bayar' => $p['total_bayar'],
+			];
+		}
+
+		$menunggak = []; $rajin = []; $dimuka = [];
+
+		foreach ($all_rumah as $r) {
+			$info = $pay_map[$r['id']] ?? null;
+			$jml = $info ? $info['jumlah_bulan'] : 0;
+			$bmax = $info ? $info['bulan_max'] : 0;
+			$tunggakan = $total_bulan_wajib - $jml;
+
+			$base = [
+				'id' => $r['id'], 'alamat' => $r['alamat'], 'nama' => $r['nama'],
+				'no_hp' => $r['no_hp'], 'koordinator' => $r['koordinator'],
+				'jumlah_bulan_bayar' => $jml, 'total_bayar' => $info ? $info['total_bayar'] : 0,
+				'terakhir_bayar' => $info ? $info['terakhir_bayar'] : null,
+			];
+
+			if ($jml < $total_bulan_wajib) {
+				$base['tunggakan'] = $tunggakan;
+				$base['status_tunggak'] = $jml == 0 ? 'Belum bayar sama sekali' : 'Tunggak '.$tunggakan.' bulan';
+				$base['level'] = ($jml == 0 || $tunggakan >= 3) ? 'danger' : 'warning';
+				$menunggak[] = $base;
+			}
+			if ($jml >= $total_bulan_wajib && $jml > 0) {
+				$rajin[] = $base;
+			}
+			if ($bmax > $bulan_akhir_ipl) {
+				$base['bulan_dimuka'] = $bmax - $bulan_akhir_ipl;
+				$base['bayar_sampai'] = ($bulan_indo[$bmax] ?? $bmax) . ' ' . $tahun;
+				$dimuka[] = $base;
+			}
+		}
+
+		usort($menunggak, function($a,$b){ return $b['tunggakan'] - $a['tunggakan']; });
+		usort($rajin, function($a,$b){ return $b['jumlah_bulan_bayar'] - $a['jumlah_bulan_bayar']; });
+		usort($dimuka, function($a,$b){ return $b['bulan_dimuka'] - $a['bulan_dimuka']; });
+
+		echo json_encode([
+			'stats' => [
+				'total' => count($all_rumah),
+				'menunggak' => count($menunggak),
+				'rajin' => count($rajin),
+				'dimuka' => count($dimuka),
+			],
+			'total_bulan_wajib' => $total_bulan_wajib,
+			'periode' => $bulan_indo[$bulan_mulai_ipl] . ' - ' . $bulan_indo[$bulan_akhir_ipl],
+			'menunggak' => $menunggak,
+			'rajin' => $rajin,
+			'dimuka' => $dimuka,
+		]);
+	}
+
+	/**
+	 * Generate PDF Surat Teguran Pembayaran IPL
+	 */
+	public function surat_teguran_pdf()
+	{
+		$this->checkSession();
+		mb_internal_encoding('UTF-8');
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		$id_rumah = $this->input->get('id_rumah', true);
+		$tahun = $this->input->get('tahun', true) ?: date('Y');
+		$bulan_filter = $this->input->get('bulan', true);
+
+		if (empty($id_rumah)) {
+			show_error('ID Rumah tidak valid');
+			return;
+		}
+
+		// Data rumah & warga
+		$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
+		if (!$rumah) { show_error('Data rumah tidak ditemukan'); return; }
+
+		$user = $this->db->get_where('master_users', ['id_rumah' => $id_rumah])->row_array();
+		$nama = $user['nama'] ?? $rumah['nama'] ?? '-';
+		$alamat = $rumah['alamat'] ?? '-';
+
+		// IPL dimulai Juni 2025
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		
+		// Penentuan bulan akhir perhitungan
+		if (!empty($bulan_filter)) {
+			$bulan_akhir = (int)$bulan_filter;
+		} else {
+			$bulan_akhir = ($tahun == (int)date('Y')) ? (int)date('n') : 12;
+		}
+		
+		$total_bulan_wajib = $bulan_akhir - $bulan_mulai_ipl + 1;
+
+		$bulan_indo = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+
+		// Cari bulan yang sudah dibayar
+		$paid_months = $this->db->query("
+			SELECT DISTINCT
+				CASE WHEN p.bulan_rapel IS NOT NULL AND p.bulan_rapel != '' THEN p.bulan_rapel
+				ELSE DATE_FORMAT(COALESCE(p.untuk_bulan, p.bulan_mulai), '%Y-%m') END as bulan_bayar
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			WHERE u.id_rumah = ? AND p.status IN ('verified','pending')
+			AND YEAR(COALESCE(p.untuk_bulan, p.bulan_mulai)) = ?
+		", [$id_rumah, $tahun])->result_array();
+
+		$paid_set = [];
+		foreach ($paid_months as $pm) {
+			$vals = explode(',', $pm['bulan_bayar']);
+			foreach ($vals as $v) { $paid_set[trim($v)] = true; }
+		}
+
+		// Hitung bulan tunggak
+		$bulan_tunggak = [];
+		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir; $m++) {
+			$key = sprintf('%04d-%02d', $tahun, $m);
+			if (!isset($paid_set[$key])) {
+				$bulan_tunggak[] = $bulan_indo[$m] . ' ' . $tahun;
+			}
+		}
+
+		$jml_tunggak = count($bulan_tunggak);
+		if ($jml_tunggak == 0) {
+			show_error('Warga ini tidak memiliki tunggakan di tahun ' . $tahun);
+			return;
+		}
+
+		$nominal_per_bulan = 125000;
+		$total_tunggakan = $jml_tunggak * $nominal_per_bulan;
+		$bulan_mulai_tunggak = $bulan_tunggak[0] ?? '-';
+
+		// PDF
+		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator('Perum TSI');
+		$pdf->SetAuthor('Paguyuban Perum TSI');
+		$pdf->SetTitle('Surat Teguran IPL');
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(false);
+		$pdf->SetMargins(25, 15, 25);
+		$pdf->SetAutoPageBreak(true, 20);
+		$pdf->AddPage();
+
+		$lm = 25; // left margin
+		$rm = 185; // right edge
+		$cw = $rm - $lm; // content width = 160
+
+		// === HEADER ===
+		$logo = FCPATH . 'logo-tsi.png';
+		if (file_exists($logo)) {
+			$pdf->Image($logo, $lm, 15, 20, 20, 'PNG');
+		}
+
+		// Header text - positioned to the right of logo
+		$hx = $lm + 23; // start after logo
+		$hw = $cw - 23; // remaining width
+		$pdf->SetXY($hx, 16);
+		$pdf->SetFont('dejavusans', 'B', 12);
+		$pdf->SetTextColor(30, 120, 180);
+		$pdf->Cell($hw, 6, 'PAGUYUBAN WARGA PERUMAHAN', 0, 1, 'C');
+		$pdf->SetX($hx);
+		$pdf->Cell($hw, 6, 'TAMAN SUKODONO INDAH', 0, 1, 'C');
+		$pdf->SetX($hx);
+		$pdf->SetFont('dejavusans', '', 9);
+		$pdf->SetTextColor(80, 80, 80);
+		$pdf->Cell($hw, 5, 'Ds. Jumputrejo, Kec. Sukodono, Kab. Sidoarjo, 61258.', 0, 1, 'C');
+
+		// Garis header
+		$pdf->SetY(38);
+		$pdf->SetDrawColor(30, 120, 180);
+		$pdf->SetLineWidth(0.8);
+		$pdf->Line($lm, 38, $rm, 38);
+		$pdf->SetLineWidth(0.2);
+		$pdf->Line($lm, 39.2, $rm, 39.2);
+
+		// === NOMOR & TANGGAL ===
+		$pdf->Ln(6);
+		$pdf->SetTextColor(0, 0, 0);
+		$pdf->SetFont('dejavusans', '', 10);
+
+		// Nomor Surat Otomatis
+		$nomor_rumah_pad = str_pad($id_rumah, 3, '0', STR_PAD_LEFT);
+		$bulan_romawi = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+		$no_surat = $nomor_rumah_pad . '/TGR-IPL/TSI/' . $bulan_romawi[(int)date('n')] . '/' . date('Y');
+
+		$tgl_surat = date('d') . ' ' . $bulan_indo[(int)date('n')] . ' ' . date('Y');
+
+		$pdf->Cell(90, 6, 'Nomor  : ' . $no_surat, 0, 0, 'L');
+		$pdf->Cell($cw - 90, 6, 'Sidoarjo, ' . $tgl_surat, 0, 1, 'R');
+		$pdf->Cell(0, 6, 'Perihal : Teguran Pembayaran IPL', 0, 1, 'L');
+
+		// === SALAM PEMBUKA ===
+		$pdf->Ln(6);
+		$pdf->Cell(0, 6, 'Assalamu\'alaikum Wr. Wb.', 0, 1);
+		$pdf->Ln(3);
+		$pdf->Cell(0, 6, 'Yang terhormat Bapak/Ibu warga Perumahan Taman Sukodono Indah.', 0, 1);
+
+		// === DATA WARGA ===
+		$pdf->Ln(3);
+		$lbl_w = 50; // label width
+		$pdf->Cell(10, 6, '', 0, 0); // indent
+		$pdf->Cell($lbl_w, 6, 'Nama', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->SetFont('dejavusans', 'B', 10);
+		$pdf->Cell(0, 6, $nama, 0, 1);
+
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell(10, 6, '', 0, 0); // indent
+		$pdf->Cell($lbl_w, 6, 'Alamat TSI', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->SetFont('dejavusans', 'B', 10);
+		$pdf->Cell(0, 6, $alamat, 0, 1);
+		$pdf->SetFont('dejavusans', '', 10);
+
+		// === ISI SURAT ===
+		$pdf->Ln(4);
+		$isi = 'Dengan hormat, melalui surat ini, kami sebagai pengurus lingkungan perum TSI memberitahukan bahwa menurut pembukuan kami, Bapak/Ibu masih memiliki kewajiban pembayaran IPL yang belum terlunasi sebesar :';
+		$pdf->MultiCell(0, 6, $isi, 0, 'J');
+
+		// Nominal besar
+		$pdf->Ln(1);
+		$pdf->SetFont('dejavusans', 'B', 13);
+		$pdf->Cell(0, 8, 'Rp ' . number_format($total_tunggakan, 0, ',', '.') . ',-', 0, 1, 'C');
+		$pdf->SetFont('dejavusans', '', 10);
+
+		// === DETAIL TUNGGAKAN ===
+		$pdf->Ln(2);
+		$lbl_d = 55; // label width for detail
+
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_d, 6, 'Perhitungan mulai bulan', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->Cell(0, 6, 'Bulan ' . $bulan_mulai_tunggak, 0, 1);
+
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_d, 6, 'Jumlah bulan tunggak', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->Cell(0, 6, $jml_tunggak . ' bulan', 0, 1);
+
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_d, 6, 'Dengan nominal', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->Cell(0, 6, 'Rp ' . number_format($nominal_per_bulan, 0, ',', '.') . ',- / bulan', 0, 1);
+
+		// Daftar bulan yang belum dibayar
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_d, 6, 'Bulan belum dibayar', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$daftar_bulan = implode(', ', $bulan_tunggak);
+		$pdf->MultiCell(0, 6, $daftar_bulan, 0, 'L');
+
+		// === PENUTUP ===
+		$pdf->Ln(4);
+		$pdf->MultiCell(0, 6, 'Dan apabila Bapak/Ibu telah membayar iuran IPL sebelum surat pemberitahuan ini diterima, kami mohon konfirmasi melalui Koordinator Blok atau Bendahara kami.', 0, 'J');
+		$pdf->Ln(2);
+		$pdf->Cell(0, 6, 'Demikian surat ini kami sampaikan. Atas perhatiannya kami ucapkan terima kasih.', 0, 1);
+		$pdf->Ln(2);
+		$pdf->Cell(0, 6, 'Wassalamu\'alaikum Wr. Wb.', 0, 1);
+
+		// === TANDA TANGAN ===
+		$pdf->Ln(10);
+		$ttd_y = $pdf->GetY();
+		$col_w = $cw / 2;
+		$stamp_w = 40;
+		$stamp_h = 16;
+
+		// Baris 1: Jabatan Atas
+		$pdf->SetXY($lm, $ttd_y);
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell($col_w, 5, 'Bidang Lingkungan TSI', 0, 0, 'C');
+		$pdf->Cell($col_w, 5, 'Bendahara TSI', 0, 1, 'C');
+
+		// TTE Atas (Kiri & Kanan)
+		$pdf->Ln(2);
+		$curr_y = $pdf->GetY();
+		$pdf->SetDrawColor(0, 128, 0);
+		$pdf->SetTextColor(0, 128, 0);
+		$pdf->SetLineWidth(0.3);
+
+		// TTE Kiri (Bidang Lingkungan)
+		$x_kiri = $lm + ($col_w - $stamp_w) / 2;
+		$pdf->RoundedRect($x_kiri, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+		$pdf->SetXY($x_kiri, $curr_y + 2);
+		$pdf->SetFont('dejavusans', 'B', 7);
+		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
+		$pdf->SetX($x_kiri);
+		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		$pdf->SetX($x_kiri);
+		$pdf->SetFont('dejavusans', '', 6);
+		$pdf->Cell($stamp_w, 3, date('d/m/Y H:i'), 0, 0, 'C');
+
+		// TTE Kanan (Bendahara)
+		$x_kanan = $lm + $col_w + ($col_w - $stamp_w) / 2;
+		$pdf->RoundedRect($x_kanan, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+		$pdf->SetXY($x_kanan, $curr_y + 2);
+		$pdf->SetFont('dejavusans', 'B', 7);
+		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
+		$pdf->SetX($x_kanan);
+		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		$pdf->SetX($x_kanan);
+		$pdf->SetFont('dejavusans', '', 6);
+		$pdf->Cell($stamp_w, 3, date('d/m/Y H:i'), 0, 1, 'C');
+
+		// Nama TTD Atas
+		$pdf->Ln(2);
+		$pdf->SetTextColor(0, 0, 0);
+		$pdf->SetX($lm);
+		$pdf->SetFont('dejavusans', 'BU', 10);
+		$pdf->Cell($col_w, 5, 'Angger', 0, 0, 'C');
+		$pdf->Cell($col_w, 5, 'Dhani Kispananto', 0, 1, 'C');
+
+		// === BAGIAN BAWAH (KETUA DENGAN TTE) ===
+		$pdf->Ln(6);
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell(0, 5, 'Mengetahui', 0, 1, 'C');
+		$pdf->Cell(0, 5, 'Ketua Paguyuban TSI', 0, 1, 'C');
+
+		// TTE Stamp di tengah bawah
+		$pdf->Ln(2);
+		$stamp_y = $pdf->GetY();
+		$stamp_x = $lm + ($cw - $stamp_w) / 2;
+
+		$pdf->SetDrawColor(0, 128, 0);
+		$pdf->SetTextColor(0, 128, 0);
+		$pdf->RoundedRect($stamp_x, $stamp_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+
+		$pdf->SetXY($stamp_x, $stamp_y + 2);
+		$pdf->SetFont('dejavusans', 'B', 7);
+		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
+		$pdf->SetX($stamp_x);
+		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		$pdf->SetX($stamp_x);
+		$pdf->SetFont('dejavusans', '', 6);
+		$pdf->Cell($stamp_w, 3, date('d/m/Y H:i'), 0, 1, 'C');
+
+		// Reset warna
+		$pdf->SetTextColor(0, 0, 0);
+		$pdf->SetDrawColor(0, 0, 0);
+
+		// Nama Ketua di paling bawah
+		$pdf->SetY($stamp_y + $stamp_h + 2);
+		$pdf->SetFont('dejavusans', 'BU', 10);
+		$pdf->Cell(0, 5, 'Mulyono', 0, 1, 'C');
+
+		$pdf->Output('Surat_Teguran_IPL_' . str_replace(' ', '_', $alamat) . '.pdf', 'I');
+	}
+
+	/**
+	 * Kirim Surat Teguran via WhatsApp Gateway (API)
+	 */
+	public function kirim_teguran_wa()
+	{
+		$this->checkSession();
+		$id_rumah = $this->input->get('id_rumah', true);
+		$tahun = $this->input->get('tahun', true) ?: date('Y');
+		$bulan_filter = $this->input->get('bulan', true);
+
+		// 1. Generate PDF ke dalam string atau file temporer
+		ob_start();
+		$this->surat_teguran_pdf(true); // mode internal (output ke file)
+		$pdf_content = ob_get_clean();
+
+		// Cari nomor HP
+		$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
+		$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+		$no_hp = $keluarga['no_hp'] ?? '';
+
+		if (empty($no_hp)) {
+			echo json_encode(['status' => 'error', 'message' => 'Nomor WhatsApp tidak ditemukan.']);
+			return;
+		}
+
+		// Simpan file sementara untuk dikirim
+		$filename = 'Teguran_' . str_replace(' ', '_', $rumah['alamat']) . '.pdf';
+		$filepath = FCPATH . 'assets/temp_pdf/' . $filename;
+		if (!is_dir(FCPATH . 'assets/temp_pdf/')) mkdir(FCPATH . 'assets/temp_pdf/', 0777, true);
+		
+		// Hitung detail untuk pesan
+		$pembayaran = $this->db->query("
+			SELECT 
+				GROUP_CONCAT(DISTINCT CASE WHEN p.bulan_rapel IS NOT NULL AND p.bulan_rapel != '' THEN p.bulan_rapel ELSE NULL END SEPARATOR ',') as all_rapel,
+				GROUP_CONCAT(DISTINCT CASE WHEN p.bulan_rapel IS NULL OR p.bulan_rapel = '' THEN DATE_FORMAT(COALESCE(p.untuk_bulan, p.bulan_mulai), '%Y-%m') ELSE NULL END SEPARATOR ',') as bulan_list
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			WHERE u.id_rumah = ? AND p.status IN ('verified','pending')
+			AND YEAR(COALESCE(p.untuk_bulan, p.bulan_mulai)) = ?
+		", [$id_rumah, $tahun])->row_array();
+
+		$bulan_lunas = [];
+		if (!empty($pembayaran['bulan_list'])) {
+			foreach (explode(',', $pembayaran['bulan_list']) as $bl) $bulan_lunas[trim($bl)] = true;
+		}
+		if (!empty($pembayaran['all_rapel'])) {
+			foreach (explode(',', $pembayaran['all_rapel']) as $bl) $bulan_lunas[trim($bl)] = true;
+		}
+
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		$bulan_akhir_hitung = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == (int)date('Y')) ? (int)date('n') : 12);
+		$bulan_indo = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+
+		$tunggak_names = [];
+		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_hitung; $m++) {
+			$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+			if (!isset($bulan_lunas[$key])) $tunggak_names[] = $bulan_indo[$m];
+		}
+		
+		$jml_tunggak = count($tunggak_names);
+		$total_rupiah = $jml_tunggak * 150000;
+		$list_bulan_str = implode(', ', $tunggak_names);
+
+		$link_download = base_url('dashboard/surat_teguran_pdf?id_rumah='.$id_rumah.'&tahun='.$tahun.'&bulan='.$bulan_filter);
+		
+		$text = "⚠️ *PEMBERITAHUAN TUNGGAKAN IPL*\n\nAssalamu'alaikum Bapak/Ibu *".$rumah['nama']."*,\n\nKami menginformasikan bahwa terdapat tunggakan pembayaran IPL untuk rumah *".$rumah['alamat']."* sebesar *Rp ".number_format($total_rupiah,0,',','.')."* ($list_bulan_str).\n\nRincian selengkapnya dapat Bapak/Ibu lihat pada surat resmi berikut ini:\n\n📄 *Link Surat:* $link_download\n\nMohon segera melakukan koordinasi pembayaran melalui Koordinator atau Bendahara TSI.\n\nTerima kasih atas kerjasamanya.\n\n*Pengurus Paguyuban TSI*";
+
+		// Kirim via API
+		$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
+		$post_data = [
+			'session' => 'wa2',
+			'to' => hp($no_hp),
+			'text' => $text
+		];
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $wa_url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+		curl_close($ch);
+
+		$res = json_decode($response, true);
+		if ($res['status'] === true || $res['success'] === true) {
+			echo json_encode(['status' => 'success', 'message' => 'Surat teguran berhasil dikirim ke WhatsApp warga.']);
+		} else {
+			echo json_encode(['status' => 'error', 'message' => 'Gagal mengirim WhatsApp: ' . ($res['message'] ?? 'Unknown error')]);
+		}
 	}
 
 	public function checkSession()
