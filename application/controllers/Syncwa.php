@@ -89,43 +89,20 @@ Hormat kami,
 Pengurus Paguyuban TSI
 Perumahan Taman Sukodono Indah
 _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
-            // Kirim notifikasi via POST ke WA Gateway jika nomor HP valid
-            $wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
-            $post_data = [
-                'session' => 'wa2',
-                'to' => hp($no_hp),
-                'text' => $text
-            ];
+            $this->load->helper('wa');
+            $res = send_wa($no_hp, $text);
 
-            // Kirim POST (gunakan CURL) dengan error handling
-            try {
-                $ch = curl_init($wa_url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
-                curl_setopt($ch, CURLOPT_POST, true);
-                $response = curl_exec($ch);
-                $curl_error = curl_error($ch);
-                curl_close($ch);
-
-                if ($response === false || !empty($curl_error)) {
-                    // Jika gagal kirim WA, rollback update status
-                    $this->db->where('id', $id);
-                    $this->db->update('master_pembayaran', ['wa_send' => 'success']); // kembalikan status semula
-                    echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA, status tidak diupdate']);
-                    return;
-                }else{
-                    $this->db->where('id', $id);
-                    $this->db->update('master_pembayaran', ['wa_send' => 'success']); // kembalikan status semula
-                }
-                echo json_encode(['status' => 'success', 'message' => 'Data berhasil diverifikasi']);
-            } catch (Exception $e) {
-                // Rollback update status jika error
+            if (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) {
+                // Update status wa_send jadi success
                 $this->db->where('id', $id);
                 $this->db->update('master_pembayaran', ['wa_send' => 'success']);
-                echo json_encode(['status' => 'error', 'message' => 'Gagal kirim notifikasi WA: ' . $e->getMessage()]);
+                echo json_encode(['status' => 'success', 'message' => 'Notifikasi WA berhasil dikirim']);
+            } else {
+                // Jika gagal, biarkan status tetap queue atau log error
+                echo json_encode(['status' => 'error', 'message' => 'Gagal kirim WA: ' . ($res['message'] ?? 'Error API')]);
             }
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Gagal memperbarui data']);
+            echo json_encode(['status' => 'error', 'message' => 'Gagal memproses data pembayaran']);
         }
     }
 }

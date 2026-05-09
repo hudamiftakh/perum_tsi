@@ -2204,7 +2204,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	/**
 	 * Generate PDF Surat Teguran Pembayaran IPL
 	 */
-	public function surat_teguran_pdf()
+	public function surat_teguran_pdf($save_path = null)
 	{
 		$this->checkSession();
 		mb_internal_encoding('UTF-8');
@@ -2356,7 +2356,11 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->SetFont('dejavusans', 'BU', 10);
 		$pdf->Cell(0, 5, 'Mulyono', 0, 1, 'C');
 
-		$pdf->Output('Surat_Teguran_IPL_' . str_replace(' ', '_', $alamat) . '.pdf', 'I');
+		if ($save_path) {
+			$pdf->Output($save_path, 'F');
+		} else {
+			$pdf->Output('Surat_Teguran_IPL_' . str_replace(' ', '_', $alamat) . '.pdf', 'I');
+		}
 	}
 
 	/**
@@ -2385,31 +2389,26 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$total_rupiah = $jml_tunggak * 125000;
 		$list_bulan_str = implode(', ', $tunggak_names);
 
-		$link_download = base_url('dashboard/surat_teguran_pdf?id_rumah='.$id_rumah.'&tahun='.$tahun.'&bulan='.$bulan_filter);
+		// 1. Generate PDF ke file fisik agar bisa diakses via URL
+		$filename = 'Surat_Teguran_' . $id_rumah . '_' . date('YmdHis') . '.pdf';
+		$temp_dir = FCPATH . 'assets/temp_pdf/';
+		if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
+		$filepath = $temp_dir . $filename;
 		
-		$text = "⚠️ *PEMBERITAHUAN TUNGGAKAN IPL*\n\nAssalamu'alaikum Bapak/Ibu *".$rumah['nama']."*,\n\nKami menginformasikan bahwa terdapat tunggakan pembayaran IPL untuk rumah *".$rumah['alamat']."* sebesar *Rp ".number_format($total_rupiah,0,',','.')."* ($list_bulan_str).\n\nRincian selengkapnya dapat Bapak/Ibu lihat pada surat resmi berikut ini:\n\n📄 *Link Surat:* $link_download\n\nMohon segera melakukan koordinasi pembayaran melalui Koordinator atau Bendahara TSI.\n\nTerima kasih atas kerjasamanya.\n\n*Pengurus Paguyuban TSI*";
+		// Generate file
+		$this->surat_teguran_pdf($filepath);
 
-		// Kirim via API
-		$wa_url = 'https://wa2.digitalminsajo.sch.id/send-message';
-		$post_data = [
-			'session' => 'wa2',
-			'to' => hp($no_hp),
-			'text' => $text
-		];
+		// 2. Kirim via WA (Gunakan send_wa_doc)
+		$this->load->helper('wa');
+		$media_url = base_url('assets/temp_pdf/' . $filename);
+		$caption = "⚠️ *PEMBERITAHUAN TUNGGAKAN IPL*\n\nAssalamu'alaikum Bapak/Ibu *".$rumah['nama']."*,\n\nKami melampirkan Surat Pemberitahuan Tunggakan IPL untuk rumah *".$rumah['alamat']."* sebesar *Rp ".number_format($total_rupiah,0,',','.')."* ($list_bulan_str).\n\nMohon segera melakukan koordinasi pembayaran. Terima kasih.\n\n*Pengurus Paguyuban TSI*";
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $wa_url);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$response = curl_exec($ch);
-		curl_close($ch);
+		$res = send_wa_doc($no_hp, $media_url, $filename, $caption);
 
-		$res = json_decode($response, true);
-		if ($res['status'] === true || $res['success'] === true) {
-			echo json_encode(['status' => 'success', 'message' => 'Surat teguran berhasil dikirim ke WhatsApp warga.']);
+		if (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) {
+			echo json_encode(['status' => 'success', 'message' => 'Surat teguran berhasil dikirim sebagai lampiran dokumen.']);
 		} else {
-			echo json_encode(['status' => 'error', 'message' => 'Gagal mengirim WhatsApp: ' . ($res['message'] ?? 'Unknown error')]);
+			echo json_encode(['status' => 'error', 'message' => 'Gagal kirim dokumen WA: ' . ($res['message'] ?? 'Error API')]);
 		}
 	}
 
