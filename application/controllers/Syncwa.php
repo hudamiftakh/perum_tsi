@@ -71,19 +71,19 @@ class Syncwa extends CI_Controller
             // Buat link pembayaran terenkripsi
             $link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
 
-            $text = "📥 Konfirmasi Pembayaran IPL
+            $text = "✅ Pembayaran IPL Telah Divalidasi
 
-Assalamu’alaikum/Salam sejahtera Bapak/Ibu *$nama*,
+Assalamu'alaikum/Salam sejahtera Bapak/Ibu *$nama*,
 
-Terima kasih kami ucapkan atas pembayaran IPL bulan *$bulan* sebesar **Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "** yang telah kami terima. 🙏
+Pembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅
 💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "
-📄 Bukti: Sudah diterima
+📄 Bukti: Sudah divalidasi
 🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "
 📑 Kitir Pembayaran: $link
 
-Pembayaran Bapak/Ibu sangat membantu dalam operasional dan pemeliharaan lingkungan kita bersama.
+Silakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.
 
-Jika ada pertanyaan atau masukan, silakan hubungi kami kapan saja.
+Terima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.
 
 Hormat kami,
 Pengurus Paguyuban TSI
