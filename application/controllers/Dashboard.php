@@ -2213,9 +2213,9 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		// Semua koordinator
 		$koordinator_all = $this->db->query("SELECT id, nama, username FROM master_koordinator_blok ORDER BY nama ASC")->result_array();
 
-		// Hitung entry per koordinator bulan ini
+		// Hitung entry per koordinator bulan ini (termasuk pending)
 		$entry_data = $this->db->query("
-			SELECT r.id_koordinator,
+			SELECT COALESCE(u.id_koordinator, r.id_koordinator) as id_koordinator,
 				   COUNT(p.id) as total_entry,
 				   SUM(p.jumlah_bayar) as total_nominal,
 				   MAX(p.created_at) as last_entry,
@@ -2228,13 +2228,16 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			WHERE MONTH(p.created_at) = ?
 			AND YEAR(p.created_at) = ?
 			AND p.pembayaran_via = 'koordinator'
-			GROUP BY r.id_koordinator
+			AND p.status IN ('verified', 'pending')
+			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator)
 		", [$bulan, $tahun])->result_array();
 
 		// Index by id_koordinator
 		$entry_map = [];
 		foreach ($entry_data as $e) {
-			$entry_map[$e['id_koordinator']] = $e;
+			if ($e['id_koordinator'] !== null) {
+				$entry_map[$e['id_koordinator']] = $e;
+			}
 		}
 
 		// Hitung jumlah rumah per koordinator
@@ -2263,9 +2266,9 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			];
 		}
 
-		// Hitung total entry semua bulan per koordinator (untuk chart)
+		// Hitung total entry semua bulan per koordinator (untuk chart, termasuk pending)
 		$trend_data = $this->db->query("
-			SELECT r.id_koordinator,
+			SELECT COALESCE(u.id_koordinator, r.id_koordinator) as id_koordinator,
 				   DATE_FORMAT(p.created_at, '%Y-%m') as bulan,
 				   COUNT(p.id) as total
 			FROM master_pembayaran p
@@ -2273,7 +2276,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			LEFT JOIN master_rumah r ON r.id = u.id_rumah
 			WHERE YEAR(p.created_at) = ?
 			AND p.pembayaran_via = 'koordinator'
-			GROUP BY r.id_koordinator, DATE_FORMAT(p.created_at, '%Y-%m')
+			AND p.status IN ('verified', 'pending')
+			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator), DATE_FORMAT(p.created_at, '%Y-%m')
 			ORDER BY bulan ASC
 		", [$tahun])->result_array();
 
