@@ -802,8 +802,8 @@ class Dashboard extends CI_Controller
 			// Jika login sebagai koordinator, hanya tampilkan koordinator yang sedang login
 			$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok WHERE id = '" . $this->db->escape_str($this->session->userdata('username')['id']) . "'")->result_array();
 		} else {
-			// Jika admin, tampilkan semua koordinator
-			$koordinator = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
+			// Jika admin, tampilkan koordinator yang punya rumah binaan
+			$koordinator = $this->db->query("SELECT DISTINCT k.id, k.nama FROM master_koordinator_blok k WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id) ORDER BY k.nama")->result_array();
 		}
 
 		// Filter pembayaran sesuai login koordinator jika role koordinator
@@ -962,7 +962,7 @@ class Dashboard extends CI_Controller
 		// ====================
 		// Koordinator dropdown
 		// ====================
-		$data['koordinator'] = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok")->result_array();
+		$data['koordinator'] = $this->db->query("SELECT DISTINCT k.id, k.nama FROM master_koordinator_blok k WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id) ORDER BY k.nama")->result_array();
 
 		// Untuk filter status di view
 		$data['status_filter'] = $status;
@@ -1550,6 +1550,14 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	public function setting()
 	{
 		$this->checkSession();
+		// Auto-add no_hp column if not exists
+		if (!$this->db->field_exists('no_hp', 'master_koordinator_blok')) {
+			$this->db->query("ALTER TABLE master_koordinator_blok ADD no_hp VARCHAR(20) DEFAULT NULL");
+		}
+		if (!$this->db->field_exists('no_hp', 'master_rumah')) {
+			$this->db->query("ALTER TABLE master_rumah ADD no_hp VARCHAR(20) DEFAULT NULL");
+		}
+		
 		$data['halaman'] = 'dashboard/setting';
 		$this->load->view('modul', $data);
 	}
@@ -1564,6 +1572,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$id = $this->input->post('user_id', true);
 		$table = $this->input->post('user_table', true);
 		$nama = trim($this->input->post('nama', true));
+		$no_hp = trim($this->input->post('no_hp', true));
 
 		// Validasi tabel
 		$allowed_tables = ['master_admin', 'master_koordinator_blok'];
@@ -1573,13 +1582,18 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			return;
 		}
 
+		$update_data = ['nama' => $nama];
+		if ($table === 'master_koordinator_blok') {
+			$update_data['no_hp'] = $no_hp;
+		}
+
 		$this->db->where('id', $id);
-		$this->db->update($table, ['nama' => $nama]);
+		$this->db->update($table, $update_data);
 
 		if ($this->db->affected_rows() >= 0) {
-			$this->session->set_flashdata('success', 'Nama user berhasil diperbarui.');
+			$this->session->set_flashdata('success', 'Data user berhasil diperbarui.');
 		} else {
-			$this->session->set_flashdata('error', 'Gagal memperbarui nama user.');
+			$this->session->set_flashdata('error', 'Gagal memperbarui data user.');
 		}
 
 		redirect('setting');
@@ -1594,6 +1608,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 		$id = $this->input->post('rumah_id', true);
 		$nama = trim($this->input->post('nama', true));
+		$no_hp = trim($this->input->post('no_hp', true));
 
 		if (empty($id)) {
 			$this->session->set_flashdata('error', 'ID rumah tidak valid.');
@@ -1602,12 +1617,22 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 
 		$this->db->where('id', $id);
-		$this->db->update('master_rumah', ['nama' => $nama]);
+		$this->db->update('master_rumah', ['nama' => $nama, 'no_hp' => $no_hp]);
+
+		// Sinkronisasi ke master_keluarga jika diperlukan
+		if (!empty($no_hp)) {
+			$rumah = $this->db->get_where('master_rumah', ['id' => $id])->row_array();
+			if ($rumah) {
+				// Cek apakah ada record keluarga, jika ada update
+				$this->db->where('nomor_rumah', $rumah['alamat']);
+				$this->db->update('master_keluarga', ['no_hp' => $no_hp]);
+			}
+		}
 
 		if ($this->db->affected_rows() >= 0) {
-			$this->session->set_flashdata('success', 'Nama pemilik rumah berhasil diperbarui.');
+			$this->session->set_flashdata('success', 'Data pemilik rumah berhasil diperbarui.');
 		} else {
-			$this->session->set_flashdata('error', 'Gagal memperbarui nama pemilik rumah.');
+			$this->session->set_flashdata('error', 'Gagal memperbarui data pemilik rumah.');
 		}
 
 		redirect('setting');
@@ -1766,7 +1791,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
                                          WHERE id = '" . $this->db->escape_str($id_koordinator) . "'")
 				->result_array();
 		} else {
-			$koordinator = $this->db->query("SELECT id, nama FROM master_koordinator_blok")->result_array();
+			$koordinator = $this->db->query("SELECT k.id, k.nama FROM master_koordinator_blok k WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id) ORDER BY k.nama")->result_array();
 		}
 
 		// Filter pembayaran by koordinator
@@ -1906,7 +1931,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 		// Pembayaran (Verified & Pending)
 		$pembayaran_raw = $this->db->query("
-			SELECT u.id_rumah, p.untuk_bulan, p.bulan_rapel, DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym, p.status
+			SELECT p.id, u.id_rumah, p.untuk_bulan, p.bulan_rapel, DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym, p.status, p.jumlah_bayar, p.tanggal_bayar
 			FROM master_pembayaran p
 			LEFT JOIN master_users u ON p.user_id = u.id
 			LEFT JOIN master_rumah r ON u.id_rumah = r.id
@@ -1916,9 +1941,25 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		")->result_array();
 
 		$lunas_map = [];
+		$stats_map = [];
 		foreach ($pembayaran_raw as $p) {
 			$idr = $p['id_rumah'];
+			$pid = $p['id'];
+			
 			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
+			if (!isset($stats_map[$idr])) $stats_map[$idr] = ['total_bayar' => 0, 'terakhir_bayar' => null, 'counted_pids' => []];
+
+			// Hitung total nominal & tgl terakhir bayar (1x per payment_id)
+			if (!in_array($pid, $stats_map[$idr]['counted_pids'])) {
+				$stats_map[$idr]['counted_pids'][] = $pid;
+				$stats_map[$idr]['total_bayar'] += (float)$p['jumlah_bayar'];
+				if (!empty($p['tanggal_bayar'])) {
+					if (empty($stats_map[$idr]['terakhir_bayar']) || strtotime($p['tanggal_bayar']) > strtotime($stats_map[$idr]['terakhir_bayar'])) {
+						$stats_map[$idr]['terakhir_bayar'] = $p['tanggal_bayar'];
+					}
+				}
+			}
+
 			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') $lunas_map[$idr][date('Y-m', strtotime($p['untuk_bulan']))] = true;
 			if (!empty($p['bulan_rapel'])) {
 				foreach (explode(',', $p['bulan_rapel']) as $br) if (trim($br)) $lunas_map[$idr][trim($br)] = true;
@@ -1932,6 +1973,9 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$idr = $r['id'];
 			$tunggak_names = [];
 			$jumlah_bayar = 0;
+
+			$r['total_bayar'] = $stats_map[$idr]['total_bayar'] ?? 0;
+			$r['terakhir_bayar'] = $stats_map[$idr]['terakhir_bayar'] ?? null;
 
 			for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_ipl; $m++) {
 				$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
@@ -1949,16 +1993,29 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				$menunggak[] = $r;
 			} else {
 				$is_dimuka = false; $dm_count = 0;
+				$max_ym = '';
 				if (isset($lunas_map[$idr])) {
 					foreach ($lunas_map[$idr] as $ym => $val) {
-						$p = explode('-', $ym);
-						if ($p[0] > $tahun || ($p[0] == $tahun && (int)$p[1] > $bulan_akhir_ipl)) {
+						if ($ym > $max_ym) $max_ym = $ym;
+						$p_parts = explode('-', $ym);
+						if ($p_parts[0] > $tahun || ($p_parts[0] == $tahun && (int)$p_parts[1] > $bulan_akhir_ipl)) {
 							$is_dimuka = true; $dm_count++;
 						}
 					}
 				}
-				if ($is_dimuka) { $r['bulan_dimuka'] = $dm_count; $dimuka[] = $r; }
-				else { $rajin[] = $r; }
+				
+				if ($is_dimuka) { 
+					$r['bulan_dimuka'] = $dm_count; 
+					if ($max_ym) {
+						$parts = explode('-', $max_ym);
+						$r['bayar_sampai'] = ($bulan_indo[(int)$parts[1]] ?? '') . ' ' . $parts[0];
+					} else {
+						$r['bayar_sampai'] = '-';
+					}
+					$dimuka[] = $r; 
+				} else { 
+					$rajin[] = $r; 
+				}
 			}
 		}
 
@@ -2210,10 +2267,17 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$bulan = $this->input->get('bulan') ?: date('m');
 		$tahun = $this->input->get('tahun') ?: date('Y');
 
-		// Semua koordinator
-		$koordinator_all = $this->db->query("SELECT id, nama, username FROM master_koordinator_blok ORDER BY nama ASC")->result_array();
+		// Koordinator yang punya rumah binaan saja (hide yang tidak punya rumah, data tetap ada)
+		$koordinator_all = $this->db->query("
+			SELECT k.id, k.nama, k.username 
+			FROM master_koordinator_blok k
+			WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id)
+			ORDER BY k.nama ASC
+		")->result_array();
 
-		// Hitung entry per koordinator bulan ini (termasuk pending)
+		// Hitung entry per koordinator bulan ini — semua metode bayar (transfer + koordinator)
+		// Filter berdasarkan bulan_mulai agar konsisten dengan rekap rapel
+		$bulan_str = sprintf('%04d-%02d', $tahun, $bulan);
 		$entry_data = $this->db->query("
 			SELECT COALESCE(u.id_koordinator, r.id_koordinator) as id_koordinator,
 				   COUNT(p.id) as total_entry,
@@ -2221,16 +2285,24 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				   MAX(p.created_at) as last_entry,
 				   SUM(CASE WHEN p.status='verified' THEN 1 ELSE 0 END) as verified,
 				   SUM(CASE WHEN p.status='pending' THEN 1 ELSE 0 END) as pending,
-				   SUM(CASE WHEN p.status='rejected' THEN 1 ELSE 0 END) as rejected
+				   SUM(CASE WHEN p.status='rejected' THEN 1 ELSE 0 END) as rejected,
+				   SUM(CASE WHEN p.pembayaran_via='koordinator' THEN 1 ELSE 0 END) as via_koordinator,
+				   SUM(CASE WHEN p.pembayaran_via IN ('transfer','transfer_2') THEN 1 ELSE 0 END) as via_transfer
 			FROM master_pembayaran p
 			LEFT JOIN master_users u ON u.id = p.user_id
 			LEFT JOIN master_rumah r ON r.id = u.id_rumah
-			WHERE MONTH(p.created_at) = ?
-			AND YEAR(p.created_at) = ?
-			AND p.pembayaran_via = 'koordinator'
-			AND p.status IN ('verified', 'pending')
+			WHERE p.status IN ('verified', 'pending')
+			AND (
+				DATE_FORMAT(p.untuk_bulan, '%Y-%m') = ?
+				OR FIND_IN_SET(?, p.bulan_rapel) > 0
+				OR (
+					DATE_FORMAT(p.bulan_mulai, '%Y-%m') = ?
+					AND (p.bulan_rapel IS NULL OR p.bulan_rapel = '')
+					AND (p.untuk_bulan IS NULL OR p.untuk_bulan = '' OR p.untuk_bulan = '0000-00-00')
+				)
+			)
 			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator)
-		", [$bulan, $tahun])->result_array();
+		", [$bulan_str, $bulan_str, $bulan_str])->result_array();
 
 		// Index by id_koordinator
 		$entry_map = [];
@@ -2263,21 +2335,22 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				'verified' => $entry['verified'] ?? 0,
 				'pending' => $entry['pending'] ?? 0,
 				'rejected' => $entry['rejected'] ?? 0,
+				'via_koordinator' => $entry['via_koordinator'] ?? 0,
+				'via_transfer' => $entry['via_transfer'] ?? 0,
 			];
 		}
 
-		// Hitung total entry semua bulan per koordinator (untuk chart, termasuk pending)
+		// Hitung total entry semua bulan per koordinator (untuk chart)
 		$trend_data = $this->db->query("
 			SELECT COALESCE(u.id_koordinator, r.id_koordinator) as id_koordinator,
-				   DATE_FORMAT(p.created_at, '%Y-%m') as bulan,
+				   DATE_FORMAT(COALESCE(NULLIF(p.untuk_bulan,'0000-00-00'), p.bulan_mulai), '%Y-%m') as bulan,
 				   COUNT(p.id) as total
 			FROM master_pembayaran p
 			LEFT JOIN master_users u ON u.id = p.user_id
 			LEFT JOIN master_rumah r ON r.id = u.id_rumah
-			WHERE YEAR(p.created_at) = ?
-			AND p.pembayaran_via = 'koordinator'
+			WHERE YEAR(COALESCE(NULLIF(p.untuk_bulan,'0000-00-00'), p.bulan_mulai)) = ?
 			AND p.status IN ('verified', 'pending')
-			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator), DATE_FORMAT(p.created_at, '%Y-%m')
+			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator), DATE_FORMAT(COALESCE(NULLIF(p.untuk_bulan,'0000-00-00'), p.bulan_mulai), '%Y-%m')
 			ORDER BY bulan ASC
 		", [$tahun])->result_array();
 

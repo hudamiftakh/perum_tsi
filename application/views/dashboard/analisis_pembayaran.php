@@ -39,7 +39,7 @@ if ($this->session->userdata('username')['role'] === 'koordinator') {
         "SELECT id, nama FROM master_koordinator_blok WHERE id = '" . $this->db->escape_str($this->session->userdata('username')['id']) . "'"
     )->result_array();
 } else {
-    $koordinator_list = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok ORDER BY nama")->result_array();
+    $koordinator_list = $this->db->query("SELECT DISTINCT k.id, k.nama FROM master_koordinator_blok k WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id) ORDER BY k.nama")->result_array();
 }
 
 $where_koor = !empty($selected_koor)
@@ -53,15 +53,15 @@ $bulan_str = sprintf('%04d-%02d', $selected_tahun, $selected_bulan);
 
 // Semua rumah
 $all_rumah = $this->db->query("
-    SELECT r.id, r.alamat, r.nama, MAX(kl.no_hp) as no_hp, MAX(k.nama) as koordinator, r.id_koordinator
+    SELECT b.id, b.alamat, b.nama, MAX(kl.no_hp) as no_hp, MAX(k.nama) as koordinator, b.id_koordinator
     FROM master_users u
-    LEFT JOIN master_rumah r ON u.id_rumah = r.id
-    LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
-    LEFT JOIN master_keluarga kl ON kl.nomor_rumah = r.alamat AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
-    WHERE r.id IS NOT NULL
+    LEFT JOIN master_rumah b ON u.id_rumah = b.id
+    LEFT JOIN master_koordinator_blok k ON b.id_koordinator = k.id
+    LEFT JOIN master_keluarga kl ON kl.nomor_rumah = b.alamat AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+    WHERE b.id IS NOT NULL
     $where_koor
-    GROUP BY r.id, r.alamat, r.nama, r.id_koordinator
-    ORDER BY r.alamat ASC
+    GROUP BY b.id, b.alamat, b.nama, b.id_koordinator
+    ORDER BY b.alamat ASC
 ")->result_array();
 
 // Rumah yang sudah bayar bulan tersebut
@@ -135,25 +135,7 @@ for ($m = 1; $m <= $bulan_akhir_chart; $m++) {
 $pie_transfer = array_sum($chart_transfer);
 $pie_koor = array_sum($chart_koor);
 
-// ============================================
-// 3. REKAP TAHUNAN (Year-over-Year)
-// ============================================
-$tahun_mulai = 2025;
-$tahun_sekarang = (int)date('Y');
-$yoy_data = [];
 
-for ($y = $tahun_mulai; $y <= $tahun_sekarang; $y++) {
-    $row_y = $this->db->query("
-        SELECT COALESCE(SUM(p.jumlah_bayar),0) as total
-        FROM master_pembayaran p
-        LEFT JOIN master_users u ON p.user_id = u.id
-        LEFT JOIN master_rumah b ON u.id_rumah = b.id
-        WHERE p.status = 'verified'
-        AND YEAR(p.tanggal_bayar) = $y
-        $where_koor
-    ")->row();
-    $yoy_data[$y] = (float)($row_y->total ?? 0);
-}
 
 // Jumlah rumah yg sudah bayar di bulan terpilih
 $jumlah_bayar = count($paid_ids);
@@ -349,58 +331,7 @@ $persen_bayar = ($total_rumah > 0) ? round(($jumlah_bayar / $total_rumah) * 100)
     </div>
 </div>
 
-<!-- ============================================ -->
-<!-- SECTION 2: REKAP TAHUNAN (Year-over-Year)   -->
-<!-- ============================================ -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow rounded-4">
-            <div class="card-body">
-                <h6 class="fw-bold mb-3">Rekap Tahunan (Year-over-Year)</h6>
-                <div class="row">
-                    <div class="col-12 col-lg-8">
-                        <div class="chart-container" style="height:260px;">
-                            <canvas id="yoyChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-4">
-                        <table class="table table-sm table-bordered mt-2">
-                            <thead style="background:#6f42c1; color:white;">
-                                <tr>
-                                    <th>Tahun</th>
-                                    <th class="text-end">Total Pembayaran</th>
-                                    <th class="text-center">Perubahan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $prev_total = 0;
-                                foreach ($yoy_data as $yr => $total):
-                                    $change = ($prev_total > 0) ? round((($total - $prev_total) / $prev_total) * 100, 1) : 0;
-                                    $change_class = $change > 0 ? 'text-success' : ($change < 0 ? 'text-danger' : 'text-muted');
-                                    $change_icon = $change > 0 ? '▲' : ($change < 0 ? '▼' : '—');
-                                ?>
-                                    <tr>
-                                        <td class="fw-semibold"><?= $yr ?></td>
-                                        <td class="text-end">Rp <?= number_format($total) ?></td>
-                                        <td class="text-center <?= $change_class ?> fw-bold">
-                                            <?php if ($prev_total > 0): ?>
-                                                <?= $change_icon ?> <?= abs($change) ?>%
-                                            <?php else: ?>
-                                                —
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php $prev_total = $total;
-                                endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- ============================================ -->
 <!-- SECTION 3: LAPORAN TUNGGAKAN                -->
@@ -562,61 +493,6 @@ $persen_bayar = ($total_rumah > 0) ? round(($jumlah_bayar / $total_rumah) * 100)
             }
         });
 
-        // ========== BAR CHART: Year-over-Year ==========
-        const yoyCtx = document.getElementById('yoyChart').getContext('2d');
-        new Chart(yoyCtx, {
-            type: 'bar',
-            data: {
-                labels: <?= json_encode(array_map('strval', array_keys($yoy_data))) ?>,
-                datasets: [{
-                    label: 'Total Pembayaran',
-                    data: <?= json_encode(array_values($yoy_data)) ?>,
-                    backgroundColor: [
-                        <?php
-                        $colors = ['rgba(111,66,193,0.7)', 'rgba(13,110,253,0.7)', 'rgba(25,135,84,0.7)', 'rgba(255,193,7,0.7)'];
-                        $ci = 0;
-                        foreach ($yoy_data as $yr => $t) {
-                            echo $colors[$ci % count($colors)] . ',';
-                            $ci++;
-                        }
-                        ?>
-                    ],
-                    borderColor: [
-                        <?php
-                        $borders = ['#6f42c1', '#0d6efd', '#198754', '#ffc107'];
-                        $ci = 0;
-                        foreach ($yoy_data as $yr => $t) {
-                            echo "'" . $borders[$ci % count($borders)] . "',";
-                            $ci++;
-                        }
-                        ?>
-                    ],
-                    borderWidth: 2,
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => 'Rp ' + ctx.parsed.y.toLocaleString('id-ID')
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: v => 'Rp ' + (v / 1000000).toFixed(0) + 'jt'
-                        }
-                    }
-                }
-            }
-        });
+
     });
 </script>

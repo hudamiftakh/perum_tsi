@@ -8,7 +8,7 @@ if ($Auth['role'] === 'koordinator') {
     $koordinator_list = $this->db->query("SELECT id, nama FROM master_koordinator_blok WHERE id = '".$this->db->escape_str($Auth['id'])."'")->result_array();
     $selected_koor = $Auth['id'];
 } else {
-    $koordinator_list = $this->db->query("SELECT DISTINCT id, nama FROM master_koordinator_blok ORDER BY nama")->result_array();
+    $koordinator_list = $this->db->query("SELECT DISTINCT k.id, k.nama FROM master_koordinator_blok k WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id) ORDER BY k.nama")->result_array();
     $selected_koor = $this->input->get('id_koordinator');
 }
 ?>

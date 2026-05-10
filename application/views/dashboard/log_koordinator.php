@@ -238,7 +238,7 @@ $bottom3 = array_slice($sorted_asc, 0, 3);
                             <th class="text-end">Nominal</th>
                             <th class="text-center">Verified</th>
                             <th class="text-center">Pending</th>
-                            <th class="text-center">Rejected</th>
+                            <th class="text-center">Via</th>
                             <th>Entry Terakhir</th>
                             <th class="text-center">Status</th>
                         </tr>
@@ -277,8 +277,13 @@ $bottom3 = array_slice($sorted_asc, 0, 3);
                             <td class="text-center">
                                 <?= $k['pending']>0 ? '<span class="badge bg-warning text-dark">'.$k['pending'].'</span>' : '<span class="text-muted">—</span>' ?>
                             </td>
-                            <td class="text-center">
-                                <?= $k['rejected']>0 ? '<span class="badge bg-danger">'.$k['rejected'].'</span>' : '<span class="text-muted">—</span>' ?>
+                            <td class="text-center text-nowrap">
+                                <?php if ($k['via_koordinator'] > 0 || $k['via_transfer'] > 0): ?>
+                                    <?php if ($k['via_koordinator'] > 0): ?><span class="badge bg-info"><?= $k['via_koordinator'] ?> Koor</span><?php endif; ?>
+                                    <?php if ($k['via_transfer'] > 0): ?><span class="badge bg-primary"><?= $k['via_transfer'] ?> Tf</span><?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
                             <td class="text-nowrap">
                                 <?php if ($k['last_entry']): ?>
@@ -319,7 +324,7 @@ $(document).ready(function(){
             emptyTable:"Tidak ada data koordinator",
             zeroRecords:"Data tidak ditemukan"
         },
-        columnDefs:[{targets:[4],orderable:false}]
+        columnDefs:[{targets:[4,8],orderable:false}]
     });
 
     // Donut Chart
