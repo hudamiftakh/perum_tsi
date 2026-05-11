@@ -2362,6 +2362,307 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$this->load->view('modul', $data);
 	}
 
+	/**
+	 * Kirim Konfirmasi Verifikasi / Kitir via WhatsApp (Lancar & Bayar Di Muka)
+	 * Generates PDF kitir and sends as document via WA API
+	 */
+	public function kirim_konfirmasi_wa()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$id_rumah = $this->input->get('id_rumah', true);
+		$tahun = (int)($this->input->get('tahun', true) ?: date('Y'));
+		$bulan_filter = $this->input->get('bulan', true);
+		$tipe = $this->input->get('tipe', true); // 'lancar' atau 'dimuka'
+
+		if (empty($id_rumah)) {
+			echo json_encode(['status' => 'error', 'message' => 'ID Rumah tidak valid']);
+			return;
+		}
+
+		// Data rumah
+		$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
+		if (!$rumah) {
+			echo json_encode(['status' => 'error', 'message' => 'Data rumah tidak ditemukan']);
+			return;
+		}
+
+		// Cari nomor HP
+		$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+		$no_hp = $keluarga['no_hp'] ?? '';
+
+		if (empty($no_hp)) {
+			// Fallback cek master_rumah
+			$no_hp = $rumah['no_hp'] ?? '';
+		}
+
+		if (empty($no_hp)) {
+			echo json_encode(['status' => 'error', 'message' => 'Nomor HP warga tidak ditemukan. Mohon lengkapi data terlebih dahulu.']);
+			return;
+		}
+
+		$bulan_indo = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+
+		// Hitung pembayaran
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		$bulan_akhir = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == (int)date('Y')) ? (int)date('n') : 12);
+
+		// Ambil data pembayaran verified
+		$pembayaran_raw = $this->db->query("
+			SELECT p.id, p.untuk_bulan, p.bulan_rapel, DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym,
+			       p.jumlah_bayar, p.tanggal_bayar, p.bulan_mulai
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			WHERE u.id_rumah = ? AND p.status = 'verified'
+			AND (YEAR(p.untuk_bulan) = ? OR YEAR(p.bulan_mulai) = ? OR p.bulan_rapel LIKE ?)
+			ORDER BY p.tanggal_bayar DESC
+		", [$id_rumah, $tahun, $tahun, '%'.$tahun.'%'])->result_array();
+
+		if (empty($pembayaran_raw)) {
+			echo json_encode(['status' => 'error', 'message' => 'Tidak ditemukan data pembayaran verified untuk warga ini.']);
+			return;
+		}
+
+		// Hitung bulan yang sudah lunas
+		$lunas_map = [];
+		$total_bayar = 0;
+		$terakhir_bayar = null;
+		$last_payment_id = null;
+
+		foreach ($pembayaran_raw as $p) {
+			$total_bayar += (float)$p['jumlah_bayar'];
+			if (!empty($p['tanggal_bayar']) && (empty($terakhir_bayar) || strtotime($p['tanggal_bayar']) > strtotime($terakhir_bayar))) {
+				$terakhir_bayar = $p['tanggal_bayar'];
+			}
+			if ($last_payment_id === null) $last_payment_id = $p['id'];
+
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00') {
+				$lunas_map[date('Y-m', strtotime($p['untuk_bulan']))] = true;
+			}
+			if (!empty($p['bulan_rapel'])) {
+				foreach (explode(',', $p['bulan_rapel']) as $br) {
+					if (trim($br)) $lunas_map[trim($br)] = true;
+				}
+			}
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
+				$lunas_map[$p['bulan_mulai_ym']] = true;
+			}
+		}
+
+		$bulan_lunas = [];
+		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir; $m++) {
+			$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+			if (isset($lunas_map[$key])) {
+				$bulan_lunas[] = $bulan_indo[$m];
+			}
+		}
+
+		// Info tambahan untuk dimuka
+		$max_ym = '';
+		$bulan_dimuka_count = 0;
+		if ($tipe === 'dimuka') {
+			foreach ($lunas_map as $ym => $val) {
+				if ($ym > $max_ym) $max_ym = $ym;
+				$p_parts = explode('-', $ym);
+				if (count($p_parts) == 2 && ($p_parts[0] > $tahun || ($p_parts[0] == $tahun && (int)$p_parts[1] > $bulan_akhir))) {
+					$bulan_dimuka_count++;
+				}
+			}
+		}
+
+		// === Generate PDF Kitir Verifikasi ===
+		mb_internal_encoding('UTF-8');
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator('Perum TSI');
+		$pdf->SetTitle('Kitir Verifikasi Pembayaran IPL');
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(false);
+		$pdf->SetMargins(20, 15, 20);
+		$pdf->AddPage();
+
+		$lm = 20; $rm = 190; $cw = $rm - $lm;
+
+		// Logo
+		$logo = FCPATH . 'logo-tsi.png';
+		if (file_exists($logo)) $pdf->Image($logo, $lm, 15, 20, 20, 'PNG');
+
+		// Header
+		$pdf->SetXY($lm + 23, 16);
+		$pdf->SetFont('dejavusans', 'B', 12);
+		$pdf->SetTextColor(30, 120, 180);
+		$pdf->Cell($cw - 23, 6, 'PAGUYUBAN WARGA PERUMAHAN', 0, 1, 'C');
+		$pdf->SetX($lm + 23);
+		$pdf->Cell($cw - 23, 6, 'TAMAN SUKODONO INDAH', 0, 1, 'C');
+		$pdf->SetX($lm + 23);
+		$pdf->SetFont('dejavusans', '', 9);
+		$pdf->SetTextColor(80, 80, 80);
+		$pdf->Cell($cw - 23, 5, 'Ds. Jumputrejo, Kec. Sukodono, Kab. Sidoarjo, 61258.', 0, 1, 'C');
+
+		$pdf->SetY(38);
+		$pdf->SetDrawColor(30, 120, 180);
+		$pdf->SetLineWidth(0.8);
+		$pdf->Line($lm, 38, $rm, 38);
+
+		// Judul
+		$pdf->Ln(6);
+		$pdf->SetTextColor(0);
+		$pdf->SetFont('dejavusans', 'B', 14);
+		if ($tipe === 'lancar') {
+			$pdf->SetTextColor(34, 139, 34);
+			$pdf->Cell(0, 8, 'SURAT KONFIRMASI LUNAS IPL', 0, 1, 'C');
+		} else {
+			$pdf->SetTextColor(102, 126, 234);
+			$pdf->Cell(0, 8, 'SURAT KONFIRMASI BAYAR DI MUKA IPL', 0, 1, 'C');
+		}
+
+		$pdf->SetTextColor(0);
+		$pdf->SetFont('dejavusans', '', 10);
+		$periode_str = $bulan_indo[$bulan_mulai_ipl] . ' - ' . $bulan_indo[$bulan_akhir] . ' ' . $tahun;
+		$pdf->Cell(0, 6, 'Periode: ' . $periode_str, 0, 1, 'C');
+
+		// Garis bawah judul
+		$pdf->Ln(4);
+		$pdf->SetDrawColor(200, 200, 200);
+		$pdf->SetLineWidth(0.3);
+		$pdf->Line($lm, $pdf->GetY(), $rm, $pdf->GetY());
+
+		// Isi surat
+		$pdf->Ln(6);
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell(0, 6, "Assalamu'alaikum Wr. Wb.", 0, 1);
+		$pdf->Ln(3);
+		$pdf->MultiCell(0, 6, 'Dengan hormat, melalui surat ini kami mengkonfirmasi bahwa:', 0, 'L');
+
+		$pdf->Ln(3);
+		$lbl_w = 45;
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_w, 6, 'Nama', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->SetFont('dejavusans', 'B', 10);
+		$pdf->Cell(0, 6, strtoupper($rumah['nama'] ?? '-'), 0, 1);
+
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_w, 6, 'Alamat', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->SetFont('dejavusans', 'B', 10);
+		$pdf->Cell(0, 6, $rumah['alamat'] ?? '-', 0, 1);
+
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_w, 6, 'Periode', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->Cell(0, 6, $periode_str, 0, 1);
+
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_w, 6, 'Total Pembayaran', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->SetFont('dejavusans', 'B', 11);
+		$pdf->Cell(0, 6, 'Rp ' . number_format($total_bayar, 0, ',', '.') . ',-', 0, 1);
+
+		$pdf->SetFont('dejavusans', '', 10);
+		$pdf->Cell(10, 6, '', 0, 0);
+		$pdf->Cell($lbl_w, 6, 'Bulan Lunas', 0, 0);
+		$pdf->Cell(5, 6, ':', 0, 0);
+		$pdf->MultiCell(0, 6, implode(', ', $bulan_lunas), 0, 'L');
+
+		if ($tipe === 'dimuka' && $bulan_dimuka_count > 0 && $max_ym) {
+			$parts = explode('-', $max_ym);
+			$bayar_sampai_str = ($bulan_indo[(int)$parts[1]] ?? '') . ' ' . $parts[0];
+			$pdf->Cell(10, 6, '', 0, 0);
+			$pdf->Cell($lbl_w, 6, 'Bayar Sampai', 0, 0);
+			$pdf->Cell(5, 6, ':', 0, 0);
+			$pdf->SetFont('dejavusans', 'B', 10);
+			$pdf->SetTextColor(102, 126, 234);
+			$pdf->Cell(0, 6, $bayar_sampai_str . ' (+' . $bulan_dimuka_count . ' bulan di muka)', 0, 1);
+			$pdf->SetTextColor(0);
+		}
+
+		// Status box
+		$pdf->Ln(6);
+		if ($tipe === 'lancar') {
+			$pdf->SetFillColor(34, 139, 34);
+			$pdf->SetTextColor(255, 255, 255);
+			$pdf->SetFont('dejavusans', 'B', 13);
+			$pdf->Cell(0, 12, '  STATUS : LUNAS  ', 0, 1, 'C', true);
+		} else {
+			$pdf->SetFillColor(102, 126, 234);
+			$pdf->SetTextColor(255, 255, 255);
+			$pdf->SetFont('dejavusans', 'B', 13);
+			$pdf->Cell(0, 12, '  STATUS : BAYAR DI MUKA  ', 0, 1, 'C', true);
+		}
+
+		$pdf->SetTextColor(0);
+		$pdf->SetFont('dejavusans', '', 10);
+
+		// Keterangan penutup
+		$pdf->Ln(6);
+		if ($tipe === 'lancar') {
+			$pdf->MultiCell(0, 6, 'Telah melunasi seluruh kewajiban Iuran Pengelolaan Lingkungan (IPL) untuk periode tersebut di atas. Terima kasih atas kepatuhan Bapak/Ibu dalam memenuhi kewajiban iuran.', 0, 'J');
+		} else {
+			$pdf->MultiCell(0, 6, 'Telah melakukan pembayaran IPL melebihi bulan berjalan (bayar di muka). Kami sangat mengapresiasi kontribusi Bapak/Ibu yang telah membayar lebih awal. Terima kasih.', 0, 'J');
+		}
+
+		$pdf->Ln(3);
+		$pdf->Cell(0, 6, "Wassalamu'alaikum Wr. Wb.", 0, 1);
+
+		// Tanda tangan
+		$pdf->Ln(8);
+		$pdf->Cell(0, 5, 'Sidoarjo, ' . date('d') . ' ' . $bulan_indo[(int)date('n')] . ' ' . date('Y'), 0, 1, 'R');
+		$pdf->Ln(2);
+		$pdf->Cell(0, 5, 'Bendahara TSI', 0, 1, 'R');
+
+		// TTE
+		$stamp_w = 40; $stamp_h = 16;
+		$pdf->Ln(2);
+		$sy = $pdf->GetY();
+		$sx = $rm - $stamp_w - 15;
+		$pdf->SetDrawColor(0, 128, 0);
+		$pdf->SetTextColor(0, 128, 0);
+		$pdf->RoundedRect($sx, $sy, $stamp_w, $stamp_h, 2, '1111', 'D');
+		$pdf->SetXY($sx, $sy + 2);
+		$pdf->SetFont('dejavusans', 'B', 7);
+		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
+		$pdf->SetX($sx);
+		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+
+		$pdf->Ln(11);
+		$pdf->SetTextColor(0);
+		$pdf->SetFont('dejavusans', 'BU', 10);
+		$pdf->Cell(0, 5, 'Dhani Kispananto', 0, 1, 'R');
+
+		// Simpan PDF ke file
+		$label_file = ($tipe === 'lancar') ? 'Konfirmasi_Lunas' : 'Konfirmasi_BayarDimuka';
+		$filename = $label_file . '_' . $id_rumah . '_' . date('YmdHis') . '.pdf';
+		$temp_dir = FCPATH . 'assets/temp_pdf/';
+		if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
+		$filepath = $temp_dir . $filename;
+		$pdf->Output($filepath, 'F');
+
+		// === Kirim via WhatsApp ===
+		$this->load->helper('wa');
+		$media_url = base_url('assets/temp_pdf/' . $filename);
+
+		if ($tipe === 'lancar') {
+			$caption = "✅ *KONFIRMASI LUNAS IPL*\n\nAssalamu'alaikum Bapak/Ibu *" . $rumah['nama'] . "*,\n\nKami mengkonfirmasi bahwa pembayaran IPL untuk rumah *" . $rumah['alamat'] . "* periode *" . $periode_str . "* telah *LUNAS*.\n\nTotal: *Rp " . number_format($total_bayar, 0, ',', '.') . "*\nBulan lunas: " . implode(', ', $bulan_lunas) . "\n\nTerlampir e-kitir konfirmasi pembayaran.\nTerima kasih atas kepatuhan Bapak/Ibu. 🙏\n\n*Pengurus Paguyuban TSI*";
+		} else {
+			$parts_max = $max_ym ? explode('-', $max_ym) : [];
+			$bayar_sampai_label = !empty($parts_max) ? (($bulan_indo[(int)$parts_max[1]] ?? '') . ' ' . $parts_max[0]) : '-';
+			$caption = "⭐ *KONFIRMASI BAYAR DI MUKA IPL*\n\nAssalamu'alaikum Bapak/Ibu *" . $rumah['nama'] . "*,\n\nKami mengkonfirmasi bahwa pembayaran IPL untuk rumah *" . $rumah['alamat'] . "* telah dibayar hingga *" . $bayar_sampai_label . "* (+" . $bulan_dimuka_count . " bulan di muka).\n\nTotal: *Rp " . number_format($total_bayar, 0, ',', '.') . "*\n\nTerlampir e-kitir konfirmasi pembayaran.\nTerima kasih atas kontribusi luar biasa Bapak/Ibu. 🌟\n\n*Pengurus Paguyuban TSI*";
+		}
+
+		$res = send_wa_doc($no_hp, $media_url, $filename, $caption);
+
+		if (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) {
+			echo json_encode(['status' => 'success', 'message' => 'Konfirmasi berhasil dikirim via WhatsApp beserta file PDF.<br><small class="text-muted">Dikirim ke: ' . $no_hp . '</small>']);
+		} else {
+			echo json_encode(['status' => 'error', 'message' => 'Gagal kirim WA: ' . ($res['message'] ?? 'Error API')]);
+		}
+	}
+
 	public function checkSession()
 	{
 		if (empty($this->session->userdata['username'])) {

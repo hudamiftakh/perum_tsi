@@ -88,6 +88,7 @@ $route['log-koordinator'] = 'dashboard/log_koordinator';
 $route['profil-warga'] = 'dashboard/profil_warga';
 $route['ajax-profil-warga'] = 'dashboard/ajax_profil_warga';
 $route['surat-teguran-pdf'] = 'dashboard/surat_teguran_pdf';
+$route['kirim-konfirmasi-wa'] = 'dashboard/kirim_konfirmasi_wa';
 $route['setting'] = 'dashboard/setting';
 $route['setting/update-user'] = 'dashboard/update_user';
 $route['setting/update-rumah'] = 'dashboard/update_rumah';

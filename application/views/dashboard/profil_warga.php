@@ -277,7 +277,7 @@ if ($Auth['role'] === 'koordinator') {
                         <table class="table table-striped table-profil table-hover w-100" id="tblRajin">
                             <thead><tr>
                                 <th width="40">No</th><th>Alamat</th><th>Nama</th><th>No HP</th>
-                                <th>Koordinator</th><th>Terbayar</th><th>Total Bayar</th><th>Terakhir Bayar</th>
+                                <th>Koordinator</th><th>Terbayar</th><th>Total Bayar</th><th>Terakhir Bayar</th><th>Aksi</th>
                             </tr></thead>
                             <tbody></tbody>
                         </table>
@@ -294,7 +294,7 @@ if ($Auth['role'] === 'koordinator') {
                         <table class="table table-striped table-profil table-hover w-100" id="tblDimuka">
                             <thead><tr>
                                 <th width="40">No</th><th>Alamat</th><th>Nama</th><th>No HP</th>
-                                <th>Koordinator</th><th>Bayar Sampai</th><th>Di Muka</th><th>Total Bayar</th>
+                                <th>Koordinator</th><th>Bayar Sampai</th><th>Di Muka</th><th>Total Bayar</th><th>Aksi</th>
                             </tr></thead>
                             <tbody></tbody>
                         </table>
@@ -399,13 +399,14 @@ function loadData() {
                     w.koordinator||'-',
                     '<span class="badge bg-success">'+w.jumlah_bulan_bayar+' bulan ✓</span>',
                     formatRp(w.total_bayar),
-                    w.terakhir_bayar ? w.terakhir_bayar.substring(8,10)+'/'+w.terakhir_bayar.substring(5,7)+'/'+w.terakhir_bayar.substring(0,4) : '-'
+                    w.terakhir_bayar ? w.terakhir_bayar.substring(8,10)+'/'+w.terakhir_bayar.substring(5,7)+'/'+w.terakhir_bayar.substring(0,4) : '-',
+                    '<button onclick="sendWaKonfirmasi('+w.id+',\'lancar\')" class="btn btn-sm btn-success" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
                 ]);
             });
             dtRajin = $('#tblRajin').DataTable({
                 data: rows2, destroy: true, pageLength: 25,
                 language: { search:"Cari:", lengthMenu:"Tampilkan _MENU_", info:"_START_-_END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga lunas semua bulan", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,7], className: 'text-center' }, { targets: [6], className: 'text-end fw-bold' }]
+                columnDefs: [{ targets: [0,5,7,8], className: 'text-center' }, { targets: [6], className: 'text-end fw-bold' }]
             });
 
             // Dimuka
@@ -419,13 +420,14 @@ function loadData() {
                     w.koordinator||'-',
                     '<span class="badge badge-dimuka">'+w.bayar_sampai+'</span>',
                     '<span class="badge bg-info">+'+w.bulan_dimuka+' bulan</span>',
-                    formatRp(w.total_bayar)
+                    formatRp(w.total_bayar),
+                    '<button onclick="sendWaKonfirmasi('+w.id+',\'dimuka\')" class="btn btn-sm btn-success" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
                 ]);
             });
             dtDimuka = $('#tblDimuka').DataTable({
                 data: rows3, destroy: true, pageLength: 25,
                 language: { search:"Cari:", lengthMenu:"Tampilkan _MENU_", info:"_START_-_END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga bayar di muka", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,6], className: 'text-center' }, { targets: [7], className: 'text-end fw-bold' }]
+                columnDefs: [{ targets: [0,5,6,8], className: 'text-center' }, { targets: [7], className: 'text-end fw-bold' }]
             });
         },
         error: function() {
@@ -471,6 +473,42 @@ function sendWaOtomatis(id_rumah) {
         success: function(res) {
             if(res.status === 'success') {
                 Swal.fire('Berhasil!', res.message, 'success');
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+        }
+    });
+}
+
+function sendWaKonfirmasi(id_rumah, tipe) {
+    var tahun = $('#filterTahun').val();
+    var bulan = $('#filterBulan').val();
+    var label = (tipe === 'lancar') ? 'konfirmasi lunas' : 'konfirmasi bayar di muka';
+    
+    if(!confirm("Kirim " + label + " via WhatsApp ke warga ini?")) return;
+
+    Swal.fire({
+        title: 'Mengirim...',
+        text: 'Sedang memproses PDF dan mengirim WhatsApp',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    $.ajax({
+        url: BASE + 'kirim-konfirmasi-wa',
+        data: { id_rumah: id_rumah, tahun: tahun, bulan: bulan, tipe: tipe },
+        dataType: 'json',
+        success: function(res) {
+            if(res.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    html: res.message,
+                    confirmButtonColor: '#25D366'
+                });
             } else {
                 Swal.fire('Gagal', res.message, 'error');
             }
