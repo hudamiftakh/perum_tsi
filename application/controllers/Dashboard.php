@@ -25,6 +25,19 @@ class Dashboard extends CI_Controller
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)");
 
+		// Auto Create Table Log Konfirmasi (lancar & dimuka)
+		$this->db->query("CREATE TABLE IF NOT EXISTS log_konfirmasi (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			id_rumah INT,
+			tipe VARCHAR(20),
+			tgl_kirim DATETIME,
+			dikirim_ke VARCHAR(20),
+			status VARCHAR(20),
+			tahun INT,
+			bulan INT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)");
+
 		// Auto-create tabel log_login jika belum ada
 		$this->_create_log_tables();
 	}
@@ -2023,6 +2036,23 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		usort($rajin, function($a,$b){ return $b['jumlah_bulan_bayar'] - $a['jumlah_bulan_bayar']; });
 		usort($dimuka, function($a,$b){ return ($b['bulan_dimuka'] ?? 0) - ($a['bulan_dimuka'] ?? 0); });
 
+		// Hitung jumlah kirim konfirmasi per rumah
+		$konfirmasi_counts = [];
+		$log_data = $this->db->query("SELECT id_rumah, COUNT(*) as total_kirim FROM log_konfirmasi WHERE status = 'success' GROUP BY id_rumah")->result_array();
+		foreach ($log_data as $ld) {
+			$konfirmasi_counts[$ld['id_rumah']] = (int)$ld['total_kirim'];
+		}
+
+		// Tambahkan count ke data rajin & dimuka
+		foreach ($rajin as &$r_item) {
+			$r_item['wa_count'] = $konfirmasi_counts[$r_item['id']] ?? 0;
+		}
+		unset($r_item);
+		foreach ($dimuka as &$d_item) {
+			$d_item['wa_count'] = $konfirmasi_counts[$d_item['id']] ?? 0;
+		}
+		unset($d_item);
+
 		echo json_encode(['stats' => ['total'=>count($all_rumah), 'menunggak'=>count($menunggak), 'rajin'=>count($rajin), 'dimuka'=>count($dimuka)], 'total_bulan_wajib'=>$total_bulan_wajib, 'periode'=>$bulan_indo[$bulan_mulai_ipl].' - '.$bulan_indo[$bulan_akhir_ipl], 'menunggak'=>$menunggak, 'rajin'=>$rajin, 'dimuka'=>$dimuka]);
 	}
 
@@ -2657,8 +2687,29 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$res = send_wa_doc($no_hp, $media_url, $filename, $caption);
 
 		if (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) {
-			echo json_encode(['status' => 'success', 'message' => 'Konfirmasi berhasil dikirim via WhatsApp beserta file PDF.<br><small class="text-muted">Dikirim ke: ' . $no_hp . '</small>']);
+			// Catat log konfirmasi
+			$this->db->insert('log_konfirmasi', [
+				'id_rumah' => $id_rumah,
+				'tipe' => $tipe,
+				'tgl_kirim' => date('Y-m-d H:i:s'),
+				'dikirim_ke' => $no_hp,
+				'status' => 'success',
+				'tahun' => $tahun,
+				'bulan' => $bulan_akhir
+			]);
+			$total_sent = $this->db->where(['id_rumah' => $id_rumah, 'status' => 'success'])->count_all_results('log_konfirmasi');
+			echo json_encode(['status' => 'success', 'message' => 'Konfirmasi berhasil dikirim via WhatsApp beserta file PDF.<br><small class="text-muted">Dikirim ke: ' . $no_hp . ' (Total kirim: ' . $total_sent . 'x)</small>']);
 		} else {
+			// Catat log gagal
+			$this->db->insert('log_konfirmasi', [
+				'id_rumah' => $id_rumah,
+				'tipe' => $tipe,
+				'tgl_kirim' => date('Y-m-d H:i:s'),
+				'dikirim_ke' => $no_hp,
+				'status' => 'failed',
+				'tahun' => $tahun,
+				'bulan' => $bulan_akhir
+			]);
 			echo json_encode(['status' => 'error', 'message' => 'Gagal kirim WA: ' . ($res['message'] ?? 'Error API')]);
 		}
 	}
