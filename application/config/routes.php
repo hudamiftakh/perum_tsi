@@ -65,6 +65,7 @@ $route['agenda/show_participant/(:any)'] = 'dashboard/show_participant/$1';
 $route['show_form_participant/(:any)'] = 'dashboard/show_form_participant/$1';
 $route['warga/data-warga'] = 'dashboard/warga';
 $route['warga/data-warga/(:any)'] = 'dashboard/warga/$1';
+$route['warga/export-warga-excel'] = 'dashboard/export_warga_excel';
 // Pendataan
 $route['pendataan-keluarga'] = 'dashboard/pendataan_keluarga';
 $route['pendataan-keluarga-koordinator'] = 'dashboard/pendataan_keluarga_koordinator';
@@ -88,6 +89,7 @@ $route['log-koordinator'] = 'dashboard/log_koordinator';
 $route['profil-warga'] = 'dashboard/profil_warga';
 $route['ajax-profil-warga'] = 'dashboard/ajax_profil_warga';
 $route['surat-teguran-pdf'] = 'dashboard/surat_teguran_pdf';
+$route['batch-surat-teguran-zip'] = 'dashboard/batch_surat_teguran_zip';
 $route['kirim-konfirmasi-wa'] = 'dashboard/kirim_konfirmasi_wa';
 $route['setting'] = 'dashboard/setting';
 $route['setting/update-user'] = 'dashboard/update_user';

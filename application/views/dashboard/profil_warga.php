@@ -253,12 +253,20 @@ if ($Auth['role'] === 'koordinator') {
                 <!-- TAB 1: MENUNGGAK -->
                 <div class="tab-pane fade show active" id="tabMenunggak">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0" id="titleMenunggak">Daftar Warga Menunggak</h6>
+                        <div class="d-flex align-items-center gap-3">
+                            <h6 class="fw-bold mb-0" id="titleMenunggak">Daftar Warga Menunggak</h6>
+                            <div id="batchActionContainer" class="d-none">
+                                <button class="btn btn-sm btn-danger shadow-sm" onclick="generateBatchPdf()" id="btnGenerateBatchPdf">
+                                    <i class="bi bi-file-earmark-pdf"></i> Generate PDF (ZIP)
+                                </button>
+                            </div>
+                        </div>
                         <small class="text-muted" id="periodeInfo">-</small>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-striped table-profil table-hover w-100" id="tblMenunggak">
                             <thead><tr>
+                                <th width="30" class="text-center"><input type="checkbox" id="checkAllTunggak" class="form-check-input" style="cursor:pointer;"></th>
                                 <th width="40">No</th><th>Alamat</th><th>Nama</th><th>No HP</th>
                                 <th>Koordinator</th><th>Terbayar</th><th>Tunggakan</th><th>Status</th><th>Aksi</th>
                             </tr></thead>
@@ -357,6 +365,10 @@ function loadData() {
 
             var tbw = res.total_bulan_wajib;
 
+            // Reset Select All
+            $('#checkAllTunggak').prop('checked', false);
+            $('#batchActionContainer').addClass('d-none');
+
             // Menunggak
             var rows1 = [];
             $.each(res.menunggak, function(i, w) {
@@ -366,6 +378,7 @@ function loadData() {
                 var waLink = "https://wa.me/" + (w.no_hp ? w.no_hp.replace(/^0/, '62') : "") + "?text=" + encodeURIComponent(msg);
 
                 rows1.push([
+                    '<input type="checkbox" value="'+w.id+'" class="form-check-input check-tunggak" style="cursor:pointer;">',
                     i+1,
                     '<i class="bi bi-geo-alt-fill text-danger me-1"></i>' + (w.alamat||'-'),
                     '<strong>' + (w.nama||'-') + '</strong>',
@@ -374,7 +387,7 @@ function loadData() {
                     '<span class="badge bg-info">'+w.jumlah_bulan_bayar+' / '+tbw+'</span>',
                     '<span class="badge bg-'+w.level+'">'+w.tunggakan+' bulan</span>',
                     '<small class="text-'+w.level+'">'+w.status_tunggak+'</small>',
-                    '<div class="d-flex gap-1">' +
+                    '<div class="d-flex gap-1 justify-content-center">' +
                         '<a href="'+BASE+'surat-teguran-pdf?id_rumah='+w.id+'&tahun='+tahun+'&bulan='+bulan+'" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak PDF"><i class="bi bi-file-earmark-pdf"></i></a>' +
                         '<a href="'+waLink+'" target="_blank" class="btn btn-sm btn-outline-success" title="Kirim WA Manual (wa.me)"><i class="bi bi-whatsapp"></i></a>' +
                         '<button onclick="sendWaOtomatis('+w.id+')" class="btn btn-sm btn-success" title="Kirim WA Otomatis (API + File)"><i class="bi bi-send-check"></i></button>' +
@@ -385,7 +398,18 @@ function loadData() {
             dtMenunggak = $('#tblMenunggak').DataTable({
                 data: rows1, destroy: true, pageLength: 25,
                 language: { search:"Cari:", lengthMenu:"Tampilkan _MENU_", info:"_START_-_END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Semua warga sudah lunas! 🎉", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,6,8], className: 'text-center' }]
+                columnDefs: [
+                    { targets: [0], orderable: false, className: 'text-center' },
+                    { targets: [1,6,7,9], className: 'text-center' }
+                ]
+            });
+
+            // Handle Checkbox Events (Bind only once or unbind first)
+            $('#tblMenunggak').off('change', '.check-tunggak').on('change', '.check-tunggak', function() {
+                var total = dtMenunggak.$('.check-tunggak').length;
+                var checked = dtMenunggak.$('.check-tunggak:checked').length;
+                $('#checkAllTunggak').prop('checked', (total > 0 && total === checked));
+                toggleBatchButton(checked);
             });
 
             // Rajin
@@ -454,7 +478,57 @@ $(document).ready(function() {
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
         $.fn.dataTable.tables({visible:true, api:true}).columns.adjust();
     });
+
+    // Check All Tunggakan (Support multiple pages)
+    $(document).on('change', '#checkAllTunggak', function() {
+        var isChecked = $(this).is(':checked');
+        if (dtMenunggak) {
+            dtMenunggak.$('.check-tunggak').prop('checked', isChecked);
+            toggleBatchButton(dtMenunggak.$('.check-tunggak:checked').length);
+        }
+    });
 });
+
+function toggleBatchButton(checkedCount) {
+    if (checkedCount > 0) {
+        $('#batchActionContainer').removeClass('d-none');
+        $('#btnGenerateBatchPdf').html('<i class="bi bi-file-earmark-pdf"></i> Generate PDF (ZIP) - ' + checkedCount + ' dipilih');
+    } else {
+        $('#batchActionContainer').addClass('d-none');
+    }
+}
+
+function generateBatchPdf() {
+    var checked = [];
+    if (dtMenunggak) {
+        dtMenunggak.$('.check-tunggak:checked').each(function() {
+            checked.push($(this).val());
+        });
+    }
+
+    if (checked.length === 0) {
+        Swal.fire('Perhatian', 'Pilih minimal satu warga untuk digenerate.', 'warning');
+        return;
+    }
+    
+    // Create form dynamically
+    var form = $('<form>', {
+        method: 'POST',
+        action: BASE + 'batch-surat-teguran-zip',
+        target: '_blank'
+    });
+    form.append($('<input>', {type: 'hidden', name: 'tahun', value: $('#filterTahun').val()}));
+    form.append($('<input>', {type: 'hidden', name: 'bulan', value: $('#filterBulan').val()}));
+    
+    $.each(checked, function(i, val) {
+        form.append($('<input>', {type: 'hidden', name: 'id_rumah[]', value: val}));
+    });
+    
+    $('body').append(form);
+    form.submit();
+    form.remove();
+}
+
 function sendWaOtomatis(id_rumah) {
     var tahun = $('#filterTahun').val();
     var bulan = $('#filterBulan').val();

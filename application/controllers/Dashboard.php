@@ -457,6 +457,61 @@ class Dashboard extends CI_Controller
 		$this->load->view('modul', $data);
 	}
 
+	public function export_warga_excel()
+	{
+		$this->checkSession();
+
+		// Query semua data rumah sebagai base
+		$this->db->select('mr.alamat as nomor_rumah, mr.nama as nama_pemilik, mk.alamat as alamat_lengkap, mk.id as keluarga_id')
+			->from('master_rumah mr')
+			->join('master_keluarga mk', "CONCAT('| ', mk.nomor_rumah, '|') LIKE CONCAT('%| ', mr.alamat, '|%')", 'left')
+			->order_by('mr.alamat', 'ASC');
+
+		$rumah_result = $this->db->get()->result_array();
+
+		// Set headers untuk download Excel
+		$filename = 'Data_Warga_' . date('Y-m-d_His') . '.xls';
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Cache-Control: max-age=0');
+
+		// Output Excel content sebagai HTML table
+		$output = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+		$output .= '<head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Data Warga</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>';
+		$output .= '<body>';
+		$output .= '<table border="1" cellpadding="5" cellspacing="0">';
+		$output .= '<thead>';
+		$output .= '<tr style="background-color: #28a745; color: #ffffff; font-weight: bold; text-align: center;">';
+		$output .= '<th>No</th>';
+		$output .= '<th>Nomor Rumah</th>';
+		$output .= '<th>Alamat</th>';
+		$output .= '<th>Nama</th>';
+		$output .= '</tr>';
+		$output .= '</thead>';
+		$output .= '<tbody>';
+
+		$no = 1;
+		foreach ($rumah_result as $value) {
+			// Nama diambil dari master_rumah
+			$nama_str = !empty($value['nama_pemilik']) ? strtoupper($value['nama_pemilik']) : '-';
+			$alamat = !empty($value['alamat_lengkap']) ? $value['alamat_lengkap'] : '-';
+
+			$output .= '<tr>';
+			$output .= '<td style="text-align: center;">' . $no++ . '</td>';
+			$output .= '<td>' . htmlspecialchars($value['nomor_rumah']) . '</td>';
+			$output .= '<td>' . htmlspecialchars($alamat) . '</td>';
+			$output .= '<td>' . htmlspecialchars($nama_str) . '</td>';
+			$output .= '</tr>';
+		}
+
+		$output .= '</tbody>';
+		$output .= '</table>';
+		$output .= '</body></html>';
+
+		echo $output;
+		exit;
+	}
+
 	public function save_pendataan_keluarga()
 	{
 		$this->load->library('upload');
@@ -2059,7 +2114,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	/**
 	 * Generate PDF Surat Teguran Pembayaran IPL
 	 */
-	public function surat_teguran_pdf($save_path = null)
+	public function surat_teguran_pdf($save_path = null, $is_kosongan = false)
 	{
 		$this->checkSession();
 		mb_internal_encoding('UTF-8');
@@ -2174,11 +2229,14 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->Ln(10); $ttd_y = $pdf->GetY(); $col_w = $cw / 2; $stamp_w = 40; $stamp_h = 16;
 		$pdf->SetFont('dejavusans', '', 10); $pdf->SetXY($lm, $ttd_y); $pdf->Cell($col_w, 5, 'Bidang Lingkungan TSI', 0, 0, 'C'); $pdf->Cell($col_w, 5, 'Bendahara TSI', 0, 1, 'C');
 		
-		$pdf->Ln(2); $curr_y = $pdf->GetY(); $pdf->SetDrawColor(0, 128, 0); $pdf->SetTextColor(0, 128, 0); $pdf->SetLineWidth(0.3);
-		$xk = $lm + ($col_w - $stamp_w) / 2; $pdf->RoundedRect($xk, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
-		$pdf->SetXY($xk, $curr_y + 2); $pdf->SetFont('dejavusans', 'B', 7); $pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C'); $pdf->SetX($xk); $pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
-		$xn = $lm + $col_w + ($col_w - $stamp_w) / 2; $pdf->RoundedRect($xn, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
-		$pdf->SetXY($xn, $curr_y + 2); $pdf->SetFont('dejavusans', 'B', 7); $pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C'); $pdf->SetX($xn); $pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		$pdf->Ln(2); $curr_y = $pdf->GetY(); 
+		if (!$is_kosongan) {
+			$pdf->SetDrawColor(0, 128, 0); $pdf->SetTextColor(0, 128, 0); $pdf->SetLineWidth(0.3);
+			$xk = $lm + ($col_w - $stamp_w) / 2; $pdf->RoundedRect($xk, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+			$pdf->SetXY($xk, $curr_y + 2); $pdf->SetFont('dejavusans', 'B', 7); $pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C'); $pdf->SetX($xk); $pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+			$xn = $lm + $col_w + ($col_w - $stamp_w) / 2; $pdf->RoundedRect($xn, $curr_y, $stamp_w, $stamp_h, 2, '1111', 'D');
+			$pdf->SetXY($xn, $curr_y + 2); $pdf->SetFont('dejavusans', 'B', 7); $pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C'); $pdf->SetX($xn); $pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		}
 
 		// Nama TTD Atas
 		$pdf->Ln(17); // Jarak dikurangi agar lebih pas
@@ -2197,14 +2255,16 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->Ln(2);
 		$sy = $pdf->GetY();
 		$sx = $lm + ($cw - $stamp_w) / 2;
-		$pdf->SetDrawColor(0, 128, 0);
-		$pdf->SetTextColor(0, 128, 0);
-		$pdf->RoundedRect($sx, $sy, $stamp_w, $stamp_h, 2, '1111', 'D');
-		$pdf->SetXY($sx, $sy+2);
-		$pdf->SetFont('dejavusans', 'B', 7);
-		$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
-		$pdf->SetX($sx);
-		$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		if (!$is_kosongan) {
+			$pdf->SetDrawColor(0, 128, 0);
+			$pdf->SetTextColor(0, 128, 0);
+			$pdf->RoundedRect($sx, $sy, $stamp_w, $stamp_h, 2, '1111', 'D');
+			$pdf->SetXY($sx, $sy+2);
+			$pdf->SetFont('dejavusans', 'B', 7);
+			$pdf->Cell($stamp_w, 4, 'DITANDATANGANI SECARA', 0, 1, 'C');
+			$pdf->SetX($sx);
+			$pdf->Cell($stamp_w, 4, 'ELEKTRONIK (TTE)', 0, 1, 'C');
+		}
 
 		$pdf->Ln(11); // Jarak dikurangi agar lebih pas
 		$pdf->SetTextColor(0);
@@ -2216,6 +2276,121 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		} else {
 			$pdf->Output('Surat_Teguran_IPL_' . str_replace(' ', '_', $alamat) . '.pdf', 'I');
 		}
+	}
+
+	/**
+	 * Batch Generate Surat Teguran PDF → ZIP Download
+	 * POST: id_rumah[] (array), tahun, bulan
+	 */
+	public function batch_surat_teguran_zip()
+	{
+		$this->checkSession();
+
+		$id_rumah_list = $this->input->post('id_rumah');
+		$tahun = $this->input->post('tahun') ?: date('Y');
+		$bulan = $this->input->post('bulan');
+
+		if (empty($id_rumah_list) || !is_array($id_rumah_list)) {
+			show_error('Tidak ada warga yang dipilih.');
+			return;
+		}
+
+		// Buat folder temp untuk batch
+		$batch_id = 'batch_' . date('YmdHis') . '_' . mt_rand(1000, 9999);
+		$temp_dir = FCPATH . 'assets/temp_pdf/' . $batch_id . '/';
+		if (!is_dir($temp_dir)) mkdir($temp_dir, 0777, true);
+
+		$pdf_files = [];
+
+		foreach ($id_rumah_list as $id_rumah) {
+			$id_rumah = (int) $id_rumah;
+
+			// Set GET params agar surat_teguran_pdf() bisa membacanya
+			$_GET['id_rumah'] = $id_rumah;
+			$_GET['tahun'] = $tahun;
+			$_GET['bulan'] = $bulan;
+
+			// Ambil data rumah untuk penamaan file
+			$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
+			if (!$rumah) continue;
+
+			$safe_alamat = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $rumah['alamat']);
+			$pdf_filename = 'Surat_Teguran_' . $safe_alamat . '.pdf';
+			$pdf_path_tte = $temp_dir . 'TTE_' . $pdf_filename;
+			$pdf_path_kosong = $temp_dir . 'Kosong_' . $pdf_filename;
+
+			// Generate PDF ke file (reuse method yang sudah ada)
+			try {
+				// 1. Generate dengan TTE
+				$this->surat_teguran_pdf($pdf_path_tte, false);
+				if (file_exists($pdf_path_tte)) {
+					$pdf_files[] = [
+						'path' => $pdf_path_tte,
+						'name' => 'TTE/' . $pdf_filename
+					];
+				}
+
+				// 2. Generate Kosongan (tanpa TTE)
+				$this->surat_teguran_pdf($pdf_path_kosong, true);
+				if (file_exists($pdf_path_kosong)) {
+					$pdf_files[] = [
+						'path' => $pdf_path_kosong,
+						'name' => 'Kosongan/' . $pdf_filename
+					];
+				}
+			} catch (Exception $e) {
+				// Skip jika gagal (misalnya tidak ada tunggakan)
+				continue;
+			}
+		}
+
+		if (empty($pdf_files)) {
+			// Cleanup
+			$this->_cleanup_dir($temp_dir);
+			show_error('Tidak ada PDF yang berhasil di-generate. Kemungkinan warga yang dipilih tidak memiliki tunggakan.');
+			return;
+		}
+
+		// Buat ZIP
+		$zip_filename = 'Surat_Teguran_Batch_' . date('Y-m-d_His') . '.zip';
+		$zip_path = FCPATH . 'assets/temp_pdf/' . $zip_filename;
+
+		$zip = new ZipArchive();
+		if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+			$this->_cleanup_dir($temp_dir);
+			show_error('Gagal membuat file ZIP.');
+			return;
+		}
+
+		foreach ($pdf_files as $file) {
+			$zip->addFile($file['path'], $file['name']);
+		}
+		$zip->close();
+
+		// Stream ZIP ke browser
+		header('Content-Type: application/zip');
+		header('Content-Disposition: attachment; filename="' . $zip_filename . '"');
+		header('Content-Length: ' . filesize($zip_path));
+		header('Cache-Control: no-cache, must-revalidate');
+		readfile($zip_path);
+
+		// Cleanup
+		$this->_cleanup_dir($temp_dir);
+		if (file_exists($zip_path)) unlink($zip_path);
+		exit;
+	}
+
+	/**
+	 * Helper: Hapus folder temp beserta isinya
+	 */
+	private function _cleanup_dir($dir)
+	{
+		if (!is_dir($dir)) return;
+		$files = glob($dir . '*');
+		foreach ($files as $file) {
+			if (is_file($file)) unlink($file);
+		}
+		rmdir($dir);
 	}
 
 	/**

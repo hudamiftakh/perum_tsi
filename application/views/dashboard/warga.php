@@ -155,7 +155,7 @@ $this->load->library('encryption');
         <!-- Tombol Export -->
         <div class="col-12 col-md-auto">
             <div class="btn-group w-100" role="group">
-                <a href="#" onclick="alert('Fitur proses dikembangkan')" class="btn btn-outline-success">
+                <a href="<?= base_url('warga/export-warga-excel'); ?>" class="btn btn-outline-success">
                     <i class="fa fa-file-excel-o me-1"></i> Excel
                 </a>
                 <a href="#"  onclick="alert('Fitur proses dikembangkan')" class="btn btn-outline-danger">
