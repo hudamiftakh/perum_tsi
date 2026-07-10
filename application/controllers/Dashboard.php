@@ -1163,31 +1163,10 @@ class Dashboard extends CI_Controller
 			$wa_user = $this->db->get_where('master_users', ['id' => $user_id])->row_array();
 			$wa_rumah = $this->db->get_where('master_rumah', ['id' => $wa_user['id_rumah'] ?? 0])->row_array();
 
-			// Ambil data keluarga untuk nomor HP
-			$wa_keluarga = [];
-			if (isset($wa_rumah['id']) && is_numeric($wa_rumah['id']) && (int) $wa_rumah['id'] > 0) {
-				$wa_keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $wa_rumah['id']])->row_array();
-			} else {
-				$wa_alamat_cari = trim($wa_rumah['alamat'] ?? '');
-				if ($wa_alamat_cari !== '') {
-					$al = $this->db->escape_like_str($wa_alamat_cari);
-					$this->db->group_start();
-					$this->db->like('nomor_rumah', $al);
-					$this->db->or_like('nomor_rumah', '|' . $al);
-					$this->db->or_like('nomor_rumah', $al . '|');
-					$this->db->group_end();
-					$wa_keluarga = $this->db->get('master_keluarga')->row_array();
-				}
-			}
-
+			// Ambil nomor HP menggunakan helper get_no_hp_warga
+			$this->load->helper('wa');
+			$wa_no_hp = get_no_hp_warga($wa_rumah['id'] ?? 0, $wa_rumah['alamat'] ?? '');
 			$wa_nama = $wa_user['nama'] ?? '';
-			$wa_no_hp = $wa_keluarga['no_hp'] ?? '';
-
-			// Validasi nomor HP, jika kosong ambil dari master_keluarga lain yang cocok
-			if (empty($wa_no_hp) && !empty($wa_rumah['alamat'])) {
-				$wa_keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($wa_rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-				$wa_no_hp = $wa_keluarga_alt['no_hp'] ?? '';
-			}
 
 			if (!empty($wa_no_hp)) {
 				$wa_bulan = date('F Y', strtotime($bulan_mulai_db));
@@ -1251,10 +1230,10 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
 			$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
 			$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
-			$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
+			$this->load->helper('wa');
+			$no_hp = get_no_hp_warga($user['id_rumah'] ?? 0, $rumah['alamat'] ?? '');
 			
 			$nama = $user['nama'] ?? '';
-			$no_hp = $keluarga['no_hp'] ?? '';
 			$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 			$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
 
@@ -1296,9 +1275,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				$pembayaran = $this->db->get_where('master_pembayaran', ['id' => $id])->row_array();
 				$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
 				$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
-				$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-				
-				$no_hp = $keluarga['no_hp'] ?? '';
+				$no_hp = get_no_hp_warga($user['id_rumah'] ?? 0, $rumah['alamat'] ?? '');
 				if (!empty($no_hp)) {
 					$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 					$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
@@ -2405,9 +2382,23 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 		// Ambil data untuk pesan
 		$rumah = $this->db->get_where('master_rumah', ['id' => $id_rumah])->row_array();
-		$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-		$no_hp = $keluarga['no_hp'] ?? '';
+		
+		$this->load->helper('wa');
+		$no_hp = get_no_hp_warga($id_rumah, $rumah['alamat'] ?? '');
+		
 		$bulan_indo = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+
+		// Hitung tunggakan dengan benar
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		$bulan_akhir_hitung = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == (int)date('Y')) ? (int)date('n') : 12);
+		
+		$p_raw = $this->db->query("SELECT untuk_bulan, bulan_rapel, DATE_FORMAT(bulan_mulai, '%Y-%m') as bulan_mulai_ym FROM master_pembayaran WHERE user_id IN (SELECT id FROM master_users WHERE id_rumah = ?) AND status IN ('verified', 'pending') AND (YEAR(untuk_bulan) = ? OR YEAR(bulan_mulai) = ? OR bulan_rapel LIKE ?)", [$id_rumah, $tahun, $tahun, '%'.$tahun.'%'])->result_array();
+		$bulan_lunas = [];
+		foreach ($p_raw as $p) {
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') $bulan_lunas[date('Y-m', strtotime($p['untuk_bulan']))] = true;
+			if (!empty($p['bulan_rapel'])) { foreach (explode(',', $p['bulan_rapel']) as $br) if (trim($br)) $bulan_lunas[trim($br)] = true; }
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00' || $p['untuk_bulan'] == '') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) $bulan_lunas[$p['bulan_mulai_ym']] = true;
+		}
 
 		$tunggak_names = [];
 		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_hitung; $m++) {
@@ -2429,7 +2420,6 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$this->surat_teguran_pdf($filepath);
 
 		// 2. Kirim via WA (Gunakan send_wa_doc)
-		$this->load->helper('wa');
 		$media_url = base_url('assets/temp_pdf/' . $filename);
 		$caption = "⚠️ *PEMBERITAHUAN TUNGGAKAN IPL*\n\nAssalamu'alaikum Bapak/Ibu *".$rumah['nama']."*,\n\nKami melampirkan Surat Pemberitahuan Tunggakan IPL untuk rumah *".$rumah['alamat']."* sebesar *Rp ".number_format($total_rupiah,0,',','.')."* ($list_bulan_str).\n\nMohon segera melakukan koordinasi pembayaran. Terima kasih.\n\n*Pengurus Paguyuban TSI*";
 
@@ -2593,14 +2583,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			return;
 		}
 
-		// Cari nomor HP
-		$keluarga = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%".$this->db->escape_like_str($rumah['alamat'])."%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-		$no_hp = $keluarga['no_hp'] ?? '';
-
-		if (empty($no_hp)) {
-			// Fallback cek master_rumah
-			$no_hp = $rumah['no_hp'] ?? '';
-		}
+		$this->load->helper('wa');
+		$no_hp = get_no_hp_warga($id_rumah, $rumah['alamat'] ?? '');
 
 		if (empty($no_hp)) {
 			echo json_encode(['status' => 'error', 'message' => 'Nomor HP warga tidak ditemukan. Mohon lengkapi data terlebih dahulu.']);

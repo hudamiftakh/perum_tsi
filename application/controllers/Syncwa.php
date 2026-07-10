@@ -33,39 +33,11 @@ class Syncwa extends CI_Controller
             $user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
             $rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
 
-            // Ambil data keluarga berdasarkan id_rumah
-            // Ambil data keluarga.
-            // Jika ada id_rumah (tidak nol), cari berdasarkan id_rumah.
-            // Jika id_rumah nol atau kosong, cari berdasarkan kecocokan alamat di kolom nomor_rumah
-            // (mengatasi format "Ruha 6| Ruha 7| TSI Blok I-1| TSI Blok II-8").
-            $keluarga = [];
-            if (isset($rumah['id']) && is_numeric($rumah['id']) && (int) $rumah['id'] > 0) {
-                // Gunakan id_rumah hanya jika bukan 0
-                $keluarga = $this->db->get_where('master_keluarga', ['id_rumah' => (int) $rumah['id']])->row_array();
-            } else {
-                $alamat = trim($rumah['alamat'] ?? '');
-                if ($alamat !== '') {
-                    $al = $this->db->escape_like_str($alamat);
-                    $this->db->group_start();
-                    // cari apakah alamat muncul di dalam string nomor_rumah (bagian manapun)
-                    $this->db->like('nomor_rumah', $al);
-                    // juga cek variasi dengan pipe di sisi kiri/kanan untuk memastikan pencarian bagian
-                    $this->db->or_like('nomor_rumah', '|' . $al);
-                    $this->db->or_like('nomor_rumah', $al . '|');
-                    $this->db->group_end();
-                    $keluarga = $this->db->get('master_keluarga')->row_array();
-                }
-            }
+            $this->load->helper('wa');
+            $no_hp = get_no_hp_warga($rumah['id'] ?? 0, $rumah['alamat'] ?? '');
 
             $nama = $user['nama'] ?? '';
             $alamat = $rumah['alamat'] ?? '';
-            $no_hp = $keluarga['no_hp'] ?? '';
-
-            // Validasi nomor HP, jika kosong ambil dari master_keluarga lain yang cocok
-            if (empty($no_hp)) {
-                $keluarga_alt = $this->db->query("SELECT no_hp FROM master_keluarga WHERE nomor_rumah LIKE '%" . $this->db->escape_like_str($rumah['alamat']) . "%' AND no_hp IS NOT NULL AND no_hp != '' LIMIT 1")->row_array();
-                $no_hp = $keluarga_alt['no_hp'] ?? '';
-            }
             $bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 
             // Buat link pembayaran terenkripsi
