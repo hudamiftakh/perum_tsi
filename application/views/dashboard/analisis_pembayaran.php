@@ -57,7 +57,7 @@ $all_rumah = $this->db->query("
     FROM master_users u
     LEFT JOIN master_rumah b ON u.id_rumah = b.id
     LEFT JOIN master_koordinator_blok k ON b.id_koordinator = k.id
-    LEFT JOIN master_keluarga kl ON kl.nomor_rumah = b.alamat AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+    LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = b.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
     WHERE b.id IS NOT NULL
     $where_koor
     GROUP BY b.id, b.alamat, b.nama, b.id_koordinator

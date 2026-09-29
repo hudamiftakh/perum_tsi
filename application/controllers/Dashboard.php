@@ -464,7 +464,7 @@ class Dashboard extends CI_Controller
 		// Query semua data rumah sebagai base
 		$this->db->select('mr.alamat as nomor_rumah, mr.nama as nama_pemilik, mk.alamat as alamat_lengkap, mk.id as keluarga_id')
 			->from('master_rumah mr')
-			->join('master_keluarga mk', "CONCAT('| ', mk.nomor_rumah, '|') LIKE CONCAT('%| ', mr.alamat, '|%')", 'left')
+			->join('master_keluarga mk', "CONCAT('| ', mk.nomor_rumah COLLATE utf8mb4_general_ci, '|') LIKE CONCAT('%| ', mr.alamat COLLATE utf8mb4_general_ci, '|%')", 'left')
 			->order_by('mr.alamat', 'ASC');
 
 		$rumah_result = $this->db->get()->result_array();
@@ -1968,7 +1968,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			FROM master_users u
 			LEFT JOIN master_rumah r ON u.id_rumah = r.id
 			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
-			LEFT JOIN master_keluarga kl ON kl.nomor_rumah = r.alamat AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
 			WHERE r.id IS NOT NULL $where_koor
 			GROUP BY r.id, r.alamat, r.nama, r.id_koordinator
 			ORDER BY r.alamat ASC

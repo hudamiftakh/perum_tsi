@@ -55,7 +55,7 @@ $data_rumah = $this->db->query("
     SELECT r.id, r.alamat, r.nama, k.nama as koordinator, COALESCE(r.no_hp, MAX(kl.no_hp)) as no_hp
     FROM master_rumah r
     LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
-    LEFT JOIN master_keluarga kl ON kl.nomor_rumah = r.alamat AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+    LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
     $where_rumah
     GROUP BY r.id, r.alamat, r.nama, r.no_hp, k.nama
     ORDER BY r.alamat ASC
