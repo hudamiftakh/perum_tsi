@@ -1638,6 +1638,13 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		if (!$this->db->field_exists('no_hp', 'master_rumah')) {
 			$this->db->query("ALTER TABLE master_rumah ADD no_hp VARCHAR(20) DEFAULT NULL");
 		}
+		if (!$this->db->field_exists('status_rumah', 'master_rumah')) {
+			$this->db->query("ALTER TABLE master_rumah ADD status_rumah VARCHAR(50) DEFAULT 'Rumah Sendiri'");
+			$this->db->query("UPDATE master_rumah r 
+				JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci 
+				SET r.status_rumah = kl.status_rumah 
+				WHERE kl.status_rumah IS NOT NULL AND kl.status_rumah != ''");
+		}
 		
 		$data['halaman'] = 'dashboard/setting';
 		$this->load->view('modul', $data);
@@ -1677,11 +1684,11 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$this->session->set_flashdata('error', 'Gagal memperbarui data user.');
 		}
 
-		redirect('setting');
+		redirect('setting?tab=users');
 	}
 
 	/**
-	 * Update nama pemilik rumah
+	 * Update nama pemilik rumah & status kepemilikan
 	 */
 	public function update_rumah()
 	{
@@ -1690,33 +1697,42 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$id = $this->input->post('rumah_id', true);
 		$nama = trim($this->input->post('nama', true));
 		$no_hp = trim($this->input->post('no_hp', true));
+		$status_rumah = trim($this->input->post('status_rumah', true));
+		if (empty($status_rumah)) {
+			$status_rumah = 'Rumah Sendiri';
+		}
 
 		if (empty($id)) {
 			$this->session->set_flashdata('error', 'ID rumah tidak valid.');
-			redirect('setting');
+			redirect('setting?tab=rumah');
 			return;
 		}
 
 		$this->db->where('id', $id);
-		$this->db->update('master_rumah', ['nama' => $nama, 'no_hp' => $no_hp]);
+		$this->db->update('master_rumah', [
+			'nama' => $nama,
+			'no_hp' => $no_hp,
+			'status_rumah' => $status_rumah
+		]);
 
 		// Sinkronisasi ke master_keluarga jika diperlukan
-		if (!empty($no_hp)) {
-			$rumah = $this->db->get_where('master_rumah', ['id' => $id])->row_array();
-			if ($rumah) {
-				// Cek apakah ada record keluarga, jika ada update
-				$this->db->where('nomor_rumah', $rumah['alamat']);
-				$this->db->update('master_keluarga', ['no_hp' => $no_hp]);
+		$rumah = $this->db->get_where('master_rumah', ['id' => $id])->row_array();
+		if ($rumah) {
+			$update_keluarga = ['status_rumah' => $status_rumah];
+			if (!empty($no_hp)) {
+				$update_keluarga['no_hp'] = $no_hp;
 			}
+			$this->db->where('nomor_rumah', $rumah['alamat']);
+			$this->db->update('master_keluarga', $update_keluarga);
 		}
 
 		if ($this->db->affected_rows() >= 0) {
-			$this->session->set_flashdata('success', 'Data pemilik rumah berhasil diperbarui.');
+			$this->session->set_flashdata('success', 'Data rumah berhasil diperbarui.');
 		} else {
-			$this->session->set_flashdata('error', 'Gagal memperbarui data pemilik rumah.');
+			$this->session->set_flashdata('error', 'Gagal memperbarui data rumah.');
 		}
 
-		redirect('setting');
+		redirect('setting?tab=rumah');
 	}
 
 	/**
