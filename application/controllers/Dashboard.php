@@ -40,6 +40,9 @@ class Dashboard extends CI_Controller
 
 		// Auto-create tabel log_login jika belum ada
 		$this->_create_log_tables();
+
+		// Auto-fix sinkronisasi collation master_keluarga & master_rumah
+		$this->_fix_collations();
 	}
 
 	/**
@@ -102,6 +105,38 @@ class Dashboard extends CI_Controller
 					KEY `idx_wa_status` (`wa_status`)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Log semua aktivitas verifikasi pembayaran + status kirim WA'
 			");
+		}
+	}
+
+	/**
+	 * Auto-fix sinkronisasi collation tabel master_keluarga & master_rumah
+	 * agar tidak terjadi Error 1267 (Illegal mix of collations)
+	 */
+	private function _fix_collations()
+	{
+		try {
+			$cols = $this->db->query("
+				SELECT TABLE_NAME, COLUMN_NAME, COLLATION_NAME 
+				FROM information_schema.COLUMNS 
+				WHERE TABLE_SCHEMA = DATABASE() 
+				AND TABLE_NAME IN ('master_keluarga', 'master_rumah') 
+				AND COLUMN_NAME IN ('nomor_rumah', 'alamat')
+			")->result_array();
+
+			$needs_alter = false;
+			foreach ($cols as $c) {
+				if (!empty($c['COLLATION_NAME']) && $c['COLLATION_NAME'] !== 'utf8mb4_general_ci') {
+					$needs_alter = true;
+					break;
+				}
+			}
+
+			if ($needs_alter) {
+				$this->db->query("ALTER TABLE master_keluarga MODIFY nomor_rumah VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL");
+				$this->db->query("ALTER TABLE master_rumah MODIFY alamat VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL");
+			}
+		} catch (\Throwable $e) {
+			// Cegah fatal error jika permission terbatas
 		}
 	}
 
@@ -1595,6 +1630,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	public function setting()
 	{
 		$this->checkSession();
+		$this->_fix_collations();
 		// Auto-add no_hp column if not exists
 		if (!$this->db->field_exists('no_hp', 'master_koordinator_blok')) {
 			$this->db->query("ALTER TABLE master_koordinator_blok ADD no_hp VARCHAR(20) DEFAULT NULL");
