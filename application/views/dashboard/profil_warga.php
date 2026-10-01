@@ -221,6 +221,9 @@ if ($Auth['role'] === 'koordinator') {
                 <button id="btnReset" class="btn btn-white btn-filter shadow-sm border text-secondary">
                     <i class="ti ti-refresh me-1"></i> Reset
                 </button>
+                <button type="button" onclick="downloadRekapMenunggakPdf()" class="btn btn-danger btn-filter shadow-sm" title="Download PDF Rekap Warga Menunggak">
+                    <i class="ti ti-file-download me-1"></i> Rekap PDF
+                </button>
             </div>
         </div>
     </div>
@@ -253,11 +256,14 @@ if ($Auth['role'] === 'koordinator') {
                 <!-- TAB 1: MENUNGGAK -->
                 <div class="tab-pane fade show active" id="tabMenunggak">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <h6 class="fw-bold mb-0" id="titleMenunggak">Daftar Warga Menunggak</h6>
+                            <button type="button" class="btn btn-sm btn-danger shadow-sm d-inline-flex align-items-center gap-1" id="btnDownloadRekapPdf" onclick="downloadRekapMenunggakPdf()" title="Download PDF Rekapitulasi Warga Menunggak">
+                                <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Rekap
+                            </button>
                             <div id="batchActionContainer" class="d-none">
-                                <button class="btn btn-sm btn-danger shadow-sm" onclick="generateBatchPdf()" id="btnGenerateBatchPdf">
-                                    <i class="bi bi-file-earmark-pdf"></i> Generate PDF (ZIP)
+                                <button class="btn btn-sm btn-outline-danger shadow-sm" onclick="generateBatchPdf()" id="btnGenerateBatchPdf">
+                                    <i class="bi bi-file-earmark-zip"></i> Generate Surat (ZIP)
                                 </button>
                             </div>
                         </div>
@@ -307,6 +313,79 @@ if ($Auth['role'] === 'koordinator') {
                             <tbody></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pilih Koordinator untuk Download Rekap PDF -->
+<div class="modal fade" id="modalDownloadRekap" tabindex="-1" aria-labelledby="modalDownloadRekapLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom py-3 px-4" style="background: #f8fafc;">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-3 p-2 bg-danger-subtle text-danger">
+                        <i class="bi bi-file-earmark-pdf-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="modal-title fw-bold text-dark mb-0" id="modalDownloadRekapLabel">Download Rekap Warga Menunggak (PDF)</h6>
+                        <small class="text-muted" id="modalPeriodeText">Tahun <?= $selected_tahun ?></small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                    <div>
+                        <span class="fw-bold text-dark small">Pilih Koordinator Blok yang Mau Dicetak:</span>
+                        <div class="text-muted" style="font-size: 0.75rem;">Centang satu atau beberapa koordinator blok yang ingin disertakan ke dalam rekap PDF</div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 small" onclick="selectAllModalKoor(true)">
+                            <i class="bi bi-check-all me-1"></i>Centang Semua
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="selectAllModalKoor(false)">
+                            <i class="bi bi-dash me-1"></i>Hapus Centang
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3 border bg-light mb-3" style="max-height: 280px; overflow-y: auto;">
+                    <div class="row g-2">
+                        <?php foreach ($koordinator_list as $k): ?>
+                            <div class="col-12 col-md-6">
+                                <label class="d-flex align-items-center p-2 rounded-3 border bg-white h-100 koor-card-item" style="cursor: pointer; transition: all 0.2s ease;">
+                                    <input type="checkbox" name="modal_koor_check[]" value="<?= $k['id'] ?>" class="form-check-input check-modal-koor me-2" checked onchange="updateKoorCount()">
+                                    <span class="small fw-semibold text-slate-700"><?= htmlspecialchars($k['nama']) ?></span>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3 border bg-white mb-2">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="checkGroupByKoor" checked style="cursor: pointer;">
+                        <label class="form-check-label fw-bold text-dark small" for="checkGroupByKoor" style="cursor: pointer;">
+                            Kelompokkan Rekap per Koordinator Blok (Disarankan)
+                        </label>
+                        <div class="text-muted" style="font-size: 0.75rem;">
+                            Tabel di PDF akan dipisahkan rapi per wilayah koordinator lengkap dengan subtotal warga menunggak masing-masing.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top py-3 px-4 d-flex justify-content-between">
+                <div>
+                    <span class="badge bg-danger rounded-pill px-2 py-1" id="badgeModalKoorCount"><?= count($koordinator_list) ?></span>
+                    <span class="small text-muted ms-1">Koordinator dipilih</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger shadow-sm d-inline-flex align-items-center gap-1" onclick="submitModalDownloadRekap()">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Rekap
+                    </button>
                 </div>
             </div>
         </div>
@@ -593,5 +672,64 @@ function sendWaKonfirmasi(id_rumah, tipe) {
             Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
         }
     });
+}
+
+function downloadRekapMenunggakPdf() {
+    var tahun = $('#filterTahun').val() || currentTahun;
+    var bulanNama = $('#filterBulan option:selected').text();
+    var koorVal = $('#filterKoor').length ? $('#filterKoor').val() : '';
+
+    $('#modalPeriodeText').text('Periode: Sampai ' + bulanNama + ' ' + tahun);
+
+    // Jika di filter sedang memilih 1 koordinator spesifik, centang hanya itu
+    if (koorVal) {
+        $('.check-modal-koor').prop('checked', false);
+        $('.check-modal-koor[value="' + koorVal + '"]').prop('checked', true);
+    } else {
+        // Jika Semua Koordinator, centang semua
+        $('.check-modal-koor').prop('checked', true);
+    }
+    updateKoorCount();
+
+    var modalEl = document.getElementById('modalDownloadRekap');
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+
+function selectAllModalKoor(check) {
+    $('.check-modal-koor').prop('checked', check);
+    updateKoorCount();
+}
+
+function updateKoorCount() {
+    var count = $('.check-modal-koor:checked').length;
+    $('#badgeModalKoorCount').text(count);
+}
+
+function submitModalDownloadRekap() {
+    var selected = [];
+    $('.check-modal-koor:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if (selected.length === 0) {
+        Swal.fire('Perhatian', 'Pilih minimal satu koordinator blok untuk dicetak.', 'warning');
+        return;
+    }
+
+    var tahun = $('#filterTahun').val() || currentTahun;
+    var bulan = $('#filterBulan').val() || '';
+    var groupBy = $('#checkGroupByKoor').is(':checked') ? '1' : '0';
+
+    var url = BASE + 'rekap-menunggak-pdf?tahun=' + encodeURIComponent(tahun) + 
+              '&bulan=' + encodeURIComponent(bulan) + 
+              '&id_koordinator=' + encodeURIComponent(selected.join(',')) + 
+              '&group_by_koor=' + groupBy;
+
+    var modalEl = document.getElementById('modalDownloadRekap');
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+
+    window.open(url, '_blank');
 }
 </script>

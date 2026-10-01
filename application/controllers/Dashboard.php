@@ -2141,6 +2141,213 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 
 	/**
+	 * Generate PDF Rekapitulasi Warga Menunggak IPL
+	 */
+	public function rekap_menunggak_pdf()
+	{
+		$this->checkSession();
+		mb_internal_encoding('UTF-8');
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		$tahun = (int)($this->input->get('tahun', true) ?: date('Y'));
+		$bulan_filter = $this->input->get('bulan', true);
+		$group_by_koor = $this->input->get('group_by_koor') !== null ? (int)$this->input->get('group_by_koor') : 1;
+		$tahun_sekarang = (int)date('Y');
+		$bulan_sekarang = (int)date('n');
+
+		$bulan_indo = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+		$bulan_singkat = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'Jul',8=>'Agu',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
+
+		// Koordinator filter: bisa 1, array, atau dipisahkan koma
+		if ($this->session->userdata('username')['role'] === 'koordinator') {
+			$koor_ids = [$this->session->userdata('username')['id']];
+		} else {
+			$raw_koor = $this->input->get('id_koordinator');
+			if (is_array($raw_koor)) {
+				$koor_ids = array_filter(array_map('trim', $raw_koor));
+			} else if (!empty($raw_koor)) {
+				$koor_ids = array_filter(explode(',', trim($raw_koor)));
+			} else {
+				$koor_ids = [];
+			}
+		}
+
+		$where_koor = '';
+		$selected_koor_names = [];
+		if (!empty($koor_ids)) {
+			$escaped_ids = array_map(function($id) { return "'" . $this->db->escape_str($id) . "'"; }, $koor_ids);
+			$where_koor = "AND r.id_koordinator IN (" . implode(',', $escaped_ids) . ")";
+			
+			$koor_rows = $this->db->query("SELECT id, nama FROM master_koordinator_blok WHERE id IN (" . implode(',', $escaped_ids) . ") ORDER BY nama")->result_array();
+			foreach ($koor_rows as $kr) {
+				$selected_koor_names[] = $kr['nama'];
+			}
+		}
+
+		$all_koor_count = $this->db->query("SELECT COUNT(*) as c FROM master_koordinator_blok")->row()->c;
+		$is_all_koor = empty($koor_ids) || (count($koor_ids) >= (int)$all_koor_count);
+
+		if ($is_all_koor) {
+			$koordinator_label = 'Semua Koordinator (Seluruh Blok)';
+		} else if (count($selected_koor_names) === 1) {
+			$koordinator_label = $selected_koor_names[0];
+		} else if (count($selected_koor_names) <= 3) {
+			$koordinator_label = implode(', ', $selected_koor_names);
+		} else {
+			$koordinator_label = count($selected_koor_names) . ' Koordinator Terpilih (' . implode(', ', array_slice($selected_koor_names, 0, 2)) . ', dll)';
+		}
+
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		$bulan_akhir_ipl = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == $tahun_sekarang) ? $bulan_sekarang : 12);
+		$total_bulan_wajib = max(1, $bulan_akhir_ipl - $bulan_mulai_ipl + 1);
+
+		// Semua rumah
+		$all_rumah = $this->db->query("
+			SELECT r.id, r.alamat, r.nama, MAX(kl.no_hp) as no_hp, MAX(k.nama) as koordinator
+			FROM master_users u
+			LEFT JOIN master_rumah r ON u.id_rumah = r.id
+			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			WHERE r.id IS NOT NULL $where_koor
+			GROUP BY r.id, r.alamat, r.nama, r.id_koordinator
+			ORDER BY r.alamat ASC
+		")->result_array();
+
+		// Pembayaran (Verified & Pending)
+		$pembayaran_raw = $this->db->query("
+			SELECT p.id, u.id_rumah, p.untuk_bulan, p.bulan_rapel, DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym, p.status, p.jumlah_bayar, p.tanggal_bayar
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			LEFT JOIN master_rumah r ON u.id_rumah = r.id
+			WHERE p.status IN ('verified','pending')
+			AND (YEAR(p.untuk_bulan) = $tahun OR YEAR(p.bulan_mulai) = $tahun OR p.bulan_rapel LIKE '%$tahun%')
+			$where_koor
+		")->result_array();
+
+		$lunas_map = [];
+		foreach ($pembayaran_raw as $p) {
+			$idr = $p['id_rumah'];
+			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') {
+				$lunas_map[$idr][date('Y-m', strtotime($p['untuk_bulan']))] = true;
+			}
+			if (!empty($p['bulan_rapel'])) {
+				foreach (explode(',', $p['bulan_rapel']) as $br) {
+					if (trim($br)) $lunas_map[$idr][trim($br)] = true;
+				}
+			}
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00' || $p['untuk_bulan'] == '') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
+				$lunas_map[$idr][$p['bulan_mulai_ym']] = true;
+			}
+		}
+
+		$menunggak = [];
+		$total_akumulasi_bulan = 0;
+
+		foreach ($all_rumah as $r) {
+			$idr = $r['id'];
+			$tunggak_names = [];
+			$tunggak_short = [];
+			$jumlah_bayar = 0;
+
+			for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_ipl; $m++) {
+				$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+				if (isset($lunas_map[$idr][$key])) {
+					$jumlah_bayar++;
+				} else {
+					$tunggak_names[] = $bulan_indo[$m];
+					$tunggak_short[] = $bulan_singkat[$m];
+				}
+			}
+
+			$r['jumlah_bulan_bayar'] = $jumlah_bayar;
+			$r['tunggakan'] = count($tunggak_names);
+			$r['bulan_tunggak_list'] = implode(', ', $tunggak_names);
+			$r['bulan_tunggak_short'] = implode(', ', $tunggak_short);
+			$r['is_all_period'] = ($r['tunggakan'] === $total_bulan_wajib);
+			$r['status_tunggak'] = $r['tunggakan'] > 0 ? ($r['tunggakan'] >= 3 ? 'Surat Teguran' : 'Peringatan') : 'Lunas';
+			$r['level'] = $r['tunggakan'] >= 3 ? 'danger' : ($r['tunggakan'] > 0 ? 'warning' : 'success');
+
+			if ($r['tunggakan'] > 0) {
+				$menunggak[] = $r;
+				$total_akumulasi_bulan += $r['tunggakan'];
+			}
+		}
+
+		// Urutkan berdasarkan tunggakan terbanyak, lalu alamat
+		usort($menunggak, function($a, $b) {
+			if ($b['tunggakan'] !== $a['tunggakan']) {
+				return $b['tunggakan'] - $a['tunggakan'];
+			}
+			return strnatcasecmp($a['alamat'], $b['alamat']);
+		});
+
+		// Pengelompokan data per Koordinator
+		$grouped_menunggak = [];
+		if ($group_by_koor) {
+			foreach ($menunggak as $w) {
+				$k_name = !empty($w['koordinator']) ? $w['koordinator'] : 'Tanpa Koordinator';
+				if (!isset($grouped_menunggak[$k_name])) {
+					$grouped_menunggak[$k_name] = [
+						'nama' => $k_name,
+						'items' => [],
+						'total_warga' => 0,
+						'total_bulan' => 0
+					];
+				}
+				$grouped_menunggak[$k_name]['items'][] = $w;
+				$grouped_menunggak[$k_name]['total_warga']++;
+				$grouped_menunggak[$k_name]['total_bulan'] += $w['tunggakan'];
+			}
+			ksort($grouped_menunggak);
+		}
+
+		$periode_str = $bulan_indo[$bulan_mulai_ipl] . ' s/d ' . $bulan_indo[$bulan_akhir_ipl] . ' ' . $tahun;
+
+		$data = [
+			'tahun'                  => $tahun,
+			'bulan_filter'           => $bulan_filter,
+			'bulan_mulai_ipl'        => $bulan_mulai_ipl,
+			'bulan_akhir_ipl'        => $bulan_akhir_ipl,
+			'total_bulan_wajib'      => $total_bulan_wajib,
+			'periode_str'            => $periode_str,
+			'koordinator_label'      => $koordinator_label,
+			'selected_koor_names'    => $selected_koor_names,
+			'group_by_koor'          => $group_by_koor,
+			'grouped_menunggak'      => $grouped_menunggak,
+			'total_rumah'            => count($all_rumah),
+			'total_menunggak'        => count($menunggak),
+			'total_akumulasi_bulan'  => $total_akumulasi_bulan,
+			'menunggak'              => $menunggak,
+			'user_session'           => $this->session->userdata('username'),
+		];
+
+		$html = $this->load->view('dashboard/cetak_rekap_menunggak', $data, true);
+
+		// Normalisasi karakter khusus/unicode
+		$html = preg_replace('/[‐-‒–—−]/u', '-', $html);
+		if (stripos($html, '<meta charset') === false) {
+			$html = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />' . $html;
+		}
+
+		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator('Perum TSI');
+		$pdf->SetAuthor('Paguyuban TSI');
+		$pdf->SetTitle('Rekapitulasi Warga Menunggak IPL - ' . $periode_str);
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(true);
+		$pdf->setFooterFont(['helvetica', 'I', 8]);
+		$pdf->SetFooterMargin(10);
+		$pdf->SetMargins(12, 10, 12, true);
+		$pdf->SetAutoPageBreak(TRUE, 12);
+		$pdf->AddPage();
+		$pdf->writeHTML($html, true, false, true, false, '');
+
+		$nama_file = 'rekap_warga_menunggak_' . $tahun . '_' . date('Ymd_His') . '.pdf';
+		$pdf->Output($nama_file, 'I');
+	}
+
+	/**
 	 * Generate PDF Surat Teguran Pembayaran IPL
 	 */
 	public function surat_teguran_pdf($save_path = null, $is_kosongan = false)
