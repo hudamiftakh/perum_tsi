@@ -157,6 +157,57 @@ if ($Auth['role'] === 'koordinator') {
     background: #f1f5f9;
     color: #475569;
 }
+
+/* Proper Checkbox Sizing & Centering */
+.table-premium input[type="checkbox"],
+#checkAllTunggak,
+.check-tunggak,
+.check-modal-koor {
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px !important;
+    min-height: 17px !important;
+    max-width: 17px !important;
+    max-height: 17px !important;
+    margin: 0 auto !important;
+    vertical-align: middle !important;
+    cursor: pointer !important;
+    border: 1.5px solid #94a3b8 !important;
+    border-radius: 4px !important;
+    background-color: #fff !important;
+    display: inline-block !important;
+    box-shadow: none !important;
+}
+
+.table-premium input[type="checkbox"]:focus,
+#checkAllTunggak:focus,
+.check-tunggak:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    outline: none !important;
+}
+
+.table-premium input[type="checkbox"]:checked,
+#checkAllTunggak:checked,
+.check-tunggak:checked {
+    background-color: #ef4444 !important;
+    border-color: #ef4444 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Hilangkan icon sorting DataTables pada kolom checkbox */
+#tblMenunggak thead th:first-child::before,
+#tblMenunggak thead th:first-child::after,
+#tblMenunggak thead th.no-sort::before,
+#tblMenunggak thead th.no-sort::after {
+    display: none !important;
+    content: "" !important;
+}
+#tblMenunggak thead th:first-child {
+    background-image: none !important;
+    padding-right: 12px !important;
+    width: 40px !important;
+    text-align: center !important;
+}
 </style>
 
 <div class="container-fluid">
@@ -389,8 +440,10 @@ if ($Auth['role'] === 'koordinator') {
                         <table class="table table-hover table-premium w-100" id="tblMenunggak">
                             <thead>
                                 <tr>
-                                    <th width="30" class="text-center"><input type="checkbox" id="checkAllTunggak" class="form-check-input" style="cursor:pointer;"></th>
-                                    <th width="40" class="text-center">No</th>
+                                    <th width="40" class="text-center no-sort" style="width:40px !important; max-width:40px; vertical-align:middle; text-align:center;">
+                                        <input type="checkbox" id="checkAllTunggak" class="form-check-input" style="cursor:pointer;" title="Pilih Semua">
+                                    </th>
+                                    <th width="45" class="text-center" style="vertical-align:middle;">No</th>
                                     <th>Nomor Rumah / Alamat</th>
                                     <th>Nama Warga</th>
                                     <th>Kontak WA</th>
@@ -649,6 +702,7 @@ function loadData() {
                 destroy: true,
                 autoWidth: false,
                 pageLength: 25,
+                order: [[1, 'asc']],
                 language: {
                     search: "Cari Warga:",
                     lengthMenu: "_MENU_",
@@ -658,8 +712,9 @@ function loadData() {
                     zeroRecords: "Tidak ditemukan"
                 },
                 columnDefs: [
-                    { targets: [0,1,6,7,8,9], className: 'text-center' },
-                    { targets: [0,9], orderable: false }
+                    { targets: 0, orderable: false, searchable: false, width: '40px', className: 'text-center align-middle' },
+                    { targets: [1,6,7,8,9], className: 'text-center align-middle' },
+                    { targets: 9, orderable: false }
                 ]
             });
 
