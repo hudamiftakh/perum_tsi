@@ -76,6 +76,12 @@ if ($Auth['role'] === 'koordinator') {
     border-radius: 16px;
     display: inline-flex;
     flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+}
+.nav-pills-premium .nav-item {
+    margin: 0;
+    padding: 0;
 }
 .nav-pills-premium .nav-link {
     border: none;
@@ -86,6 +92,7 @@ if ($Auth['role'] === 'koordinator') {
     padding: 10px 20px;
     transition: all 0.25s ease;
     background: transparent;
+    cursor: pointer;
 }
 .nav-pills-premium .nav-link:hover {
     color: #1e293b;
@@ -336,20 +343,26 @@ if ($Auth['role'] === 'koordinator') {
         <div class="card-body p-3 p-md-4">
             <!-- Nav-Pills Toolbar -->
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                <div class="nav-pills-premium">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabMenunggak" type="button">
-                        <i class="ti ti-alert-triangle text-danger me-1"></i> Warga Menunggak
-                        <span class="badge rounded-pill bg-danger-subtle text-danger ms-1 badge-count-danger" id="badgeMenunggak">0</span>
-                    </button>
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabRajin" type="button">
-                        <i class="ti ti-circle-check text-success me-1"></i> Warga Rajin Bayar
-                        <span class="badge rounded-pill bg-success-subtle text-success ms-1 badge-count-success" id="badgeRajin">0</span>
-                    </button>
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDimuka" type="button">
-                        <i class="ti ti-star text-warning me-1"></i> Bayar Di Muka
-                        <span class="badge rounded-pill ms-1 badge-count-dimuka" style="background:#ede9fe;color:#7c3aed" id="badgeDimuka">0</span>
-                    </button>
-                </div>
+                <ul class="nav nav-pills nav-pills-premium" id="profilTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-btn-menunggak" data-bs-toggle="pill" data-bs-target="#tabMenunggak" type="button" role="tab" aria-controls="tabMenunggak" aria-selected="true">
+                            <i class="ti ti-alert-triangle text-danger me-1"></i> Warga Menunggak
+                            <span class="badge rounded-pill bg-danger-subtle text-danger ms-1 badge-count-danger" id="badgeMenunggak">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-btn-rajin" data-bs-toggle="pill" data-bs-target="#tabRajin" type="button" role="tab" aria-controls="tabRajin" aria-selected="false">
+                            <i class="ti ti-circle-check text-success me-1"></i> Warga Rajin Bayar
+                            <span class="badge rounded-pill bg-success-subtle text-success ms-1 badge-count-success" id="badgeRajin">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-btn-dimuka" data-bs-toggle="pill" data-bs-target="#tabDimuka" type="button" role="tab" aria-controls="tabDimuka" aria-selected="false">
+                            <i class="ti ti-star text-warning me-1"></i> Bayar Di Muka
+                            <span class="badge rounded-pill ms-1 badge-count-dimuka" style="background:#ede9fe;color:#7c3aed" id="badgeDimuka">0</span>
+                        </button>
+                    </li>
+                </ul>
 
                 <div class="small text-muted" id="periodeInfo">-</div>
             </div>
@@ -526,7 +539,7 @@ if ($Auth['role'] === 'koordinator') {
 
 <script>
 var BASE = '<?= base_url() ?>';
-var dtMenunggak, dtRajin, dtDimuka;
+var dtMenunggak = null, dtRajin = null, dtDimuka = null;
 var currentTahun = '<?= $selected_tahun ?>';
 
 function formatHp(hp) {
@@ -534,8 +547,16 @@ function formatHp(hp) {
     var wa = hp.replace(/^0/, '62').replace(/[^0-9]/g, '');
     return '<a href="https://wa.me/'+wa+'" target="_blank" class="badge bg-success-subtle text-success text-decoration-none fw-semibold"><i class="bi bi-whatsapp me-1"></i>'+hp+'</a>';
 }
+
 function formatRp(n) {
     return 'Rp' + Number(n||0).toLocaleString('id-ID');
+}
+
+function destroyTableSafely(selector) {
+    if ($.fn.DataTable.isDataTable(selector)) {
+        $(selector).DataTable().clear().destroy();
+        $(selector + ' tbody').empty();
+    }
 }
 
 function loadData() {
@@ -544,23 +565,27 @@ function loadData() {
     var koor = $('#filterKoor').length ? $('#filterKoor').val() : '';
     currentTahun = tahun;
 
-    // Destroy existing DataTables
-    if (dtMenunggak) { dtMenunggak.destroy(); dtMenunggak = null; }
-    if (dtRajin) { dtRajin.destroy(); dtRajin = null; }
-    if (dtDimuka) { dtDimuka.destroy(); dtDimuka = null; }
+    // Destroy existing DataTables safely
+    destroyTableSafely('#tblMenunggak');
+    destroyTableSafely('#tblRajin');
+    destroyTableSafely('#tblDimuka');
+    dtMenunggak = null;
+    dtRajin = null;
+    dtDimuka = null;
 
-    // Loading state
+    // Loading indicator on tables
     $('#tblMenunggak tbody, #tblRajin tbody, #tblDimuka tbody').html(
-        '<tr><td colspan="10" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small">Memuat data profil kepatuhan...</div></td></tr>'
+        '<tr><td colspan="10" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small fw-semibold">Memuat data profil kepatuhan warga via AJAX...</div></td></tr>'
     );
     $('#statTotal, #statMenunggak, #statRajin, #statDimuka').text('-');
 
     $.ajax({
         url: BASE + 'ajax-profil-warga',
+        type: 'GET',
         data: { tahun: tahun, bulan: bulan, id_koordinator: koor },
         dataType: 'json',
         success: function(res) {
-            // Update stats
+            // Update stats & progress bar
             var total = res.stats.total || 0;
             var menunggak = res.stats.menunggak || 0;
             var rajin = res.stats.rajin || 0;
@@ -580,20 +605,20 @@ function loadData() {
             $('#statKepatuhanBar').css('width', pct + '%');
 
             $('#titleMenunggak').text('Daftar Warga Menunggak — Tahun ' + tahun);
-            $('#periodeInfo').html('<i class="ti ti-calendar me-1"></i> Periode: <strong>' + res.periode + '</strong> (' + res.total_bulan_wajib + ' bulan wajib)');
+            $('#periodeInfo').html('<i class="ti ti-calendar me-1"></i> Periode: <strong>' + (res.periode || '-') + '</strong> (' + (res.total_bulan_wajib || 1) + ' bulan wajib)');
 
-            var tbw = res.total_bulan_wajib;
+            var tbw = res.total_bulan_wajib || 1;
 
             // Reset Select All
             $('#checkAllTunggak').prop('checked', false);
             $('#batchActionContainer').addClass('d-none');
 
-            // 1. Menunggak
+            // 1. Data Menunggak
             var rows1 = [];
-            $.each(res.menunggak, function(i, w) {
-                var totalNominal = w.tunggakan * 150000;
+            $.each(res.menunggak || [], function(i, w) {
+                var totalNominal = (w.tunggakan || 0) * 150000;
                 var listBulan = w.bulan_tunggak_list || (w.tunggakan + " bulan");
-                var msg = "Assalamualaikum Bapak/Ibu *" + w.nama + "*, kami dari pengurus Paguyuban TSI memberitahukan bahwa terdapat tunggakan IPL untuk rumah *" + w.alamat + "* sebesar *Rp " + totalNominal.toLocaleString('id-ID') + "* (" + listBulan + "). Mohon segera melakukan koordinasi pembayaran melalui Koordinator atau Bendahara. Terima kasih.";
+                var msg = "Assalamualaikum Bapak/Ibu *" + (w.nama || '') + "*, kami dari pengurus Paguyuban TSI memberitahukan bahwa terdapat tunggakan IPL untuk rumah *" + (w.alamat || '') + "* sebesar *Rp " + totalNominal.toLocaleString('id-ID') + "* (" + listBulan + "). Mohon segera melakukan koordinasi pembayaran melalui Koordinator atau Bendahara. Terima kasih.";
                 var waLink = "https://wa.me/" + (w.no_hp ? w.no_hp.replace(/^0/, '62').replace(/[^0-9]/g, '') : "") + "?text=" + encodeURIComponent(msg);
 
                 var badgeClass = 'bg-danger';
@@ -607,8 +632,8 @@ function loadData() {
                     '<div><span class="avatar-initial">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong></div>',
                     formatHp(w.no_hp),
                     '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
-                    '<span class="badge bg-info-subtle text-info fw-bold px-2 py-1">' + w.jumlah_bulan_bayar + ' / ' + tbw + ' Bln</span>',
-                    '<span class="badge ' + badgeClass + ' px-2 py-1">' + w.tunggakan + ' Bulan</span>',
+                    '<span class="badge bg-info-subtle text-info fw-bold px-2 py-1">' + (w.jumlah_bulan_bayar || 0) + ' / ' + tbw + ' Bln</span>',
+                    '<span class="badge ' + badgeClass + ' px-2 py-1">' + (w.tunggakan || 0) + ' Bulan</span>',
                     '<small class="fw-semibold text-danger">' + (w.status_tunggak||'Nunggak') + '</small>',
                     '<div class="d-flex gap-1 justify-content-center">' +
                         '<a href="'+BASE+'surat-teguran-pdf?id_rumah='+w.id+'&tahun='+tahun+'&bulan='+bulan+'" target="_blank" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:30px;height:30px" title="Cetak Surat PDF"><i class="bi bi-file-earmark-pdf"></i></a>' +
@@ -618,90 +643,159 @@ function loadData() {
                     '</div>'
                 ]);
             });
+
             dtMenunggak = $('#tblMenunggak').DataTable({
-                data: rows1, destroy: true, pageLength: 25,
-                language: { search:"Cari Warga:", lengthMenu:"_MENU_", info:"_START_ - _END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Luar biasa! Tidak ada warga yang menunggak di periode ini 🎉", zeroRecords:"Tidak ditemukan" },
+                data: rows1,
+                destroy: true,
+                autoWidth: false,
+                pageLength: 25,
+                language: {
+                    search: "Cari Warga:",
+                    lengthMenu: "_MENU_",
+                    info: "_START_ - _END_ dari _TOTAL_",
+                    paginate: { previous: "Prev", next: "Next" },
+                    emptyTable: "Luar biasa! Tidak ada warga yang menunggak di periode ini 🎉",
+                    zeroRecords: "Tidak ditemukan"
+                },
                 columnDefs: [
                     { targets: [0,1,6,7,8,9], className: 'text-center' },
                     { targets: [0,9], orderable: false }
                 ]
             });
 
-            // Checkbox Events
-            $('#tblMenunggak').off('change', '.check-tunggak').on('change', '.check-tunggak', function() {
-                var total = dtMenunggak.$('.check-tunggak').length;
-                var checked = dtMenunggak.$('.check-tunggak:checked').length;
-                $('#checkAllTunggak').prop('checked', (total > 0 && total === checked));
-                toggleBatchButton(checked);
-            });
-
-            // 2. Rajin Bayar
+            // 2. Data Rajin Bayar
             var rows2 = [];
-            $.each(res.rajin, function(i, w) {
+            $.each(res.rajin || [], function(i, w) {
                 rows2.push([
                     '<span class="text-muted fw-bold">' + (i+1) + '</span>',
                     '<div><i class="bi bi-geo-alt-fill text-success me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
                     '<div><span class="avatar-initial" style="background:#dcfce7;color:#15803d">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong> <i class="bi bi-patch-check-fill text-success"></i></div>',
                     formatHp(w.no_hp),
                     '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
-                    '<span class="badge bg-success-subtle text-success fw-bold px-2 py-1">' + w.jumlah_bulan_bayar + ' Bulan ✓</span>',
+                    '<span class="badge bg-success-subtle text-success fw-bold px-2 py-1">' + (w.jumlah_bulan_bayar || 0) + ' Bulan ✓</span>',
                     '<span class="fw-bold text-dark">' + formatRp(w.total_bayar) + '</span>',
                     w.terakhir_bayar ? '<span class="small">' + w.terakhir_bayar.substring(8,10)+'/'+w.terakhir_bayar.substring(5,7)+'/'+w.terakhir_bayar.substring(0,4) + '</span>' : '-',
-                    w.wa_count > 0 ? '<span class="badge bg-warning text-dark"><i class="bi bi-check-all"></i> '+w.wa_count+'x</span>' : '<span class="text-muted small">-</span>',
+                    (w.wa_count > 0) ? '<span class="badge bg-warning text-dark"><i class="bi bi-check-all"></i> '+w.wa_count+'x</span>' : '<span class="text-muted small">-</span>',
                     '<button onclick="sendWaKonfirmasi('+w.id+',\'lancar\')" class="btn btn-sm btn-success rounded-pill px-2 py-1 small" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
                 ]);
             });
+
             dtRajin = $('#tblRajin').DataTable({
-                data: rows2, destroy: true, pageLength: 25,
-                language: { search:"Cari Warga:", lengthMenu:"_MENU_", info:"_START_ - _END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga lunas semua bulan", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,7,8,9], className: 'text-center' }, { targets: [6], className: 'text-end' }]
+                data: rows2,
+                destroy: true,
+                autoWidth: false,
+                pageLength: 25,
+                language: {
+                    search: "Cari Warga:",
+                    lengthMenu: "_MENU_",
+                    info: "_START_ - _END_ dari _TOTAL_",
+                    paginate: { previous: "Prev", next: "Next" },
+                    emptyTable: "Belum ada warga lunas semua bulan",
+                    zeroRecords: "Tidak ditemukan"
+                },
+                columnDefs: [
+                    { targets: [0,5,7,8,9], className: 'text-center' },
+                    { targets: [6], className: 'text-end' }
+                ]
             });
 
-            // 3. Bayar Di Muka
+            // 3. Data Bayar Di Muka
             var rows3 = [];
-            $.each(res.dimuka, function(i, w) {
+            $.each(res.dimuka || [], function(i, w) {
                 rows3.push([
                     '<span class="text-muted fw-bold">' + (i+1) + '</span>',
                     '<div><i class="bi bi-geo-alt-fill text-primary me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
                     '<div><span class="avatar-initial" style="background:#ede9fe;color:#6b21a8">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong> ⭐</div>',
                     formatHp(w.no_hp),
                     '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
-                    '<span class="badge rounded-pill" style="background:#7c3aed;color:#fff">' + w.bayar_sampai + '</span>',
-                    '<span class="badge bg-info-subtle text-info fw-bold">+' + w.bulan_dimuka + ' Bulan</span>',
+                    '<span class="badge rounded-pill" style="background:#7c3aed;color:#fff">' + (w.bayar_sampai || '-') + '</span>',
+                    '<span class="badge bg-info-subtle text-info fw-bold">+' + (w.bulan_dimuka || 0) + ' Bulan</span>',
                     '<span class="fw-bold text-dark">' + formatRp(w.total_bayar) + '</span>',
-                    w.wa_count > 0 ? '<span class="badge bg-warning text-dark"><i class="bi bi-check-all"></i> '+w.wa_count+'x</span>' : '<span class="text-muted small">-</span>',
+                    (w.wa_count > 0) ? '<span class="badge bg-warning text-dark"><i class="bi bi-check-all"></i> '+w.wa_count+'x</span>' : '<span class="text-muted small">-</span>',
                     '<button onclick="sendWaKonfirmasi('+w.id+',\'dimuka\')" class="btn btn-sm btn-success rounded-pill px-2 py-1 small" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
                 ]);
             });
+
             dtDimuka = $('#tblDimuka').DataTable({
-                data: rows3, destroy: true, pageLength: 25,
-                language: { search:"Cari Warga:", lengthMenu:"_MENU_", info:"_START_ - _END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga bayar di muka", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,6,8,9], className: 'text-center' }, { targets: [7], className: 'text-end' }]
+                data: rows3,
+                destroy: true,
+                autoWidth: false,
+                pageLength: 25,
+                language: {
+                    search: "Cari Warga:",
+                    lengthMenu: "_MENU_",
+                    info: "_START_ - _END_ dari _TOTAL_",
+                    paginate: { previous: "Prev", next: "Next" },
+                    emptyTable: "Belum ada warga bayar di muka",
+                    zeroRecords: "Tidak ditemukan"
+                },
+                columnDefs: [
+                    { targets: [0,5,6,8,9], className: 'text-center' },
+                    { targets: [7], className: 'text-end' }
+                ]
             });
+
+            // Re-adjust columns on active visible table
+            setTimeout(function() {
+                if ($.fn.dataTable) {
+                    $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+                }
+            }, 60);
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            console.error("Ajax Profil Warga Error:", error);
             $('#tblMenunggak tbody, #tblRajin tbody, #tblDimuka tbody').html(
-                '<tr><td colspan="10" class="text-center py-5 text-danger"><i class="bi bi-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Gagal memuat data profil kepatuhan</p></td></tr>'
+                '<tr><td colspan="10" class="text-center py-5 text-danger"><i class="bi bi-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2 fw-semibold">Gagal memuat data profil kepatuhan via AJAX.</p></td></tr>'
             );
         }
     });
 }
 
 $(document).ready(function() {
+    // 1. Tab Switching (Direct, foolproof click listener)
+    $(document).on('click', '#profilTabs button.nav-link', function(e) {
+        e.preventDefault();
+        var target = $(this).attr('data-bs-target');
+
+        $('#profilTabs button.nav-link').removeClass('active').attr('aria-selected', 'false');
+        $(this).addClass('active').attr('aria-selected', 'true');
+
+        $('.tab-content > .tab-pane').removeClass('show active');
+        $(target).addClass('show active');
+
+        // Adjust DataTables columns in the newly activated tab
+        setTimeout(function() {
+            if ($.fn.dataTable) {
+                $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+            }
+        }, 50);
+    });
+
+    // 2. Also hook to Bootstrap shown.bs.tab if available
+    $('button[data-bs-toggle="pill"], button[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
+        if ($.fn.dataTable) {
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+        }
+    });
+
+    // 3. Initial Load
     loadData();
 
-    $('#btnFilter').on('click', function() { loadData(); });
-    $('#btnReset').on('click', function() {
+    // 4. Filter Buttons
+    $('#btnFilter').on('click', function(e) {
+        e.preventDefault();
+        loadData();
+    });
+
+    $('#btnReset').on('click', function(e) {
+        e.preventDefault();
         $('#filterTahun').val('<?= $tahun_sekarang ?>');
         $('#filterBulan').val('<?= (int)date('n') ?>');
         if ($('#filterKoor').length) $('#filterKoor').val('');
         loadData();
     });
 
-    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
-        $.fn.dataTable.tables({visible:true, api:true}).columns.adjust();
-    });
-
+    // 5. Checkbox Tunggak Handlers
     $(document).on('change', '#checkAllTunggak', function() {
         var isChecked = $(this).is(':checked');
         if (dtMenunggak) {
@@ -709,12 +803,21 @@ $(document).ready(function() {
             toggleBatchButton(dtMenunggak.$('.check-tunggak:checked').length);
         }
     });
+
+    $('#tblMenunggak').on('change', '.check-tunggak', function() {
+        if (dtMenunggak) {
+            var total = dtMenunggak.$('.check-tunggak').length;
+            var checked = dtMenunggak.$('.check-tunggak:checked').length;
+            $('#checkAllTunggak').prop('checked', (total > 0 && total === checked));
+            toggleBatchButton(checked);
+        }
+    });
 });
 
 function toggleBatchButton(checkedCount) {
     if (checkedCount > 0) {
         $('#batchActionContainer').removeClass('d-none');
-        $('#btnGenerateBatchPdf').html('<i class="bi bi-file-earmark-pdf"></i> Generate PDF (ZIP) - ' + checkedCount + ' dipilih');
+        $('#btnGenerateBatchPdf').html('<i class="bi bi-file-earmark-zip me-1"></i> Generate Surat (ZIP) - ' + checkedCount + ' dipilih');
     } else {
         $('#batchActionContainer').addClass('d-none');
     }
@@ -732,7 +835,7 @@ function generateBatchPdf() {
     }
     var tahun = $('#filterTahun').val();
     var bulan = $('#filterBulan').val();
-    window.open(BASE + 'surat-teguran-batch-pdf?ids=' + ids.join(',') + '&tahun=' + tahun + '&bulan=' + bulan, '_blank');
+    window.open(BASE + 'batch-surat-teguran-zip?ids=' + ids.join(',') + '&tahun=' + tahun + '&bulan=' + bulan, '_blank');
 }
 
 function sendWaOtomatis(id_rumah) {
@@ -767,7 +870,7 @@ function sendWaKonfirmasi(id_rumah, tipe) {
     $(btn).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
 
     $.ajax({
-        url: BASE + 'dashboard/kirim_konfirmasi_wa',
+        url: BASE + 'kirim-konfirmasi-wa',
         data: { id_rumah: id_rumah, tahun: tahun, bulan: bulan, tipe: tipe },
         dataType: 'json',
         success: function(res) {

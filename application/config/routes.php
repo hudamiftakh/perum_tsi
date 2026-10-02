@@ -93,6 +93,7 @@ $route['ajax-profil-warga'] = 'dashboard/ajax_profil_warga';
 $route['surat-teguran-pdf'] = 'dashboard/surat_teguran_pdf';
 $route['batch-surat-teguran-zip'] = 'dashboard/batch_surat_teguran_zip';
 $route['rekap-menunggak-pdf'] = 'dashboard/rekap_menunggak_pdf';
+$route['kirim-teguran-wa'] = 'dashboard/kirim_teguran_wa';
 $route['kirim-konfirmasi-wa'] = 'dashboard/kirim_konfirmasi_wa';
 $route['setting'] = 'dashboard/setting';
 $route['setting/update-user'] = 'dashboard/update_user';
