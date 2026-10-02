@@ -8,7 +8,11 @@ class auth extends CI_Controller
     {
         error_reporting(0);
         parent::__construct();
+        $this->load->database();
         $this->load->library('session');
+        if (function_exists('ensure_log_tables_exist')) {
+            ensure_log_tables_exist();
+        }
     }
     public function index()
     {
@@ -25,6 +29,9 @@ class auth extends CI_Controller
     }
     public function logout()
     {
+        if (function_exists('catat_log_aktivitas')) {
+            catat_log_aktivitas('Auth', 'Logout', 'User logout dari sistem');
+        }
         session_destroy();
         redirect('./login');
     }

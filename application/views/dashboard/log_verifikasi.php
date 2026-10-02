@@ -1,3 +1,4 @@
+<?php if (function_exists('ensure_log_tables_exist')) { ensure_log_tables_exist(); } ?>
 <div class="container-fluid">
     <div class="card bg-light-info shadow-none position-relative overflow-hidden">
         <div class="card-body px-4 py-3">

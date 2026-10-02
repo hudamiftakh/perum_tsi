@@ -46,66 +46,94 @@ class Dashboard extends CI_Controller
 	}
 
 	/**
-	 * Auto-create tabel log_login dan log_verifikasi jika belum ada
+	 * Auto-create semua tabel log jika belum ada di database
 	 */
 	private function _create_log_tables()
 	{
-		// Tabel log_login
-		if (!$this->db->table_exists('log_login')) {
-			$this->db->query("
-				CREATE TABLE `log_login` (
-					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-					`username` VARCHAR(100) DEFAULT NULL COMMENT 'Username yang diinput',
-					`nama` VARCHAR(255) DEFAULT NULL COMMENT 'Nama user jika login berhasil',
-					`role` VARCHAR(50) DEFAULT NULL COMMENT 'Role: admin/koordinator/bendahara',
-					`user_id` INT(11) DEFAULT NULL COMMENT 'ID user di tabel master',
-					`status` ENUM('success','failed') NOT NULL DEFAULT 'failed' COMMENT 'Hasil login',
-					`ip_address` VARCHAR(45) DEFAULT NULL COMMENT 'IP address client',
-					`user_agent` TEXT DEFAULT NULL COMMENT 'Browser/device info',
-					`keterangan` VARCHAR(500) DEFAULT NULL COMMENT 'Catatan tambahan',
-					`login_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Waktu login',
-					PRIMARY KEY (`id`),
-					KEY `idx_login_at` (`login_at`),
-					KEY `idx_username` (`username`),
-					KEY `idx_status` (`status`)
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Log semua aktivitas login (berhasil/gagal)'
-			");
+		if (function_exists('ensure_log_tables_exist')) {
+			ensure_log_tables_exist();
+			return;
 		}
 
-		// Tabel log_verifikasi
-		if (!$this->db->table_exists('log_verifikasi')) {
-			$this->db->query("
-				CREATE TABLE `log_verifikasi` (
-					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-					`pembayaran_id` INT(11) DEFAULT NULL COMMENT 'ID di master_pembayaran',
-					`admin_id` INT(11) DEFAULT NULL COMMENT 'ID admin/verifikator',
-					`admin_username` VARCHAR(100) DEFAULT NULL,
-					`admin_nama` VARCHAR(255) DEFAULT NULL,
-					`admin_role` VARCHAR(50) DEFAULT NULL,
-					`aksi` VARCHAR(50) DEFAULT NULL COMMENT 'verified/rejected',
-					`status_sebelum` VARCHAR(50) DEFAULT NULL COMMENT 'Status sebelum aksi',
-					`status_sesudah` VARCHAR(50) DEFAULT NULL COMMENT 'Status sesudah aksi',
-					`warga_nama` VARCHAR(255) DEFAULT NULL,
-					`warga_alamat` VARCHAR(255) DEFAULT NULL,
-					`bulan_bayar` DATE DEFAULT NULL,
-					`jumlah_bayar` DECIMAL(15,2) DEFAULT 0,
-					`pembayaran_via` VARCHAR(50) DEFAULT NULL COMMENT 'koordinator/transfer',
-					`tanggal_bayar` DATE DEFAULT NULL,
-					`wa_status` VARCHAR(20) DEFAULT NULL COMMENT 'success/failed/skipped',
-					`wa_no_tujuan` VARCHAR(20) DEFAULT NULL COMMENT 'Nomor HP tujuan WA',
-					`wa_response` TEXT DEFAULT NULL COMMENT 'Response dari WA gateway',
-					`wa_error` TEXT DEFAULT NULL COMMENT 'Error message jika WA gagal',
-					`ip_address` VARCHAR(45) DEFAULT NULL,
-					`user_agent` TEXT DEFAULT NULL,
-					`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-					PRIMARY KEY (`id`),
-					KEY `idx_created_at` (`created_at`),
-					KEY `idx_pembayaran_id` (`pembayaran_id`),
-					KEY `idx_aksi` (`aksi`),
-					KEY `idx_wa_status` (`wa_status`)
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Log semua aktivitas verifikasi pembayaran + status kirim WA'
-			");
-		}
+		// Fallback jika helper belum ter-load
+		$this->db->query("CREATE TABLE IF NOT EXISTS `log_login` (
+			`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`username` VARCHAR(100) DEFAULT NULL,
+			`nama` VARCHAR(255) DEFAULT NULL,
+			`role` VARCHAR(50) DEFAULT NULL,
+			`user_id` INT(11) DEFAULT NULL,
+			`status` ENUM('success','failed') NOT NULL DEFAULT 'failed',
+			`ip_address` VARCHAR(45) DEFAULT NULL,
+			`user_agent` TEXT DEFAULT NULL,
+			`keterangan` VARCHAR(500) DEFAULT NULL,
+			`login_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			KEY `idx_login_at` (`login_at`),
+			KEY `idx_username` (`username`),
+			KEY `idx_status` (`status`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+		$this->db->query("CREATE TABLE IF NOT EXISTS `log_verifikasi` (
+			`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`pembayaran_id` INT(11) DEFAULT NULL,
+			`admin_id` INT(11) DEFAULT NULL,
+			`admin_username` VARCHAR(100) DEFAULT NULL,
+			`admin_nama` VARCHAR(255) DEFAULT NULL,
+			`admin_role` VARCHAR(50) DEFAULT NULL,
+			`aksi` VARCHAR(50) DEFAULT NULL,
+			`status_sebelum` VARCHAR(50) DEFAULT NULL,
+			`status_sesudah` VARCHAR(50) DEFAULT NULL,
+			`warga_nama` VARCHAR(255) DEFAULT NULL,
+			`warga_alamat` VARCHAR(255) DEFAULT NULL,
+			`bulan_bayar` DATE DEFAULT NULL,
+			`jumlah_bayar` DECIMAL(15,2) DEFAULT 0,
+			`pembayaran_via` VARCHAR(50) DEFAULT NULL,
+			`tanggal_bayar` DATE DEFAULT NULL,
+			`wa_status` VARCHAR(20) DEFAULT NULL,
+			`wa_no_tujuan` VARCHAR(20) DEFAULT NULL,
+			`wa_response` TEXT DEFAULT NULL,
+			`wa_error` TEXT DEFAULT NULL,
+			`ip_address` VARCHAR(45) DEFAULT NULL,
+			`user_agent` TEXT DEFAULT NULL,
+			`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			KEY `idx_created_at` (`created_at`),
+			KEY `idx_pembayaran_id` (`pembayaran_id`),
+			KEY `idx_aksi` (`aksi`),
+			KEY `idx_wa_status` (`wa_status`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+		$this->db->query("CREATE TABLE IF NOT EXISTS `log_koordinator` (
+			`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`id_koordinator` INT(11) DEFAULT NULL,
+			`nama_koordinator` VARCHAR(255) DEFAULT NULL,
+			`blok` VARCHAR(50) DEFAULT NULL,
+			`aksi` VARCHAR(100) DEFAULT NULL,
+			`jumlah_rumah` INT(11) DEFAULT 0,
+			`nominal_total` DECIMAL(15,2) DEFAULT 0,
+			`keterangan` TEXT DEFAULT NULL,
+			`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			KEY `idx_koordinator` (`id_koordinator`),
+			KEY `idx_created_at` (`created_at`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+		$this->db->query("CREATE TABLE IF NOT EXISTS `log_aktivitas` (
+			`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`user_id` INT(11) DEFAULT NULL,
+			`username` VARCHAR(100) DEFAULT NULL,
+			`role` VARCHAR(50) DEFAULT NULL,
+			`modul` VARCHAR(100) DEFAULT NULL,
+			`aksi` VARCHAR(100) DEFAULT NULL,
+			`deskripsi` TEXT DEFAULT NULL,
+			`ip_address` VARCHAR(45) DEFAULT NULL,
+			`user_agent` TEXT DEFAULT NULL,
+			`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			KEY `idx_user` (`user_id`),
+			KEY `idx_modul` (`modul`),
+			KEY `idx_created_at` (`created_at`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 	}
 
 	/**
@@ -145,6 +173,7 @@ class Dashboard extends CI_Controller
 	 */
 	private function _insert_log_verifikasi($data)
 	{
+		$this->_create_log_tables();
 		$session = $this->session->userdata('username');
 		$log = array_merge([
 			'admin_id' => $session['id'] ?? null,
@@ -156,6 +185,73 @@ class Dashboard extends CI_Controller
 			'created_at' => date('Y-m-d H:i:s'),
 		], $data);
 		$this->db->insert('log_verifikasi', $log);
+	}
+
+	/**
+	 * Backfill/sinkronisasi historis dari master_pembayaran ke log_verifikasi
+	 * jika tabel log_verifikasi masih kosong.
+	 */
+	private function _sync_historical_log_verifikasi()
+	{
+		$this->_create_log_tables();
+		$sudah_ada = $this->db->count_all('log_verifikasi');
+		if ($sudah_ada > 0) {
+			return;
+		}
+
+		$pembayaran = $this->db->query("
+			SELECT p.id, p.status, p.user_id, p.jumlah_bayar, p.pembayaran_via, p.tanggal_bayar,
+			       p.bulan_mulai, p.created_at, p.wa_send,
+			       u.nama as warga_nama, r.alamat as warga_alamat, kl.no_hp
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			LEFT JOIN master_rumah r ON u.id_rumah = r.id
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			WHERE p.status IN ('verified', 'rejected')
+			ORDER BY p.id DESC
+		")->result_array();
+
+		if (empty($pembayaran)) {
+			return;
+		}
+
+		$batch = [];
+		$this->load->helper('wa');
+		foreach ($pembayaran as $p) {
+			$wa_status = 'skipped';
+			if ($p['wa_send'] === 'success') {
+				$wa_status = 'success';
+			} elseif ($p['wa_send'] === 'queue') {
+				$wa_status = 'queue';
+			}
+
+			$batch[] = [
+				'pembayaran_id'   => $p['id'],
+				'admin_id'        => 1,
+				'admin_username'  => 'admin',
+				'admin_nama'      => 'Admin Sistem',
+				'admin_role'      => 'admin',
+				'aksi'            => $p['status'],
+				'status_sebelum'  => 'pending',
+				'status_sesudah'  => $p['status'],
+				'warga_nama'      => $p['warga_nama'] ?? 'Warga',
+				'warga_alamat'    => $p['warga_alamat'] ?? '-',
+				'bulan_bayar'     => $p['bulan_mulai'],
+				'jumlah_bayar'    => $p['jumlah_bayar'],
+				'pembayaran_via'  => $p['pembayaran_via'],
+				'tanggal_bayar'   => $p['tanggal_bayar'],
+				'wa_status'       => $wa_status,
+				'wa_no_tujuan'    => !empty($p['no_hp']) ? hp($p['no_hp']) : null,
+				'wa_response'     => 'Auto-sync historical payment',
+				'ip_address'      => '127.0.0.1',
+				'user_agent'      => 'System Migration',
+				'created_at'      => $p['created_at'] ?: date('Y-m-d H:i:s'),
+			];
+		}
+
+		if (!empty($batch)) {
+			$this->db->insert_batch('log_verifikasi', $batch);
+		}
 	}
 
 	/**
@@ -174,6 +270,7 @@ class Dashboard extends CI_Controller
 	public function log_verifikasi()
 	{
 		$this->checkSession();
+		$this->_sync_historical_log_verifikasi();
 		$data['halaman'] = 'dashboard/log_verifikasi';
 		$this->load->view('modul', $data);
 	}
@@ -1276,10 +1373,12 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 			$log_data = [
 				'pembayaran_id' => $id, 'aksi' => $aksi, 'status_sebelum' => $cek->status, 'status_sesudah' => $statusBaru,
-				'warga_nama' => $nama, 'warga_alamat' => $rumah['alamat'], 'bulan_bayar' => $pembayaran['bulan_mulai'],
+				'warga_nama' => $nama, 'warga_alamat' => $rumah['alamat'] ?? '', 'bulan_bayar' => $pembayaran['bulan_mulai'],
 				'jumlah_bayar' => $pembayaran['jumlah_bayar'], 'pembayaran_via' => $pembayaran['pembayaran_via'],
 				'tanggal_bayar' => $pembayaran['tanggal_bayar'], 'wa_no_tujuan' => hp($no_hp),
+				'wa_status' => !empty($no_hp) ? 'queue' : 'skipped',
 			];
+			$this->_insert_log_verifikasi($log_data);
 
 			// Tandai untuk dikirim via antrian (agar simpan jadi cepat/instan)
 			$this->db->where('id', $id);
@@ -1311,12 +1410,35 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				$user = $this->db->get_where('master_users', ['id' => $pembayaran['user_id']])->row_array();
 				$rumah = $this->db->get_where('master_rumah', ['id' => $user['id_rumah']])->row_array();
 				$no_hp = get_no_hp_warga($user['id_rumah'] ?? 0, $rumah['alamat'] ?? '');
+				
+				$wa_status = 'skipped';
+				$wa_response = null;
 				if (!empty($no_hp)) {
 					$bulan = date('F Y', strtotime($pembayaran['bulan_mulai']));
 					$link = base_url('download_invoice/' . encrypt_url($pembayaran['id']));
 					$text = "✅ Pembayaran IPL Telah Divalidasi\n\nAssalamu'alaikum/Salam sejahtera Bapak/Ibu *".$user['nama']."*,\n\nPembayaran IPL bulan *$bulan* sebesar *Rp" . number_format($pembayaran['jumlah_bayar'], 0, ',', '.') . "* telah *divalidasi* oleh pengurus. ✅\n💳 Tanggal Bayar: " . date('d-m-Y', strtotime($pembayaran['tanggal_bayar'])) . "\n📄 Bukti: Sudah divalidasi\n🔄 Metode Pembayaran: " . ($pembayaran['pembayaran_via'] === 'koordinator' ? 'Koordinator' : 'Transfer') . "\n📑 Kitir Pembayaran: $link\n\nSilakan unduh e-kitir di atas sebagai bukti pembayaran resmi Bapak/Ibu.\n\nTerima kasih atas kontribusi Bapak/Ibu dalam operasional dan pemeliharaan lingkungan kita bersama.\n\nHormat kami,\nPengurus Paguyuban TSI\nPerumahan Taman Sukodono Indah\n_⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tidak membalas pesan ini._";
-					send_wa($no_hp, $text);
+					$res = send_wa($no_hp, $text);
+					$wa_status = (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) ? 'success' : 'failed';
+					$wa_response = json_encode($res);
 				}
+
+				// Catat ke log verifikasi
+				$log_data = [
+					'pembayaran_id' => $id,
+					'aksi' => $aksi,
+					'status_sebelum' => $cek->status,
+					'status_sesudah' => $statusBaru,
+					'warga_nama' => $user['nama'] ?? '',
+					'warga_alamat' => $rumah['alamat'] ?? '',
+					'bulan_bayar' => $pembayaran['bulan_mulai'],
+					'jumlah_bayar' => $pembayaran['jumlah_bayar'],
+					'pembayaran_via' => $pembayaran['pembayaran_via'],
+					'tanggal_bayar' => $pembayaran['tanggal_bayar'],
+					'wa_no_tujuan' => !empty($no_hp) ? hp($no_hp) : null,
+					'wa_status' => $wa_status,
+					'wa_response' => $wa_response,
+				];
+				$this->_insert_log_verifikasi($log_data);
 			}
 		}
 		echo json_encode(['status' => 'success', 'message' => 'Data terpilih berhasil diproses']);
@@ -2710,41 +2832,48 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 
 	/**
-	 * Halaman Log Laporan Koordinator
-	 * Menampilkan koordinator yang rajin entry dan yang tidak
+	/**
+	 * Hitung data log koordinator (binaan, lunas, nunggak, capaian)
 	 */
-	public function log_koordinator()
+	private function _get_log_koordinator_data($bulan, $tahun)
 	{
-		$this->checkSession();
+		$nama_bulan = [
+			'01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April',
+			'05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus',
+			'09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
+		];
+		$bulan = sprintf('%02d', (int)$bulan);
+		$tahun = (int)$tahun;
+		$bulan_str = sprintf('%04d-%02d', $tahun, $bulan);
 
-		// Filter bulan & tahun
-		$bulan = $this->input->get('bulan') ?: date('m');
-		$tahun = $this->input->get('tahun') ?: date('Y');
+		// Pastikan kolom no_hp ada di master_koordinator_blok
+		if (!$this->db->field_exists('no_hp', 'master_koordinator_blok')) {
+			$this->db->query("ALTER TABLE master_koordinator_blok ADD no_hp VARCHAR(20) DEFAULT NULL");
+		}
 
-		// Koordinator yang punya rumah binaan saja (hide yang tidak punya rumah, data tetap ada)
+		// Koordinator yang punya rumah binaan saja
 		$koordinator_all = $this->db->query("
-			SELECT k.id, k.nama, k.username 
+			SELECT k.id, k.nama, k.username, k.no_hp 
 			FROM master_koordinator_blok k
 			WHERE EXISTS (SELECT 1 FROM master_rumah r WHERE r.id_koordinator = k.id)
 			ORDER BY k.nama ASC
 		")->result_array();
 
-		// Hitung entry per koordinator bulan ini — semua metode bayar (transfer + koordinator)
-		// Filter berdasarkan bulan_mulai agar konsisten dengan rekap rapel
-		$bulan_str = sprintf('%04d-%02d', $tahun, $bulan);
-		$entry_data = $this->db->query("
-			SELECT COALESCE(u.id_koordinator, r.id_koordinator) as id_koordinator,
-				   COUNT(p.id) as total_entry,
-				   SUM(p.jumlah_bayar) as total_nominal,
-				   MAX(p.created_at) as last_entry,
-				   SUM(CASE WHEN p.status='verified' THEN 1 ELSE 0 END) as verified,
-				   SUM(CASE WHEN p.status='pending' THEN 1 ELSE 0 END) as pending,
-				   SUM(CASE WHEN p.status='rejected' THEN 1 ELSE 0 END) as rejected,
-				   SUM(CASE WHEN p.pembayaran_via='koordinator' THEN 1 ELSE 0 END) as via_koordinator,
-				   SUM(CASE WHEN p.pembayaran_via IN ('transfer','transfer_2') THEN 1 ELSE 0 END) as via_transfer
+		// Ambil semua rumah binaan beserta no_hp warga
+		$semua_rumah = $this->db->query("
+			SELECT r.id as id_rumah, r.alamat, r.nama, r.id_koordinator, MAX(kl.no_hp) as no_hp
+			FROM master_rumah r
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			WHERE r.id_koordinator IS NOT NULL
+			GROUP BY r.id, r.alamat, r.nama, r.id_koordinator
+			ORDER BY r.alamat ASC
+		")->result_array();
+
+		// Ambil seluruh data pembayaran untuk bulan kewajiban ini
+		$pembayaran_bulan = $this->db->query("
+			SELECT p.id, u.id_rumah, p.status, p.jumlah_bayar, p.pembayaran_via, p.tanggal_bayar, p.created_at
 			FROM master_pembayaran p
-			LEFT JOIN master_users u ON u.id = p.user_id
-			LEFT JOIN master_rumah r ON r.id = u.id_rumah
+			LEFT JOIN master_users u ON p.user_id = u.id
 			WHERE p.status IN ('verified', 'pending')
 			AND (
 				DATE_FORMAT(p.untuk_bulan, '%Y-%m') = ?
@@ -2755,65 +2884,294 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 					AND (p.untuk_bulan IS NULL OR p.untuk_bulan = '' OR p.untuk_bulan = '0000-00-00')
 				)
 			)
-			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator)
+			ORDER BY p.id DESC
 		", [$bulan_str, $bulan_str, $bulan_str])->result_array();
 
-		// Index by id_koordinator
-		$entry_map = [];
-		foreach ($entry_data as $e) {
-			if ($e['id_koordinator'] !== null) {
-				$entry_map[$e['id_koordinator']] = $e;
+		// Map pembayaran per id_rumah
+		$pay_by_rumah = [];
+		foreach ($pembayaran_bulan as $p) {
+			if (!isset($pay_by_rumah[$p['id_rumah']])) {
+				$pay_by_rumah[$p['id_rumah']] = $p;
 			}
 		}
 
-		// Hitung jumlah rumah per koordinator
-		$rumah_data = $this->db->query("SELECT id_koordinator, COUNT(*) as jml_rumah FROM master_rumah WHERE id_koordinator IS NOT NULL GROUP BY id_koordinator")->result_array();
-		$rumah_map = [];
-		foreach ($rumah_data as $rd) {
-			$rumah_map[$rd['id_koordinator']] = $rd['jml_rumah'];
+		// Kelompokkan rumah per koordinator
+		$rumah_by_koor = [];
+		foreach ($semua_rumah as $r) {
+			$rumah_by_koor[$r['id_koordinator']][] = $r;
 		}
 
-		// Gabungkan data
+		// Gabungkan data per koordinator
 		$result = [];
+		$total_rumah_all = 0;
+		$total_lunas_all = 0;
+		$total_nominal_all = 0;
+		$rajin_cnt = 0;
+		$belum_entry_cnt = 0;
+
 		foreach ($koordinator_all as $k) {
 			$kid = $k['id'];
-			$entry = $entry_map[$kid] ?? null;
+			$daftarrumah = $rumah_by_koor[$kid] ?? [];
+			$list_lunas = [];
+			$list_nunggak = [];
+			$total_nominal = 0;
+			$last_entry = null;
+			$verified_cnt = 0;
+			$pending_cnt = 0;
+			$via_koor = 0;
+			$via_tf = 0;
+
+			foreach ($daftarrumah as $rm) {
+				$idr = $rm['id_rumah'];
+				if (isset($pay_by_rumah[$idr])) {
+					$pay = $pay_by_rumah[$idr];
+					$total_nominal += (float)$pay['jumlah_bayar'];
+					if ($pay['status'] === 'verified') $verified_cnt++;
+					elseif ($pay['status'] === 'pending') $pending_cnt++;
+
+					if ($pay['pembayaran_via'] === 'koordinator') $via_koor++;
+					elseif (in_array($pay['pembayaran_via'], ['transfer', 'transfer_2'])) $via_tf++;
+
+					$tgl_entry = $pay['created_at'] ?: $pay['tanggal_bayar'];
+					if ($tgl_entry && (!$last_entry || strtotime($tgl_entry) > strtotime($last_entry))) {
+						$last_entry = $tgl_entry;
+					}
+
+					$list_lunas[] = array_merge($rm, [
+						'pembayaran_id' => $pay['id'],
+						'jumlah_bayar'  => $pay['jumlah_bayar'],
+						'tanggal_bayar' => $pay['tanggal_bayar'],
+						'pembayaran_via'=> $pay['pembayaran_via'],
+						'status'        => $pay['status'],
+					]);
+				} else {
+					$list_nunggak[] = $rm;
+				}
+			}
+
+			$jml_rumah = count($daftarrumah);
+			$jml_lunas = count($list_lunas);
+			$jml_nunggak = count($list_nunggak);
+			$persen = ($jml_rumah > 0) ? round(($jml_lunas / $jml_rumah) * 100) : 0;
+
+			$total_rumah_all += $jml_rumah;
+			$total_lunas_all += $jml_lunas;
+			$total_nominal_all += $total_nominal;
+
+			// Kategori kerajinan
+			if ($jml_rumah > 0 && $jml_lunas == $jml_rumah) {
+				$status_rajin = 'sangat_rajin';
+				$label_rajin = '🌟 Tuntas 100%';
+				$badge_class = 'bg-success';
+				$rajin_cnt++;
+			} elseif ($persen >= 75) {
+				$status_rajin = 'rajin';
+				$label_rajin = '✅ Rajin (' . $persen . '%)';
+				$badge_class = 'bg-success';
+				$rajin_cnt++;
+			} elseif ($persen >= 50) {
+				$status_rajin = 'cukup';
+				$label_rajin = '⚡ Cukup (' . $persen . '%)';
+				$badge_class = 'bg-warning text-dark';
+			} elseif ($jml_lunas > 0) {
+				$status_rajin = 'kurang';
+				$label_rajin = '⚠️ Kurang (' . $persen . '%)';
+				$badge_class = 'bg-danger';
+			} else {
+				$status_rajin = 'belum_entry';
+				$label_rajin = '❌ Belum Entry';
+				$badge_class = 'bg-dark';
+				$belum_entry_cnt++;
+			}
+
 			$result[] = [
-				'id' => $kid,
-				'nama' => $k['nama'],
-				'username' => $k['username'],
-				'jml_rumah' => $rumah_map[$kid] ?? 0,
-				'total_entry' => $entry['total_entry'] ?? 0,
-				'total_nominal' => $entry['total_nominal'] ?? 0,
-				'last_entry' => $entry['last_entry'] ?? null,
-				'verified' => $entry['verified'] ?? 0,
-				'pending' => $entry['pending'] ?? 0,
-				'rejected' => $entry['rejected'] ?? 0,
-				'via_koordinator' => $entry['via_koordinator'] ?? 0,
-				'via_transfer' => $entry['via_transfer'] ?? 0,
+				'id'              => $kid,
+				'nama'            => $k['nama'],
+				'username'        => $k['username'],
+				'no_hp'           => $k['no_hp'],
+				'jml_rumah'       => $jml_rumah,
+				'total_entry'     => $jml_lunas,
+				'jml_lunas'       => $jml_lunas,
+				'jml_nunggak'     => $jml_nunggak,
+				'persen_lunas'    => $persen,
+				'status_rajin'    => $status_rajin,
+				'label_rajin'     => $label_rajin,
+				'badge_class'     => $badge_class,
+				'total_nominal'   => $total_nominal,
+				'last_entry'      => $last_entry,
+				'verified'        => $verified_cnt,
+				'pending'         => $pending_cnt,
+				'via_koordinator' => $via_koor,
+				'via_transfer'    => $via_tf,
+				'list_lunas'      => $list_lunas,
+				'list_nunggak'    => $list_nunggak,
 			];
 		}
 
-		// Hitung total entry semua bulan per koordinator (untuk chart)
-		$trend_data = $this->db->query("
-			SELECT COALESCE(u.id_koordinator, r.id_koordinator) as id_koordinator,
-				   DATE_FORMAT(COALESCE(NULLIF(p.untuk_bulan,'0000-00-00'), p.bulan_mulai), '%Y-%m') as bulan,
-				   COUNT(p.id) as total
-			FROM master_pembayaran p
-			LEFT JOIN master_users u ON u.id = p.user_id
-			LEFT JOIN master_rumah r ON r.id = u.id_rumah
-			WHERE YEAR(COALESCE(NULLIF(p.untuk_bulan,'0000-00-00'), p.bulan_mulai)) = ?
-			AND p.status IN ('verified', 'pending')
-			GROUP BY COALESCE(u.id_koordinator, r.id_koordinator), DATE_FORMAT(COALESCE(NULLIF(p.untuk_bulan,'0000-00-00'), p.bulan_mulai), '%Y-%m')
-			ORDER BY bulan ASC
-		", [$tahun])->result_array();
+		// Urutkan default: % tertinggi ke terendah
+		usort($result, function($a, $b) {
+			if ($b['persen_lunas'] != $a['persen_lunas']) return $b['persen_lunas'] - $a['persen_lunas'];
+			return $b['total_entry'] - $a['total_entry'];
+		});
 
-		$data['koordinator_list'] = $result;
-		$data['trend_data'] = $trend_data;
-		$data['bulan_filter'] = $bulan;
-		$data['tahun_filter'] = $tahun;
+		// Top 3 Koordinator Terajin
+		$top3 = array_slice($result, 0, 3);
+
+		// Bottom 3 (Perlu Diingatkan)
+		$sorted_bottom = $result;
+		usort($sorted_bottom, function($a, $b) {
+			if ($b['jml_nunggak'] != $a['jml_nunggak']) return $b['jml_nunggak'] - $a['jml_nunggak'];
+			return $a['persen_lunas'] - $b['persen_lunas'];
+		});
+		$bottom3 = array_slice($sorted_bottom, 0, 3);
+
+		$persen_total_perumahan = ($total_rumah_all > 0) ? round(($total_lunas_all / $total_rumah_all) * 100) : 0;
+
+		return [
+			'koordinator_list'       => $result,
+			'total_koordinator'      => count($result),
+			'total_rajin'            => $rajin_cnt,
+			'total_belum_entry'      => $belum_entry_cnt,
+			'persen_total_perumahan' => $persen_total_perumahan,
+			'total_lunas_all'        => $total_lunas_all,
+			'total_rumah_all'        => $total_rumah_all,
+			'total_nominal_all'      => $total_nominal_all,
+			'top3'                   => $top3,
+			'bottom3'                => $bottom3,
+			'bulan'                  => $bulan,
+			'tahun'                  => $tahun,
+			'bulan_str'              => $bulan_str,
+			'bulan_label'            => $nama_bulan[$bulan] ?? $bulan,
+		];
+	}
+
+	/**
+	 * Halaman Log Laporan Koordinator (Shell View)
+	 */
+	public function log_koordinator()
+	{
+		$this->checkSession();
+
+		$data['bulan_filter'] = $this->input->get('bulan') ?: date('m');
+		$data['tahun_filter'] = $this->input->get('tahun') ?: date('Y');
 		$data['halaman'] = 'dashboard/log_koordinator';
 		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * Endpoint AJAX DataTables untuk Rekap Koordinator
+	 */
+	public function ajax_log_koordinator()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$bulan = $this->input->get('bulan') ?: date('m');
+		$tahun = $this->input->get('tahun') ?: date('Y');
+
+		$res = $this->_get_log_koordinator_data($bulan, $tahun);
+
+		$data_rows = [];
+		$no = 1;
+		foreach ($res['koordinator_list'] as $k) {
+			$data_rows[] = [
+				'no'             => $no++,
+				'id'             => $k['id'],
+				'nama'           => $k['nama'],
+				'username'       => $k['username'],
+				'no_hp'          => $k['no_hp'],
+				'jml_rumah'      => $k['jml_rumah'],
+				'jml_lunas'      => $k['jml_lunas'],
+				'jml_nunggak'    => $k['jml_nunggak'],
+				'persen_lunas'   => $k['persen_lunas'],
+				'total_nominal'  => $k['total_nominal'],
+				'total_nominal_rp' => 'Rp' . number_format($k['total_nominal'], 0, ',', '.'),
+				'last_entry'     => $k['last_entry'],
+				'last_entry_formatted' => $k['last_entry'] ? date('d/m/Y H:i', strtotime($k['last_entry'])) : '-',
+				'status_rajin'   => $k['status_rajin'],
+				'label_rajin'    => $k['label_rajin'],
+				'badge_class'    => $k['badge_class'],
+			];
+		}
+
+		echo json_encode([
+			'status' => 'success',
+			'kpi'    => [
+				'total_koordinator'       => $res['total_koordinator'],
+				'total_rajin'             => $res['total_rajin'],
+				'total_belum_entry'       => $res['total_belum_entry'],
+				'persen_total_perumahan'  => $res['persen_total_perumahan'],
+				'total_lunas_all'         => $res['total_lunas_all'],
+				'total_rumah_all'         => $res['total_rumah_all'],
+				'total_nominal_all_rp'    => 'Rp' . number_format($res['total_nominal_all'], 0, ',', '.'),
+				'bulan_label'             => $res['bulan_label'],
+				'tahun'                   => $res['tahun'],
+				'top3'                    => $res['top3'],
+				'bottom3'                 => $res['bottom3'],
+			],
+			'data'   => $data_rows
+		]);
+	}
+
+	/**
+	 * Endpoint AJAX Detail Rekap Koordinator (Rumah Lunas & Nunggak)
+	 */
+	public function ajax_detail_log_koordinator()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$id_koor = (int)$this->input->get('id');
+		$bulan = $this->input->get('bulan') ?: date('m');
+		$tahun = $this->input->get('tahun') ?: date('Y');
+
+		if (empty($id_koor)) {
+			echo json_encode(['status' => 'error', 'message' => 'ID Koordinator tidak valid']);
+			return;
+		}
+
+		$res = $this->_get_log_koordinator_data($bulan, $tahun);
+		$selected = null;
+		foreach ($res['koordinator_list'] as $k) {
+			if ($k['id'] == $id_koor) {
+				$selected = $k;
+				break;
+			}
+		}
+
+		if (!$selected) {
+			echo json_encode(['status' => 'error', 'message' => 'Data koordinator tidak ditemukan']);
+			return;
+		}
+
+		// WhatsApp reminder link
+		$wa_link = '';
+		if (!empty($selected['no_hp']) && $selected['jml_nunggak'] > 0) {
+			$wa_msg = "Halo Bapak/Ibu Koordinator *" . $selected['nama'] . "*,\n\nSalam dari Pengurus Paguyuban TSI.\nMohon bantuannya untuk menindaklanjuti entri rekapan iuran IPL bulan *" . $res['bulan_label'] . " " . $tahun . "*.\nSaat ini di binaan Anda masih tercatat *" . $selected['jml_nunggak'] . " rumah* yang belum terentri/bayar dari total " . $selected['jml_rumah'] . " rumah binaan.\n\nTerima kasih banyak atas dedikasi dan kerjasamanya!";
+			$wa_link = "https://wa.me/" . preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $selected['no_hp'])) . "?text=" . urlencode($wa_msg);
+		}
+
+		echo json_encode([
+			'status' => 'success',
+			'koordinator' => [
+				'id'           => $selected['id'],
+				'nama'         => $selected['nama'],
+				'no_hp'        => $selected['no_hp'],
+				'jml_rumah'    => $selected['jml_rumah'],
+				'jml_lunas'    => $selected['jml_lunas'],
+				'jml_nunggak'  => $selected['jml_nunggak'],
+				'persen_lunas' => $selected['persen_lunas'],
+				'total_nominal'=> $selected['total_nominal'],
+				'total_nominal_rp' => 'Rp' . number_format($selected['total_nominal'], 0, ',', '.'),
+				'label_rajin'  => $selected['label_rajin'],
+				'badge_class'  => $selected['badge_class'],
+				'wa_link'      => $wa_link,
+				'bulan_label'  => $res['bulan_label'],
+				'tahun'        => $tahun,
+			],
+			'list_nunggak' => $selected['list_nunggak'],
+			'list_lunas'   => $selected['list_lunas'],
+		]);
 	}
 
 	/**

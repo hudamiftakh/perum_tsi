@@ -11,6 +11,9 @@ class Syncwa extends CI_Controller
         $this->load->library('session');
         $this->load->library('pagination');
         $this->load->model('M_Datatables');
+        if (function_exists('ensure_log_tables_exist')) {
+            ensure_log_tables_exist();
+        }
     }
 
     public function public()
@@ -51,9 +54,24 @@ class Syncwa extends CI_Controller
                 // Update status wa_send jadi success
                 $this->db->where('id', $id);
                 $this->db->update('master_pembayaran', ['wa_send' => 'success']);
+
+                // Sinkronkan ke log_verifikasi jika tabel ada
+                if ($this->db->table_exists('log_verifikasi')) {
+                    $this->db->where('pembayaran_id', $id)->update('log_verifikasi', [
+                        'wa_status' => 'success',
+                        'wa_response' => json_encode($res),
+                    ]);
+                }
                 echo json_encode(['status' => 'success', 'message' => 'Notifikasi WA berhasil dikirim']);
             } else {
-                // Jika gagal, biarkan status tetap queue atau log error
+                // Jika gagal, catat error ke log_verifikasi
+                if ($this->db->table_exists('log_verifikasi')) {
+                    $this->db->where('pembayaran_id', $id)->update('log_verifikasi', [
+                        'wa_status' => 'failed',
+                        'wa_error' => $res['message'] ?? 'Error API',
+                        'wa_response' => json_encode($res),
+                    ]);
+                }
                 echo json_encode(['status' => 'error', 'message' => 'Gagal kirim WA: ' . ($res['message'] ?? 'Error API')]);
             }
         } else {

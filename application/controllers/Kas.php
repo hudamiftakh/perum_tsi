@@ -8,10 +8,13 @@ class kas extends CI_Controller
 	{
 		error_reporting(1);
 		parent::__construct();
+		$this->load->database();
 		$this->load->library('session');
 		$this->load->library('pagination');
-		$this->load->library('session');
 		$this->load->model('Kas_model');
+		if (function_exists('ensure_log_tables_exist')) {
+			ensure_log_tables_exist();
+		}
 	}
 
 	public function checkSession()

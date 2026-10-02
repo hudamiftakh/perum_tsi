@@ -14,186 +14,283 @@ if ($Auth['role'] === 'koordinator') {
 ?>
 
 <style>
+/* Modern Styling Variables */
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    --success-gradient: linear-gradient(135deg, #51cf66 0%, #21d4fd 100%);
-    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --primary-grad: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --danger-grad: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --success-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --warning-grad: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --info-grad: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    --card-shadow-hover: 0 20px 30px -10px rgba(0, 0, 0, 0.08), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
 }
 
-.stat-card {
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-    background: #fff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    overflow: hidden;
+.kpi-card {
+    border: none;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    overflow: hidden;
 }
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
 }
-
-.stat-card .card-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+.kpi-card .kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 15px;
+    font-size: 1.4rem;
     color: #fff;
+    flex-shrink: 0;
+}
+.kpi-card .card-glow {
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    opacity: 0.06;
+    pointer-events: none;
 }
 
-.nav-tabs-profil {
-    border-bottom: none;
-    gap: 10px;
+/* Modern Filter Card */
+.filter-card-premium {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
-.nav-tabs-profil .nav-link {
+/* Tab Styling */
+.nav-pills-premium {
+    gap: 8px;
+    background: #f8fafc;
+    padding: 6px;
+    border-radius: 16px;
+    display: inline-flex;
+    flex-wrap: wrap;
+}
+.nav-pills-premium .nav-link {
     border: none;
     border-radius: 12px;
     color: #64748b;
     font-weight: 600;
-    padding: 12px 24px;
-    transition: all 0.3s;
-    background: #f8fafc;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    transition: all 0.25s ease;
+    background: transparent;
 }
-
-.nav-tabs-profil .nav-link:hover {
-    background: #f1f5f9;
+.nav-pills-premium .nav-link:hover {
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.6);
 }
-
-.nav-tabs-profil .nav-link.active {
-    background: var(--primary-gradient);
+.nav-pills-premium .nav-link.active {
+    background: #ffffff;
+    color: #0f172a !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.nav-pills-premium .nav-link.active .badge-count-danger {
+    background: #ef4444 !important;
     color: #fff !important;
-    box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
 }
-
-.nav-tabs-profil .nav-link.active i, 
-.nav-tabs-profil .nav-link.active span {
+.nav-pills-premium .nav-link.active .badge-count-success {
+    background: #10b981 !important;
+    color: #fff !important;
+}
+.nav-pills-premium .nav-link.active .badge-count-dimuka {
+    background: #7c3aed !important;
     color: #fff !important;
 }
 
-.table-profil {
+/* Table Design */
+.table-premium {
     border-collapse: separate;
-    border-spacing: 0 8px;
+    border-spacing: 0;
+    width: 100% !important;
 }
-
-.table-profil thead th {
-    background: #f8fafc !important;
-    color: #64748b !important;
+.table-premium thead th {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    font-size: 0.76rem;
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    border: none;
-    padding: 15px;
-}
-
-.table-profil tbody tr {
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    transition: all 0.2s;
-}
-
-.table-profil tbody tr:hover {
-    transform: scale(1.005);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-.table-profil td {
-    padding: 15px;
+    letter-spacing: 0.6px;
+    padding: 14px 12px;
     border: none;
     vertical-align: middle;
 }
-
-.table-profil td:first-child { border-radius: 12px 0 0 12px; }
-.table-profil td:last-child { border-radius: 0 12px 12px 0; }
-
-.badge-dimuka { background: var(--primary-gradient); color: #fff; }
-.btn-filter { border-radius: 10px; padding: 10px 20px; font-weight: 600; }
+.table-premium thead th:first-child { border-top-left-radius: 12px; }
+.table-premium thead th:last-child { border-top-right-radius: 12px; }
+.table-premium tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.88rem;
+}
+.table-premium tbody tr:hover {
+    background-color: #f8fafc;
+}
+.avatar-initial {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-right: 8px;
+    background: #f1f5f9;
+    color: #475569;
+}
 </style>
 
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-3">
-        <div class="card-body px-4 py-3">
-            <h4 class="fw-semibold mb-1">🏠 Profil Kepatuhan Warga</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Profil Kepatuhan Warga</li>
-                </ol>
-            </nav>
+    <!-- Header Hero Banner -->
+    <div class="card border-0 mb-4 position-relative overflow-hidden text-white" 
+         style="background: linear-gradient(135deg, #1e3a8a 0%, #047857 100%); border-radius: 20px; box-shadow: 0 10px 25px rgba(4, 120, 87, 0.2);">
+        <div class="card-body px-4 py-4 position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);">
+                        <i class="ti ti-shield-check text-warning"></i>
+                        <span class="small fw-semibold text-white">Sistem Evaluasi &amp; Monitoring Kepatuhan Warga</span>
+                    </div>
+                    <h3 class="fw-bold text-white mb-1">🏠 Profil Kepatuhan Pembayaran Warga</h3>
+                    <p class="text-white-50 mb-0 small">
+                        Laporan otomatis status warga (Menunggak, Rajin Bayar Tepat Waktu, dan Bayar Di Muka) untuk transparansi Paguyuban TSI.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-md-end mb-0">
+                            <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>" class="text-white-50">Dashboard</a></li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">Profil Kepatuhan</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <i class="ti ti-chart-donut position-absolute" style="right: -20px; bottom: -30px; font-size: 11rem; opacity: 0.08;"></i>
+    </div>
+
+    <!-- 5 KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <!-- 1. Total Rumah -->
+        <div class="col-6 col-lg-2-4 col-md-4">
+            <div class="card kpi-card p-3 h-100">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon" style="background: var(--info-grad);">
+                        <i class="ti ti-home"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold d-block">Total Rumah</span>
+                        <h4 class="fw-bold text-dark mb-0" id="statTotal">-</h4>
+                        <small class="text-muted" style="font-size:0.75rem">Terdaftar di sistem</small>
+                    </div>
+                </div>
+                <div class="card-glow" style="background: var(--info-grad);"></div>
+            </div>
+        </div>
+
+        <!-- 2. Menunggak -->
+        <div class="col-6 col-lg-2-4 col-md-4">
+            <div class="card kpi-card p-3 h-100" style="border-bottom: 3px solid #ef4444;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon" style="background: var(--danger-grad);">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold d-block">Menunggak</span>
+                        <h4 class="fw-bold text-danger mb-0" id="statMenunggak">-</h4>
+                        <small class="text-danger fw-semibold" style="font-size:0.75rem">Perlu ditagih</small>
+                    </div>
+                </div>
+                <div class="card-glow" style="background: var(--danger-grad);"></div>
+            </div>
+        </div>
+
+        <!-- 3. Rajin Bayar -->
+        <div class="col-6 col-lg-2-4 col-md-4">
+            <div class="card kpi-card p-3 h-100" style="border-bottom: 3px solid #10b981;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon" style="background: var(--success-grad);">
+                        <i class="ti ti-circle-check"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold d-block">Rajin Bayar</span>
+                        <h4 class="fw-bold text-success mb-0" id="statRajin">-</h4>
+                        <small class="text-success fw-semibold" style="font-size:0.75rem">Lunas tepat waktu</small>
+                    </div>
+                </div>
+                <div class="card-glow" style="background: var(--success-grad);"></div>
+            </div>
+        </div>
+
+        <!-- 4. Bayar Di Muka -->
+        <div class="col-6 col-lg-2-4 col-md-6">
+            <div class="card kpi-card p-3 h-100" style="border-bottom: 3px solid #7c3aed;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon" style="background: var(--primary-grad);">
+                        <i class="ti ti-star"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold d-block">Bayar Di Muka</span>
+                        <h4 class="fw-bold mb-0" style="color:#7c3aed" id="statDimuka">-</h4>
+                        <small class="text-muted" style="font-size:0.75rem">Saldo surplus</small>
+                    </div>
+                </div>
+                <div class="card-glow" style="background: var(--primary-grad);"></div>
+            </div>
+        </div>
+
+        <!-- 5. Tingkat Kepatuhan -->
+        <div class="col-12 col-lg-2-4 col-md-6">
+            <div class="card kpi-card p-3 h-100" style="border-bottom: 3px solid #059669;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="kpi-icon" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                        <i class="ti ti-chart-line"></i>
+                    </div>
+                    <div class="w-100">
+                        <span class="text-muted small fw-semibold d-block">Kepatuhan (%)</span>
+                        <h4 class="fw-bold text-success mb-0" id="statKepatuhanPct">0%</h4>
+                        <div class="progress mt-1" style="height:6px">
+                            <div class="progress-bar bg-success" id="statKepatuhanBar" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Stats -->
-    <div class="row mb-4">
-        <div class="col-6 col-lg-3 mb-3">
-            <div class="card stat-card p-3">
-                <div class="card-icon" style="background: var(--info-gradient);">
-                    <i class="ti ti-home"></i>
-                </div>
-                <div>
-                    <h3 class="fw-bold mb-0" id="statTotal">-</h3>
-                    <span class="text-muted small fw-semibold">Total Rumah</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3 mb-3">
-            <div class="card stat-card p-3">
-                <div class="card-icon" style="background: var(--danger-gradient);">
-                    <i class="ti ti-alert-triangle"></i>
-                </div>
-                <div>
-                    <h3 class="fw-bold mb-0" id="statMenunggak">-</h3>
-                    <span class="text-muted small fw-semibold">Menunggak</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3 mb-3">
-            <div class="card stat-card p-3">
-                <div class="card-icon" style="background: var(--success-gradient);">
-                    <i class="ti ti-circle-check"></i>
-                </div>
-                <div>
-                    <h3 class="fw-bold mb-0" id="statRajin">-</h3>
-                    <span class="text-muted small fw-semibold">Rajin Bayar</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3 mb-3">
-            <div class="card stat-card p-3">
-                <div class="card-icon" style="background: var(--primary-gradient);">
-                    <i class="ti ti-star"></i>
-                </div>
-                <div>
-                    <h3 class="fw-bold mb-0" id="statDimuka">-</h3>
-                    <span class="text-muted small fw-semibold">Bayar Di Muka</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Section (Moved below stats) -->
-    <div class="mb-4 p-4 border rounded-4 shadow-sm" style="background: #f1f5f9; border: 1px solid #cbd5e1 !important;">
+    <!-- Filter Control Card -->
+    <div class="card filter-card-premium p-4 mb-4">
         <div class="d-flex flex-wrap align-items-end gap-3">
-            <div style="min-width: 120px; flex: 1;">
-                <label class="form-label fw-bold text-slate-700 small">Tahun</label>
-                <select id="filterTahun" class="form-select">
-                    <?php for ($y = $tahun_sekarang; $y >= 2025; $y--): ?>
+            <!-- Filter Tahun -->
+            <div style="min-width: 140px; flex: 1;">
+                <label class="form-label fw-bold text-muted small mb-1">
+                    <i class="ti ti-calendar me-1 text-primary"></i> Tahun Buku
+                </label>
+                <select id="filterTahun" class="form-select form-select-sm rounded-3">
+                    <?php for ($y = $tahun_sekarang; $y >= 2024; $y--): ?>
                         <option value="<?= $y ?>" <?= $selected_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
                     <?php endfor; ?>
                 </select>
             </div>
-            <div style="min-width: 150px; flex: 1;">
-                <label class="form-label fw-bold text-slate-700 small">Sampai Bulan</label>
-                <select id="filterBulan" class="form-select">
+
+            <!-- Filter Bulan -->
+            <div style="min-width: 160px; flex: 1;">
+                <label class="form-label fw-bold text-muted small mb-1">
+                    <i class="ti ti-calendar-event me-1 text-primary"></i> Sampai Bulan
+                </label>
+                <select id="filterBulan" class="form-select form-select-sm rounded-3">
                     <?php 
                     $bulans = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
                     foreach($bulans as $num => $nama): 
@@ -203,10 +300,14 @@ if ($Auth['role'] === 'koordinator') {
                     <?php endforeach; ?>
                 </select>
             </div>
+
+            <!-- Filter Koordinator (Jika Admin) -->
             <?php if ($Auth['role'] !== 'koordinator'): ?>
-            <div style="min-width: 180px; flex: 1;">
-                <label class="form-label fw-bold text-slate-700 small">Koordinator</label>
-                <select id="filterKoor" class="form-select">
+            <div style="min-width: 200px; flex: 1.5;">
+                <label class="form-label fw-bold text-muted small mb-1">
+                    <i class="ti ti-user-check me-1 text-primary"></i> Koordinator Blok
+                </label>
+                <select id="filterKoor" class="form-select form-select-sm rounded-3">
                     <option value="">Semua Koordinator</option>
                     <?php foreach ($koordinator_list as $k): ?>
                         <option value="<?= $k['id'] ?>" <?= $selected_koor == $k['id'] ? 'selected' : '' ?>><?= htmlspecialchars($k['nama']) ?></option>
@@ -214,68 +315,79 @@ if ($Auth['role'] === 'koordinator') {
                 </select>
             </div>
             <?php endif; ?>
+
+            <!-- Action Buttons -->
             <div class="d-flex gap-2">
-                <button id="btnFilter" class="btn btn-primary btn-filter shadow-sm" style="background: var(--primary-gradient); border:none;">
-                    <i class="ti ti-search me-1"></i> Filter
+                <button id="btnFilter" class="btn btn-sm btn-primary rounded-3 px-3 shadow-sm" style="background: var(--primary-grad); border: none;">
+                    <i class="ti ti-search me-1"></i> Terapkan Filter
                 </button>
-                <button id="btnReset" class="btn btn-white btn-filter shadow-sm border text-secondary">
+                <button id="btnReset" class="btn btn-sm btn-outline-secondary rounded-3 px-3">
                     <i class="ti ti-refresh me-1"></i> Reset
                 </button>
-                <button type="button" onclick="downloadRekapMenunggakPdf()" class="btn btn-danger btn-filter shadow-sm" title="Download PDF Rekap Warga Menunggak">
+                <button type="button" onclick="downloadRekapMenunggakPdf()" class="btn btn-sm btn-danger rounded-3 px-3 shadow-sm" title="Download PDF Rekap Warga Menunggak">
                     <i class="ti ti-file-download me-1"></i> Rekap PDF
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="card border rounded-4 shadow-sm" style="border-color: #e2e8f0 !important;">
-        <div class="card-body p-0">
-            <ul class="nav nav-tabs nav-tabs-profil px-3 pt-3" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#tabMenunggak">
-                        <i class="bi bi-exclamation-triangle text-danger me-1"></i> Warga Menunggak
-                        <span class="badge bg-danger ms-1" id="badgeMenunggak">0</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#tabRajin">
-                        <i class="bi bi-check-circle text-success me-1"></i> Warga Rajin Bayar
-                        <span class="badge bg-success ms-1" id="badgeRajin">0</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#tabDimuka">
-                        <i class="bi bi-star-fill text-warning me-1"></i> Bayar Di Muka
-                        <span class="badge badge-dimuka ms-1" id="badgeDimuka">0</span>
-                    </a>
-                </li>
-            </ul>
+    <!-- Main Tabs Section -->
+    <div class="card border-0 rounded-4 shadow-sm mb-4">
+        <div class="card-body p-3 p-md-4">
+            <!-- Nav-Pills Toolbar -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div class="nav-pills-premium">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabMenunggak" type="button">
+                        <i class="ti ti-alert-triangle text-danger me-1"></i> Warga Menunggak
+                        <span class="badge rounded-pill bg-danger-subtle text-danger ms-1 badge-count-danger" id="badgeMenunggak">0</span>
+                    </button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabRajin" type="button">
+                        <i class="ti ti-circle-check text-success me-1"></i> Warga Rajin Bayar
+                        <span class="badge rounded-pill bg-success-subtle text-success ms-1 badge-count-success" id="badgeRajin">0</span>
+                    </button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDimuka" type="button">
+                        <i class="ti ti-star text-warning me-1"></i> Bayar Di Muka
+                        <span class="badge rounded-pill ms-1 badge-count-dimuka" style="background:#ede9fe;color:#7c3aed" id="badgeDimuka">0</span>
+                    </button>
+                </div>
 
-            <div class="tab-content p-3">
+                <div class="small text-muted" id="periodeInfo">-</div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content pt-2">
                 <!-- TAB 1: MENUNGGAK -->
                 <div class="tab-pane fade show active" id="tabMenunggak">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <h6 class="fw-bold mb-0" id="titleMenunggak">Daftar Warga Menunggak</h6>
-                            <button type="button" class="btn btn-sm btn-danger shadow-sm d-inline-flex align-items-center gap-1" id="btnDownloadRekapPdf" onclick="downloadRekapMenunggakPdf()" title="Download PDF Rekapitulasi Warga Menunggak">
+                            <h6 class="fw-bold mb-0 text-dark" id="titleMenunggak">Daftar Warga Menunggak</h6>
+                            <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" id="btnDownloadRekapPdf" onclick="downloadRekapMenunggakPdf()">
                                 <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Rekap
                             </button>
                             <div id="batchActionContainer" class="d-none">
-                                <button class="btn btn-sm btn-outline-danger shadow-sm" onclick="generateBatchPdf()" id="btnGenerateBatchPdf">
+                                <button class="btn btn-sm btn-outline-danger rounded-pill px-3 shadow-sm" onclick="generateBatchPdf()" id="btnGenerateBatchPdf">
                                     <i class="bi bi-file-earmark-zip"></i> Generate Surat (ZIP)
                                 </button>
                             </div>
                         </div>
-                        <small class="text-muted" id="periodeInfo">-</small>
                     </div>
+
                     <div class="table-responsive">
-                        <table class="table table-striped table-profil table-hover w-100" id="tblMenunggak">
-                            <thead><tr>
-                                <th width="30" class="text-center"><input type="checkbox" id="checkAllTunggak" class="form-check-input" style="cursor:pointer;"></th>
-                                <th width="40">No</th><th>Alamat</th><th>Nama</th><th>No HP</th>
-                                <th>Koordinator</th><th>Terbayar</th><th>Tunggakan</th><th>Status</th><th>Aksi</th>
-                            </tr></thead>
+                        <table class="table table-hover table-premium w-100" id="tblMenunggak">
+                            <thead>
+                                <tr>
+                                    <th width="30" class="text-center"><input type="checkbox" id="checkAllTunggak" class="form-check-input" style="cursor:pointer;"></th>
+                                    <th width="40" class="text-center">No</th>
+                                    <th>Nomor Rumah / Alamat</th>
+                                    <th>Nama Warga</th>
+                                    <th>Kontak WA</th>
+                                    <th>Koordinator</th>
+                                    <th class="text-center">Terbayar</th>
+                                    <th class="text-center">Tunggakan</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center" width="130">Aksi</th>
+                                </tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -284,15 +396,25 @@ if ($Auth['role'] === 'koordinator') {
                 <!-- TAB 2: RAJIN BAYAR -->
                 <div class="tab-pane fade" id="tabRajin">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">🏆 Warga Rajin Bayar</h6>
-                        <small class="text-muted">Lunas semua bulan wajib</small>
+                        <h6 class="fw-bold mb-0 text-success"><i class="ti ti-trophy me-1"></i> Warga Rajin Bayar (Tepat Waktu)</h6>
+                        <small class="text-muted">Telah melunasi seluruh kewajiban iuran IPL periode ini</small>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-striped table-profil table-hover w-100" id="tblRajin">
-                            <thead><tr>
-                                <th width="40">No</th><th>Alamat</th><th>Nama</th><th>No HP</th>
-                                <th>Koordinator</th><th>Terbayar</th><th>Total Bayar</th><th>Terakhir Bayar</th><th>Terkirim</th><th>Aksi</th>
-                            </tr></thead>
+                        <table class="table table-hover table-premium w-100" id="tblRajin">
+                            <thead>
+                                <tr>
+                                    <th width="40" class="text-center">No</th>
+                                    <th>Nomor Rumah / Alamat</th>
+                                    <th>Nama Warga</th>
+                                    <th>Kontak WA</th>
+                                    <th>Koordinator</th>
+                                    <th class="text-center">Terbayar</th>
+                                    <th class="text-end">Total Nominal</th>
+                                    <th class="text-center">Terakhir Bayar</th>
+                                    <th class="text-center">Kitir Terkirim</th>
+                                    <th class="text-center" width="120">Aksi</th>
+                                </tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -301,15 +423,25 @@ if ($Auth['role'] === 'koordinator') {
                 <!-- TAB 3: BAYAR DI MUKA -->
                 <div class="tab-pane fade" id="tabDimuka">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">⭐ Warga Bayar Di Muka</h6>
-                        <small class="text-muted">Membayar melebihi bulan berjalan</small>
+                        <h6 class="fw-bold mb-0" style="color:#7c3aed"><i class="ti ti-star-filled me-1"></i> Warga Bayar Di Muka (Surplus)</h6>
+                        <small class="text-muted">Membayar melampaui bulan berjalan saat ini</small>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-striped table-profil table-hover w-100" id="tblDimuka">
-                            <thead><tr>
-                                <th width="40">No</th><th>Alamat</th><th>Nama</th><th>No HP</th>
-                                <th>Koordinator</th><th>Bayar Sampai</th><th>Di Muka</th><th>Total Bayar</th><th>Terkirim</th><th>Aksi</th>
-                            </tr></thead>
+                        <table class="table table-hover table-premium w-100" id="tblDimuka">
+                            <thead>
+                                <tr>
+                                    <th width="40" class="text-center">No</th>
+                                    <th>Nomor Rumah / Alamat</th>
+                                    <th>Nama Warga</th>
+                                    <th>Kontak WA</th>
+                                    <th>Koordinator</th>
+                                    <th class="text-center">Bayar Sampai</th>
+                                    <th class="text-center">Surplus Bulan</th>
+                                    <th class="text-end">Total Nominal</th>
+                                    <th class="text-center">Kitir Terkirim</th>
+                                    <th class="text-center" width="120">Aksi</th>
+                                </tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -342,10 +474,10 @@ if ($Auth['role'] === 'koordinator') {
                         <div class="text-muted" style="font-size: 0.75rem;">Centang satu atau beberapa koordinator blok yang ingin disertakan ke dalam rekap PDF</div>
                     </div>
                     <div class="d-flex gap-1">
-                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 small" onclick="selectAllModalKoor(true)">
+                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 small rounded-pill" onclick="selectAllModalKoor(true)">
                             <i class="bi bi-check-all me-1"></i>Centang Semua
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="selectAllModalKoor(false)">
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 small rounded-pill" onclick="selectAllModalKoor(false)">
                             <i class="bi bi-dash me-1"></i>Hapus Centang
                         </button>
                     </div>
@@ -357,7 +489,7 @@ if ($Auth['role'] === 'koordinator') {
                             <div class="col-12 col-md-6">
                                 <label class="d-flex align-items-center p-2 rounded-3 border bg-white h-100 koor-card-item" style="cursor: pointer; transition: all 0.2s ease;">
                                     <input type="checkbox" name="modal_koor_check[]" value="<?= $k['id'] ?>" class="form-check-input check-modal-koor me-2" checked onchange="updateKoorCount()">
-                                    <span class="small fw-semibold text-slate-700"><?= htmlspecialchars($k['nama']) ?></span>
+                                    <span class="small fw-semibold text-dark"><?= htmlspecialchars($k['nama']) ?></span>
                                 </label>
                             </div>
                         <?php endforeach; ?>
@@ -382,8 +514,8 @@ if ($Auth['role'] === 'koordinator') {
                     <span class="small text-muted ms-1">Koordinator dipilih</span>
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-danger shadow-sm d-inline-flex align-items-center gap-1" onclick="submitModalDownloadRekap()">
+                    <button type="button" class="btn btn-sm btn-light rounded-pill px-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" onclick="submitModalDownloadRekap()">
                         <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF Rekap
                     </button>
                 </div>
@@ -398,15 +530,12 @@ var dtMenunggak, dtRajin, dtDimuka;
 var currentTahun = '<?= $selected_tahun ?>';
 
 function formatHp(hp) {
-    if (!hp) return '<span class="text-muted">-</span>';
-    var wa = hp.replace(/^0/, '62');
-    return '<a href="https://wa.me/'+wa+'" target="_blank" class="text-decoration-none"><i class="bi bi-whatsapp text-success"></i> '+hp+'</a>';
+    if (!hp) return '<span class="text-muted small">-</span>';
+    var wa = hp.replace(/^0/, '62').replace(/[^0-9]/g, '');
+    return '<a href="https://wa.me/'+wa+'" target="_blank" class="badge bg-success-subtle text-success text-decoration-none fw-semibold"><i class="bi bi-whatsapp me-1"></i>'+hp+'</a>';
 }
 function formatRp(n) {
     return 'Rp' + Number(n||0).toLocaleString('id-ID');
-}
-function encryptUrl(id) {
-    return btoa(id); // simple base64 for link, server will handle actual encryption
 }
 
 function loadData() {
@@ -422,7 +551,7 @@ function loadData() {
 
     // Loading state
     $('#tblMenunggak tbody, #tblRajin tbody, #tblDimuka tbody').html(
-        '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted">Memuat data...</div></td></tr>'
+        '<tr><td colspan="10" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small">Memuat data profil kepatuhan...</div></td></tr>'
     );
     $('#statTotal, #statMenunggak, #statRajin, #statDimuka').text('-');
 
@@ -432,15 +561,26 @@ function loadData() {
         dataType: 'json',
         success: function(res) {
             // Update stats
-            $('#statTotal').text(res.stats.total);
-            $('#statMenunggak').text(res.stats.menunggak);
-            $('#statRajin').text(res.stats.rajin);
-            $('#statDimuka').text(res.stats.dimuka);
-            $('#badgeMenunggak').text(res.stats.menunggak);
-            $('#badgeRajin').text(res.stats.rajin);
-            $('#badgeDimuka').text(res.stats.dimuka);
+            var total = res.stats.total || 0;
+            var menunggak = res.stats.menunggak || 0;
+            var rajin = res.stats.rajin || 0;
+            var dimuka = res.stats.dimuka || 0;
+            var taat = rajin + dimuka;
+            var pct = (total > 0) ? Math.round((taat / total) * 100) : 0;
+
+            $('#statTotal').text(total);
+            $('#statMenunggak').text(menunggak);
+            $('#statRajin').text(rajin);
+            $('#statDimuka').text(dimuka);
+            $('#badgeMenunggak').text(menunggak);
+            $('#badgeRajin').text(rajin);
+            $('#badgeDimuka').text(dimuka);
+
+            $('#statKepatuhanPct').text(pct + '%');
+            $('#statKepatuhanBar').css('width', pct + '%');
+
             $('#titleMenunggak').text('Daftar Warga Menunggak — Tahun ' + tahun);
-            $('#periodeInfo').text('Periode: ' + res.periode + ' (' + res.total_bulan_wajib + ' bulan wajib)');
+            $('#periodeInfo').html('<i class="ti ti-calendar me-1"></i> Periode: <strong>' + res.periode + '</strong> (' + res.total_bulan_wajib + ' bulan wajib)');
 
             var tbw = res.total_bulan_wajib;
 
@@ -448,42 +588,46 @@ function loadData() {
             $('#checkAllTunggak').prop('checked', false);
             $('#batchActionContainer').addClass('d-none');
 
-            // Menunggak
+            // 1. Menunggak
             var rows1 = [];
             $.each(res.menunggak, function(i, w) {
                 var totalNominal = w.tunggakan * 150000;
                 var listBulan = w.bulan_tunggak_list || (w.tunggakan + " bulan");
                 var msg = "Assalamualaikum Bapak/Ibu *" + w.nama + "*, kami dari pengurus Paguyuban TSI memberitahukan bahwa terdapat tunggakan IPL untuk rumah *" + w.alamat + "* sebesar *Rp " + totalNominal.toLocaleString('id-ID') + "* (" + listBulan + "). Mohon segera melakukan koordinasi pembayaran melalui Koordinator atau Bendahara. Terima kasih.";
-                var waLink = "https://wa.me/" + (w.no_hp ? w.no_hp.replace(/^0/, '62') : "") + "?text=" + encodeURIComponent(msg);
+                var waLink = "https://wa.me/" + (w.no_hp ? w.no_hp.replace(/^0/, '62').replace(/[^0-9]/g, '') : "") + "?text=" + encodeURIComponent(msg);
+
+                var badgeClass = 'bg-danger';
+                if (w.tunggakan <= 1) badgeClass = 'bg-warning text-dark';
+                else if (w.tunggakan <= 3) badgeClass = 'bg-danger-subtle text-danger';
 
                 rows1.push([
                     '<input type="checkbox" value="'+w.id+'" class="form-check-input check-tunggak" style="cursor:pointer;">',
-                    i+1,
-                    '<i class="bi bi-geo-alt-fill text-danger me-1"></i>' + (w.alamat||'-'),
-                    '<strong>' + (w.nama||'-') + '</strong>',
+                    '<span class="text-muted fw-bold">' + (i+1) + '</span>',
+                    '<div><i class="bi bi-geo-alt-fill text-danger me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
+                    '<div><span class="avatar-initial">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong></div>',
                     formatHp(w.no_hp),
-                    w.koordinator||'-',
-                    '<span class="badge bg-info">'+w.jumlah_bulan_bayar+' / '+tbw+'</span>',
-                    '<span class="badge bg-'+w.level+'">'+w.tunggakan+' bulan</span>',
-                    '<small class="text-'+w.level+'">'+w.status_tunggak+'</small>',
+                    '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
+                    '<span class="badge bg-info-subtle text-info fw-bold px-2 py-1">' + w.jumlah_bulan_bayar + ' / ' + tbw + ' Bln</span>',
+                    '<span class="badge ' + badgeClass + ' px-2 py-1">' + w.tunggakan + ' Bulan</span>',
+                    '<small class="fw-semibold text-danger">' + (w.status_tunggak||'Nunggak') + '</small>',
                     '<div class="d-flex gap-1 justify-content-center">' +
-                        '<a href="'+BASE+'surat-teguran-pdf?id_rumah='+w.id+'&tahun='+tahun+'&bulan='+bulan+'" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak PDF"><i class="bi bi-file-earmark-pdf"></i></a>' +
-                        '<a href="'+waLink+'" target="_blank" class="btn btn-sm btn-outline-success" title="Kirim WA Manual (wa.me)"><i class="bi bi-whatsapp"></i></a>' +
-                        '<button onclick="sendWaOtomatis('+w.id+')" class="btn btn-sm btn-success" title="Kirim WA Otomatis (API + File)"><i class="bi bi-send-check"></i></button>' +
-                        '<a href="'+BASE+'pembayaran/'+w.id+'" class="btn btn-sm btn-outline-primary" title="Input Bayar"><i class="bi bi-cash-coin"></i></a>' +
+                        '<a href="'+BASE+'surat-teguran-pdf?id_rumah='+w.id+'&tahun='+tahun+'&bulan='+bulan+'" target="_blank" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:30px;height:30px" title="Cetak Surat PDF"><i class="bi bi-file-earmark-pdf"></i></a>' +
+                        '<a href="'+waLink+'" target="_blank" class="btn btn-sm btn-outline-success rounded-circle p-1" style="width:30px;height:30px" title="Kirim WA Manual"><i class="bi bi-whatsapp"></i></a>' +
+                        '<button onclick="sendWaOtomatis('+w.id+')" class="btn btn-sm btn-success rounded-circle p-1" style="width:30px;height:30px" title="Kirim WA Otomatis (API)"><i class="bi bi-send-check"></i></button>' +
+                        '<a href="'+BASE+'pembayaran/'+w.id+'" class="btn btn-sm btn-outline-primary rounded-circle p-1" style="width:30px;height:30px" title="Input Pembayaran"><i class="bi bi-cash-coin"></i></a>' +
                     '</div>'
                 ]);
             });
             dtMenunggak = $('#tblMenunggak').DataTable({
                 data: rows1, destroy: true, pageLength: 25,
-                language: { search:"Cari:", lengthMenu:"Tampilkan _MENU_", info:"_START_-_END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Semua warga sudah lunas! 🎉", zeroRecords:"Tidak ditemukan" },
+                language: { search:"Cari Warga:", lengthMenu:"_MENU_", info:"_START_ - _END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Luar biasa! Tidak ada warga yang menunggak di periode ini 🎉", zeroRecords:"Tidak ditemukan" },
                 columnDefs: [
-                    { targets: [0], orderable: false, className: 'text-center' },
-                    { targets: [1,6,7,9], className: 'text-center' }
+                    { targets: [0,1,6,7,8,9], className: 'text-center' },
+                    { targets: [0,9], orderable: false }
                 ]
             });
 
-            // Handle Checkbox Events (Bind only once or unbind first)
+            // Checkbox Events
             $('#tblMenunggak').off('change', '.check-tunggak').on('change', '.check-tunggak', function() {
                 var total = dtMenunggak.$('.check-tunggak').length;
                 var checked = dtMenunggak.$('.check-tunggak:checked').length;
@@ -491,53 +635,53 @@ function loadData() {
                 toggleBatchButton(checked);
             });
 
-            // Rajin
+            // 2. Rajin Bayar
             var rows2 = [];
             $.each(res.rajin, function(i, w) {
                 rows2.push([
-                    i+1,
-                    '<i class="bi bi-geo-alt-fill text-success me-1"></i>' + (w.alamat||'-'),
-                    '<strong>' + (w.nama||'-') + '</strong> <i class="bi bi-patch-check-fill text-success"></i>',
+                    '<span class="text-muted fw-bold">' + (i+1) + '</span>',
+                    '<div><i class="bi bi-geo-alt-fill text-success me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
+                    '<div><span class="avatar-initial" style="background:#dcfce7;color:#15803d">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong> <i class="bi bi-patch-check-fill text-success"></i></div>',
                     formatHp(w.no_hp),
-                    w.koordinator||'-',
-                    '<span class="badge bg-success">'+w.jumlah_bulan_bayar+' bulan ✓</span>',
-                    formatRp(w.total_bayar),
-                    w.terakhir_bayar ? w.terakhir_bayar.substring(8,10)+'/'+w.terakhir_bayar.substring(5,7)+'/'+w.terakhir_bayar.substring(0,4) : '-',
-                    w.wa_count > 0 ? '<span class="badge bg-warning text-dark">'+w.wa_count+'x</span>' : '<span class="text-muted">-</span>',
-                    '<button onclick="sendWaKonfirmasi('+w.id+',\'lancar\')" class="btn btn-sm btn-success" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
+                    '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
+                    '<span class="badge bg-success-subtle text-success fw-bold px-2 py-1">' + w.jumlah_bulan_bayar + ' Bulan ✓</span>',
+                    '<span class="fw-bold text-dark">' + formatRp(w.total_bayar) + '</span>',
+                    w.terakhir_bayar ? '<span class="small">' + w.terakhir_bayar.substring(8,10)+'/'+w.terakhir_bayar.substring(5,7)+'/'+w.terakhir_bayar.substring(0,4) + '</span>' : '-',
+                    w.wa_count > 0 ? '<span class="badge bg-warning text-dark"><i class="bi bi-check-all"></i> '+w.wa_count+'x</span>' : '<span class="text-muted small">-</span>',
+                    '<button onclick="sendWaKonfirmasi('+w.id+',\'lancar\')" class="btn btn-sm btn-success rounded-pill px-2 py-1 small" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
                 ]);
             });
             dtRajin = $('#tblRajin').DataTable({
                 data: rows2, destroy: true, pageLength: 25,
-                language: { search:"Cari:", lengthMenu:"Tampilkan _MENU_", info:"_START_-_END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga lunas semua bulan", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,7,8,9], className: 'text-center' }, { targets: [6], className: 'text-end fw-bold' }]
+                language: { search:"Cari Warga:", lengthMenu:"_MENU_", info:"_START_ - _END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga lunas semua bulan", zeroRecords:"Tidak ditemukan" },
+                columnDefs: [{ targets: [0,5,7,8,9], className: 'text-center' }, { targets: [6], className: 'text-end' }]
             });
 
-            // Dimuka
+            // 3. Bayar Di Muka
             var rows3 = [];
             $.each(res.dimuka, function(i, w) {
                 rows3.push([
-                    i+1,
-                    '<i class="bi bi-geo-alt-fill text-primary me-1"></i>' + (w.alamat||'-'),
-                    '<strong>' + (w.nama||'-') + '</strong> ⭐',
+                    '<span class="text-muted fw-bold">' + (i+1) + '</span>',
+                    '<div><i class="bi bi-geo-alt-fill text-primary me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
+                    '<div><span class="avatar-initial" style="background:#ede9fe;color:#6b21a8">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong> ⭐</div>',
                     formatHp(w.no_hp),
-                    w.koordinator||'-',
-                    '<span class="badge badge-dimuka">'+w.bayar_sampai+'</span>',
-                    '<span class="badge bg-info">+'+w.bulan_dimuka+' bulan</span>',
-                    formatRp(w.total_bayar),
-                    w.wa_count > 0 ? '<span class="badge bg-warning text-dark">'+w.wa_count+'x</span>' : '<span class="text-muted">-</span>',
-                    '<button onclick="sendWaKonfirmasi('+w.id+',\'dimuka\')" class="btn btn-sm btn-success" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
+                    '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
+                    '<span class="badge rounded-pill" style="background:#7c3aed;color:#fff">' + w.bayar_sampai + '</span>',
+                    '<span class="badge bg-info-subtle text-info fw-bold">+' + w.bulan_dimuka + ' Bulan</span>',
+                    '<span class="fw-bold text-dark">' + formatRp(w.total_bayar) + '</span>',
+                    w.wa_count > 0 ? '<span class="badge bg-warning text-dark"><i class="bi bi-check-all"></i> '+w.wa_count+'x</span>' : '<span class="text-muted small">-</span>',
+                    '<button onclick="sendWaKonfirmasi('+w.id+',\'dimuka\')" class="btn btn-sm btn-success rounded-pill px-2 py-1 small" title="Kirim Bukti Pembayaran via WA"><i class="bi bi-send-check me-1"></i>Kirim Bukti</button>'
                 ]);
             });
             dtDimuka = $('#tblDimuka').DataTable({
                 data: rows3, destroy: true, pageLength: 25,
-                language: { search:"Cari:", lengthMenu:"Tampilkan _MENU_", info:"_START_-_END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga bayar di muka", zeroRecords:"Tidak ditemukan" },
-                columnDefs: [{ targets: [0,5,6,8,9], className: 'text-center' }, { targets: [7], className: 'text-end fw-bold' }]
+                language: { search:"Cari Warga:", lengthMenu:"_MENU_", info:"_START_ - _END_ dari _TOTAL_", paginate:{previous:"Prev",next:"Next"}, emptyTable:"Belum ada warga bayar di muka", zeroRecords:"Tidak ditemukan" },
+                columnDefs: [{ targets: [0,5,6,8,9], className: 'text-center' }, { targets: [7], className: 'text-end' }]
             });
         },
         error: function() {
             $('#tblMenunggak tbody, #tblRajin tbody, #tblDimuka tbody').html(
-                '<tr><td colspan="9" class="text-center py-4 text-danger"><i class="bi bi-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Gagal memuat data</p></td></tr>'
+                '<tr><td colspan="10" class="text-center py-5 text-danger"><i class="bi bi-exclamation-circle" style="font-size:2rem;"></i><p class="mt-2">Gagal memuat data profil kepatuhan</p></td></tr>'
             );
         }
     });
@@ -549,16 +693,15 @@ $(document).ready(function() {
     $('#btnFilter').on('click', function() { loadData(); });
     $('#btnReset').on('click', function() {
         $('#filterTahun').val('<?= $tahun_sekarang ?>');
+        $('#filterBulan').val('<?= (int)date('n') ?>');
         if ($('#filterKoor').length) $('#filterKoor').val('');
         loadData();
     });
 
-    // Fix DataTable column width on tab switch
-    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
+    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
         $.fn.dataTable.tables({visible:true, api:true}).columns.adjust();
     });
 
-    // Check All Tunggakan (Support multiple pages)
     $(document).on('change', '#checkAllTunggak', function() {
         var isChecked = $(this).is(':checked');
         if (dtMenunggak) {
@@ -578,62 +721,39 @@ function toggleBatchButton(checkedCount) {
 }
 
 function generateBatchPdf() {
-    var checked = [];
-    if (dtMenunggak) {
-        dtMenunggak.$('.check-tunggak:checked').each(function() {
-            checked.push($(this).val());
-        });
-    }
-
-    if (checked.length === 0) {
-        Swal.fire('Perhatian', 'Pilih minimal satu warga untuk digenerate.', 'warning');
+    if (!dtMenunggak) return;
+    var ids = [];
+    dtMenunggak.$('.check-tunggak:checked').each(function() {
+        ids.push($(this).val());
+    });
+    if (ids.length === 0) {
+        alert('Pilih minimal satu warga terlebih dahulu.');
         return;
     }
-    
-    // Create form dynamically
-    var form = $('<form>', {
-        method: 'POST',
-        action: BASE + 'batch-surat-teguran-zip',
-        target: '_blank'
-    });
-    form.append($('<input>', {type: 'hidden', name: 'tahun', value: $('#filterTahun').val()}));
-    form.append($('<input>', {type: 'hidden', name: 'bulan', value: $('#filterBulan').val()}));
-    
-    $.each(checked, function(i, val) {
-        form.append($('<input>', {type: 'hidden', name: 'id_rumah[]', value: val}));
-    });
-    
-    $('body').append(form);
-    form.submit();
-    form.remove();
+    var tahun = $('#filterTahun').val();
+    var bulan = $('#filterBulan').val();
+    window.open(BASE + 'surat-teguran-batch-pdf?ids=' + ids.join(',') + '&tahun=' + tahun + '&bulan=' + bulan, '_blank');
 }
 
 function sendWaOtomatis(id_rumah) {
     var tahun = $('#filterTahun').val();
     var bulan = $('#filterBulan').val();
-    
-    if(!confirm("Kirim surat teguran otomatis ke WhatsApp warga?")) return;
+    if (!confirm('Kirim surat teguran WA langsung ke nomor HP warga?')) return;
 
-    Swal.fire({
-        title: 'Mengirim...',
-        text: 'Sedang memproses PDF dan mengirim WhatsApp',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-    });
+    var btn = event.currentTarget;
+    $(btn).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
 
     $.ajax({
-        url: BASE + 'dashboard/kirim_teguran_wa',
+        url: BASE + 'kirim-teguran-wa',
         data: { id_rumah: id_rumah, tahun: tahun, bulan: bulan },
         dataType: 'json',
         success: function(res) {
-            if(res.status === 'success') {
-                Swal.fire('Berhasil!', res.message, 'success');
-            } else {
-                Swal.fire('Gagal', res.message, 'error');
-            }
+            alert(res.message);
+            $(btn).prop('disabled', false).html('<i class="bi bi-send-check"></i>');
         },
         error: function() {
-            Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            alert('Gagal mengirim WhatsApp');
+            $(btn).prop('disabled', false).html('<i class="bi bi-send-check"></i>');
         }
     });
 }
@@ -641,95 +761,49 @@ function sendWaOtomatis(id_rumah) {
 function sendWaKonfirmasi(id_rumah, tipe) {
     var tahun = $('#filterTahun').val();
     var bulan = $('#filterBulan').val();
-    var label = (tipe === 'lancar') ? 'konfirmasi lunas' : 'konfirmasi bayar di muka';
-    
-    if(!confirm("Kirim " + label + " via WhatsApp ke warga ini?")) return;
+    if (!confirm('Kirim kitir konfirmasi via WhatsApp?')) return;
 
-    Swal.fire({
-        title: 'Mengirim...',
-        text: 'Sedang memproses PDF dan mengirim WhatsApp',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-    });
+    var btn = event.currentTarget;
+    $(btn).prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
 
     $.ajax({
-        url: BASE + 'kirim-konfirmasi-wa',
+        url: BASE + 'dashboard/kirim_konfirmasi_wa',
         data: { id_rumah: id_rumah, tahun: tahun, bulan: bulan, tipe: tipe },
         dataType: 'json',
         success: function(res) {
-            if(res.status === 'success') {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    html: res.message,
-                    confirmButtonColor: '#25D366'
-                });
-            } else {
-                Swal.fire('Gagal', res.message, 'error');
-            }
+            alert(res.message);
+            $(btn).prop('disabled', false).html('<i class="bi bi-send-check me-1"></i>Kirim Bukti');
+            loadData();
         },
         error: function() {
-            Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            alert('Gagal mengirim WhatsApp');
+            $(btn).prop('disabled', false).html('<i class="bi bi-send-check me-1"></i>Kirim Bukti');
         }
     });
 }
 
 function downloadRekapMenunggakPdf() {
-    var tahun = $('#filterTahun').val() || currentTahun;
-    var bulanNama = $('#filterBulan option:selected').text();
-    var koorVal = $('#filterKoor').length ? $('#filterKoor').val() : '';
-
-    $('#modalPeriodeText').text('Periode: Sampai ' + bulanNama + ' ' + tahun);
-
-    // Jika di filter sedang memilih 1 koordinator spesifik, centang hanya itu
-    if (koorVal) {
-        $('.check-modal-koor').prop('checked', false);
-        $('.check-modal-koor[value="' + koorVal + '"]').prop('checked', true);
-    } else {
-        // Jika Semua Koordinator, centang semua
-        $('.check-modal-koor').prop('checked', true);
-    }
-    updateKoorCount();
-
-    var modalEl = document.getElementById('modalDownloadRekap');
-    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
+    $('#modalDownloadRekap').modal('show');
 }
-
 function selectAllModalKoor(check) {
     $('.check-modal-koor').prop('checked', check);
     updateKoorCount();
 }
-
 function updateKoorCount() {
-    var count = $('.check-modal-koor:checked').length;
-    $('#badgeModalKoorCount').text(count);
+    var cnt = $('.check-modal-koor:checked').length;
+    $('#badgeModalKoorCount').text(cnt);
 }
-
 function submitModalDownloadRekap() {
     var selected = [];
-    $('.check-modal-koor:checked').each(function() {
-        selected.push($(this).val());
-    });
-
+    $('.check-modal-koor:checked').each(function() { selected.push($(this).val()); });
     if (selected.length === 0) {
-        Swal.fire('Perhatian', 'Pilih minimal satu koordinator blok untuk dicetak.', 'warning');
+        alert('Pilih minimal satu koordinator blok.');
         return;
     }
-
-    var tahun = $('#filterTahun').val() || currentTahun;
-    var bulan = $('#filterBulan').val() || '';
+    var tahun = $('#filterTahun').val();
+    var bulan = $('#filterBulan').val();
     var groupBy = $('#checkGroupByKoor').is(':checked') ? '1' : '0';
-
-    var url = BASE + 'rekap-menunggak-pdf?tahun=' + encodeURIComponent(tahun) + 
-              '&bulan=' + encodeURIComponent(bulan) + 
-              '&id_koordinator=' + encodeURIComponent(selected.join(',')) + 
-              '&group_by_koor=' + groupBy;
-
-    var modalEl = document.getElementById('modalDownloadRekap');
-    var modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) modal.hide();
-
-    window.open(url, '_blank');
+    $('#modalDownloadRekap').modal('hide');
+    window.open(BASE + 'rekap-menunggak-pdf?tahun=' + tahun + '&bulan=' + bulan + '&id_koordinator=' + encodeURIComponent(selected.join(',')) + '&group_by=' + groupBy, '_blank');
 }
 </script>

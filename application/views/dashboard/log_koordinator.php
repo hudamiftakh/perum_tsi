@@ -1,308 +1,198 @@
 <?php
+if (function_exists('ensure_log_tables_exist')) {
+    ensure_log_tables_exist();
+}
+$bulan_filter = $bulan_filter ?? date('m');
+$tahun_filter = $tahun_filter ?? date('Y');
 $nama_bulan = [
     '01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April',
     '05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus',
     '09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
 ];
-$bulan = str_pad($bulan_filter, 2, '0', STR_PAD_LEFT);
-$tahun = $tahun_filter;
-$bulan_label = $nama_bulan[$bulan] ?? $bulan;
-$total_koordinator = count($koordinator_list);
-$rajin = array_filter($koordinator_list, function($k){ return $k['total_entry'] > 0; });
-$tidak_rajin = array_filter($koordinator_list, function($k){ return $k['total_entry'] == 0; });
-$total_entry_all = array_sum(array_column($koordinator_list, 'total_entry'));
-$total_nominal_all = array_sum(array_column($koordinator_list, 'total_nominal'));
-
-// Sort untuk ranking
-$sorted_desc = $koordinator_list;
-usort($sorted_desc, function($a,$b){ return $b['total_entry'] - $a['total_entry']; });
-$top3 = array_slice($sorted_desc, 0, 3);
-$sorted_asc = $koordinator_list;
-usort($sorted_asc, function($a,$b){ return $a['total_entry'] - $b['total_entry']; });
-$bottom3 = array_slice($sorted_asc, 0, 3);
 ?>
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
+    <!-- Header Page -->
     <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-4">
         <div class="card-body px-4 py-3">
             <div class="row align-items-center">
-                <div class="col-9">
-                    <h4 class="fw-semibold mb-8">📊 Log Laporan Koordinator</h4>
+                <div class="col-md-7 col-12">
+                    <h4 class="fw-semibold mb-1"><i class="ti ti-report-analytics text-primary me-2"></i> Log Monitoring Entri Koordinator</h4>
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
+                        <ol class="breadcrumb mb-0">
                             <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Dashboard</a></li>
-                            <li class="breadcrumb-item active">Log Koordinator</li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0)">Log Aktivitas</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Log Koordinator</li>
                         </ol>
                     </nav>
                 </div>
+                <!-- Filter Bulan & Tahun -->
+                <div class="col-md-5 col-12 mt-3 mt-md-0">
+                    <form id="formFilterKoor" class="d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+                        <div>
+                            <select id="filterBulan" name="bulan" class="form-select form-select-sm shadow-sm" style="min-width:130px">
+                                <?php foreach ($nama_bulan as $k => $v): ?>
+                                    <option value="<?= $k ?>" <?= ($bulan_filter == $k) ? 'selected' : '' ?>><?= $v ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filterTahun" name="tahun" class="form-select form-select-sm shadow-sm" style="min-width:90px">
+                                <?php for ($y = date('Y'); $y >= 2023; $y--): ?>
+                                    <option value="<?= $y ?>" <?= ($tahun_filter == $y) ? 'selected' : '' ?>><?= $y ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary d-flex align-items-center gap-1 shadow-sm px-3">
+                            <i class="ti ti-filter"></i> <span>Terapkan</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Filter -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body py-3">
-            <form method="get" action="<?= base_url('log-koordinator') ?>" class="row align-items-end g-2">
-                <div class="col-auto">
-                    <label class="form-label fw-semibold mb-1" style="font-size:0.82rem">📅 Bulan</label>
-                    <select name="bulan" class="form-select form-select-sm" style="min-width:140px">
-                        <?php foreach ($nama_bulan as $bk => $bv): ?>
-                            <option value="<?= $bk ?>" <?= ($bk==$bulan)?'selected':'' ?>><?= $bv ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <label class="form-label fw-semibold mb-1" style="font-size:0.82rem">📆 Tahun</label>
-                    <select name="tahun" class="form-select form-select-sm" style="min-width:100px">
-                        <?php for ($y = date('Y'); $y >= 2024; $y--): ?>
-                            <option value="<?= $y ?>" <?= ($y==$tahun)?'selected':'' ?>><?= $y ?></option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-sm btn-success fw-semibold">
-                        <i class="ti ti-filter"></i> Filter
-                    </button>
-                </div>
-                <div class="col-auto ms-auto">
-                    <span class="badge bg-dark fs-6"><?= $bulan_label ?> <?= $tahun ?></span>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Stat Cards -->
+    <!-- 4 KPI Summary Cards -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #0ea5e9 !important">
+        <!-- Card 1: Total Koordinator -->
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #0284c7 !important;">
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#e0f2fe;color:#0ea5e9;font-size:1.3rem;flex-shrink:0">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#e0f2fe;color:#0284c7;font-size:1.3rem;flex-shrink:0">
                             <i class="ti ti-users"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-0" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px">Total Koordinator</h6>
-                            <h3 class="fw-bold mb-0" style="color:#0ea5e9"><?= $total_koordinator ?></h3>
+                            <span class="text-muted small fw-semibold">Total Koordinator</span>
+                            <h3 class="fw-bold mb-0 text-dark" id="kpiTotalKoor">-</h3>
+                            <small class="text-muted">Blok Perumahan</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #10b981 !important">
+
+        <!-- Card 2: Koordinator Rajin -->
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #16a34a !important;">
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#d1fae5;color:#10b981;font-size:1.3rem;flex-shrink:0">
-                            <i class="ti ti-mood-happy"></i>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#dcfce7;color:#16a34a;font-size:1.3rem;flex-shrink:0">
+                            <i class="ti ti-trophy"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-0" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px">Rajin Entry</h6>
-                            <h3 class="fw-bold mb-0" style="color:#10b981"><?= count($rajin) ?></h3>
-                            <small class="text-muted">dari <?= $total_koordinator ?> koordinator</small>
+                            <span class="text-muted small fw-semibold">Koordinator Rajin</span>
+                            <h3 class="fw-bold mb-0 text-success" id="kpiTotalRajin">-</h3>
+                            <small class="text-success fw-semibold">&ge; 75% entri tuntas</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #f43f5e !important">
+
+        <!-- Card 3: Belum Entri -->
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #e11d48 !important;">
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#ffe4e6;color:#f43f5e;font-size:1.3rem;flex-shrink:0">
-                            <i class="ti ti-mood-sad"></i>
+                            <i class="ti ti-alert-triangle"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-0" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px">Belum Entry</h6>
-                            <h3 class="fw-bold mb-0" style="color:#f43f5e"><?= count($tidak_rajin) ?></h3>
-                            <small class="text-muted">perlu follow up</small>
+                            <span class="text-muted small fw-semibold">Belum Entri</span>
+                            <h3 class="fw-bold mb-0 text-danger" id="kpiBelumEntry">-</h3>
+                            <small class="text-danger fw-semibold">0% entri di periode ini</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left:4px solid #f59e0b !important">
+
+        <!-- Card 4: Progress Entri Perumahan -->
+        <div class="col-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #8b5cf6 !important;">
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#fef3c7;color:#f59e0b;font-size:1.3rem;flex-shrink:0">
-                            <i class="ti ti-receipt-2"></i>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#ede9fe;color:#8b5cf6;font-size:1.3rem;flex-shrink:0">
+                            <i class="ti ti-chart-pie"></i>
                         </div>
-                        <div>
-                            <h6 class="text-muted mb-0" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px">Entry <?= $bulan_label ?></h6>
-                            <h3 class="fw-bold mb-0" style="color:#f59e0b"><?= $total_entry_all ?></h3>
-                            <small class="text-muted">Rp<?= number_format($total_nominal_all, 0, ',', '.') ?></small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="row mb-4">
-        <div class="col-lg-4 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">📈 Komposisi <?= $bulan_label ?> <?= $tahun ?></h6>
-                    <div style="position:relative;height:220px;display:flex;align-items:center;justify-content:center">
-                        <canvas id="donutChart"></canvas>
-                    </div>
-                    <div class="text-center mt-3">
-                        <span class="badge bg-success me-1">● Rajin: <?= count($rajin) ?></span>
-                        <span class="badge bg-danger">● Belum: <?= count($tidak_rajin) ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-8 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">📊 Tren Entry Koordinator — Tahun <?= $tahun ?></h6>
-                    <div style="position:relative;height:260px">
-                        <canvas id="trendChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ranking Row -->
-    <div class="row mb-4">
-        <div class="col-lg-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">🏆 Top 3 Koordinator Terajin</h6>
-                    <?php foreach ($top3 as $i => $tk):
-                        $medal = ['🥇','🥈','🥉'][$i] ?? '';
-                        $pct = ($tk['jml_rumah'] > 0) ? min(round(($tk['total_entry']/$tk['jml_rumah'])*100), 100) : 0;
-                    ?>
-                    <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:#f0fdf4">
-                        <span style="font-size:1.5rem;width:36px;text-align:center"><?= $medal ?></span>
-                        <div class="flex-grow-1">
-                            <strong><?= htmlspecialchars($tk['nama']) ?></strong>
-                            <div class="d-flex align-items-center gap-2 mt-1">
-                                <div class="progress flex-grow-1" style="height:6px">
-                                    <div class="progress-bar bg-success" style="width:<?= $pct ?>%"></div>
-                                </div>
-                                <small class="fw-bold text-success text-nowrap"><?= $tk['total_entry'] ?> entry</small>
+                        <div class="w-100">
+                            <span class="text-muted small fw-semibold">Terkumpul Perumahan</span>
+                            <div class="d-flex align-items-baseline gap-2">
+                                <h3 class="fw-bold mb-0" style="color:#8b5cf6" id="kpiPersenPerumahan">0%</h3>
+                                <small class="text-muted" id="kpiRumahRatio">(0/0 rumah)</small>
+                            </div>
+                            <div class="progress mt-1" style="height:6px">
+                                <div id="kpiProgressBar" class="progress-bar" style="width:0%;background:#8b5cf6"></div>
                             </div>
                         </div>
                     </div>
-                    <?php endforeach; ?>
-                    <?php if (empty($top3)): ?>
-                        <p class="text-muted text-center py-3">Belum ada data entry</p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">⚠️ Koordinator Perlu Perhatian</h6>
-                    <?php foreach ($bottom3 as $i => $bk):
-                        $pct = ($bk['jml_rumah'] > 0) ? min(round(($bk['total_entry']/$bk['jml_rumah'])*100), 100) : 0;
-                        $is_zero = ($bk['total_entry'] == 0);
-                    ?>
-                    <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:<?= $is_zero ? '#fff1f2' : '#fefce8' ?>">
-                        <span style="font-size:1.3rem;width:36px;text-align:center"><?= $is_zero ? '🔴' : '🟡' ?></span>
-                        <div class="flex-grow-1">
-                            <strong><?= htmlspecialchars($bk['nama']) ?></strong>
-                            <div class="d-flex align-items-center gap-2 mt-1">
-                                <div class="progress flex-grow-1" style="height:6px">
-                                    <div class="progress-bar <?= $is_zero ? 'bg-danger' : 'bg-warning' ?>" style="width:<?= max($pct,3) ?>%"></div>
-                                </div>
-                                <small class="fw-bold text-nowrap <?= $is_zero ? 'text-danger' : 'text-warning' ?>"><?= $bk['total_entry'] ?> entry</small>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Table -->
-    <div class="card shadow-sm">
+    <!-- Leaderboard Highlight Row -->
+    <div class="row mb-4">
+        <!-- Top 3 Koordinator Terajin -->
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0 h-100 rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold mb-0 text-success"><i class="ti ti-trophy me-1"></i> Top 3 Koordinator Terajin Entri</h6>
+                        <small class="text-muted">Kelengkapan entri tertinggi</small>
+                    </div>
+                    <div id="containerTop3">
+                        <div class="text-center py-3 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Koordinator Perlu Diingatkan / Menunggak -->
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0 h-100 rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold mb-0 text-danger"><i class="ti ti-alert-circle me-1"></i> Koordinator Perlu Diingatkan (Follow-Up)</h6>
+                        <small class="text-muted">Banyak rumah binaan belum entri</small>
+                    </div>
+                    <div id="containerBottom3">
+                        <div class="text-center py-3 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="card shadow-sm border-0 rounded-4">
         <div class="card-body">
-            <h6 class="fw-bold mb-3"><i class="ti ti-list-details"></i> Detail Aktivitas Entry Koordinator</h6>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark"><i class="ti ti-list-check me-1 text-primary"></i> Tabel Rekap Kerajinan Koordinator</h5>
+                    <small class="text-muted">Klik tombol <strong>"Detail Rekap"</strong> di setiap koordinator untuk melihat daftar rumah yang sudah lunas vs yang masih nunggak.</small>
+                </div>
+            </div>
+
             <div class="table-responsive">
-                <table id="tblLogKoordinator" class="table table-striped table-hover align-middle" style="width:100%">
+                <table id="tblLogKoordinator" class="table table-hover align-middle w-100" style="font-size:0.92rem">
                     <thead class="table-dark">
                         <tr>
                             <th width="35" class="text-center">No</th>
-                            <th>Koordinator</th>
-                            <th class="text-center">Binaan</th>
-                            <th class="text-center">Total Entry</th>
-                            <th>Capaian</th>
-                            <th class="text-end">Nominal</th>
-                            <th class="text-center">Verified</th>
-                            <th class="text-center">Pending</th>
-                            <th class="text-center">Via</th>
-                            <th>Entry Terakhir</th>
-                            <th class="text-center">Status</th>
+                            <th>Koordinator Blok</th>
+                            <th class="text-center" width="80">Binaan</th>
+                            <th class="text-center" width="95">Sudah Entri</th>
+                            <th class="text-center" width="95">Nunggak</th>
+                            <th width="140">Capaian (%)</th>
+                            <th class="text-end" width="120">Nominal Masuk</th>
+                            <th>Terakhir Entri</th>
+                            <th class="text-center" width="120">Status Kerajinan</th>
+                            <th class="text-center" width="110">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                        usort($koordinator_list, function($a,$b){ return $b['total_entry'] - $a['total_entry']; });
-                        $no = 1;
-                        foreach ($koordinator_list as $k):
-                            $persen = ($k['jml_rumah'] > 0) ? round(($k['total_entry'] / $k['jml_rumah']) * 100) : 0;
-                            if ($persen > 100) $persen = 100;
-                            $bar_class = $persen >= 70 ? 'bg-success' : ($persen >= 30 ? 'bg-warning' : 'bg-danger');
-                        ?>
-                        <tr>
-                            <td class="text-center fw-bold"><?= $no++ ?></td>
-                            <td>
-                                <strong><?= htmlspecialchars($k['nama']) ?></strong>
-                                <br><small class="text-muted"><?= htmlspecialchars($k['username'] ?? '') ?></small>
-                            </td>
-                            <td class="text-center"><span class="badge bg-secondary"><?= $k['jml_rumah'] ?></span></td>
-                            <td class="text-center">
-                                <span class="fw-bold fs-5 <?= $k['total_entry']>0 ? 'text-success' : 'text-danger' ?>"><?= $k['total_entry'] ?></span>
-                            </td>
-                            <td style="min-width:120px">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="progress flex-grow-1" style="height:7px">
-                                        <div class="progress-bar <?= $bar_class ?>" style="width:<?= $persen ?>%"></div>
-                                    </div>
-                                    <small class="fw-bold text-nowrap"><?= $persen ?>%</small>
-                                </div>
-                            </td>
-                            <td class="text-end text-nowrap"><strong>Rp<?= number_format($k['total_nominal'],0,',','.') ?></strong></td>
-                            <td class="text-center">
-                                <?= $k['verified']>0 ? '<span class="badge bg-success">'.$k['verified'].'</span>' : '<span class="text-muted">—</span>' ?>
-                            </td>
-                            <td class="text-center">
-                                <?= $k['pending']>0 ? '<span class="badge bg-warning text-dark">'.$k['pending'].'</span>' : '<span class="text-muted">—</span>' ?>
-                            </td>
-                            <td class="text-center text-nowrap">
-                                <?php if ($k['via_koordinator'] > 0 || $k['via_transfer'] > 0): ?>
-                                    <?php if ($k['via_koordinator'] > 0): ?><span class="badge bg-info"><?= $k['via_koordinator'] ?> Koor</span><?php endif; ?>
-                                    <?php if ($k['via_transfer'] > 0): ?><span class="badge bg-primary"><?= $k['via_transfer'] ?> Tf</span><?php endif; ?>
-                                <?php else: ?>
-                                    <span class="text-muted">—</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="text-nowrap">
-                                <?php if ($k['last_entry']): ?>
-                                    <small><i class="bi bi-clock text-muted"></i> <?= date('d/m/Y H:i', strtotime($k['last_entry'])) ?></small>
-                                <?php else: ?>
-                                    <small class="text-danger">Belum ada</small>
-                                <?php endif; ?>
-                            </td>
-                            <td class="text-center text-nowrap">
-                                <?php if ($k['total_entry']==0): ?>
-                                    <span class="badge bg-danger" style="font-size:0.75rem">❌ Belum Entry</span>
-                                <?php elseif ($persen >= 70): ?>
-                                    <span class="badge bg-success" style="font-size:0.75rem">✅ Rajin</span>
-                                <?php else: ?>
-                                    <span class="badge bg-warning text-dark" style="font-size:0.75rem">⚠️ Kurang</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
+                        <!-- Diisi via DataTables AJAX -->
                     </tbody>
                 </table>
             </div>
@@ -310,82 +200,408 @@ $bottom3 = array_slice($sorted_asc, 0, 3);
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Modal Detail Rekap Koordinator (Tunggal & Bersih di Luar Tabel) -->
+<div class="modal fade" id="modalDetailKoor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom py-3 px-4" style="background:#f8fafc">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="modalKoorTitle">
+                        <i class="ti ti-user-check text-primary me-1"></i> Rincian Entri Koordinator
+                    </h5>
+                    <small class="text-muted" id="modalKoorSubtitle">Periode: -</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="modalKoorBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <div class="text-muted fw-semibold">Memuat rincian data rumah...</div>
+                </div>
+            </div>
+            <div class="modal-footer border-top py-2 px-4 d-flex justify-content-between" id="modalKoorFooter">
+                <div id="modalKoorWaBtn"></div>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 $(document).ready(function(){
-    $('#tblLogKoordinator').DataTable({
-        order:[[3,'desc']],
-        pageLength:25,
-        language:{
-            search:"Cari:",
-            lengthMenu:"Tampilkan _MENU_ data",
-            info:"Menampilkan _START_ - _END_ dari _TOTAL_ koordinator",
-            paginate:{previous:"Sebelumnya",next:"Selanjutnya"},
-            emptyTable:"Tidak ada data koordinator",
-            zeroRecords:"Data tidak ditemukan"
-        },
-        columnDefs:[{targets:[4,8],orderable:false}]
-    });
+    var dtKoordinator;
 
-    // Donut Chart
-    new Chart(document.getElementById('donutChart'),{
-        type:'doughnut',
-        data:{
-            labels:['Rajin Entry','Belum Entry'],
-            datasets:[{
-                data:[<?= count($rajin) ?>,<?= count($tidak_rajin) ?>],
-                backgroundColor:['#10b981','#f43f5e'],
-                borderWidth:3,
-                borderColor:'#fff',
-                hoverOffset:8
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            cutout:'65%',
-            plugins:{legend:{display:false}}
-        }
-    });
-
-    // Bar Chart Trend
-    <?php
-    $tp = [];
-    foreach ($trend_data as $td) {
-        $b = $td['bulan'];
-        $tp[$b] = ($tp[$b] ?? 0) + $td['total'];
-    }
-    ksort($tp);
-    $tl = []; $tv = [];
-    foreach ($tp as $b => $t) {
-        $p = explode('-', $b);
-        $tl[] = ($nama_bulan[$p[1]] ?? $p[1]);
-        $tv[] = $t;
-    }
-    ?>
-    new Chart(document.getElementById('trendChart'),{
-        type:'bar',
-        data:{
-            labels:<?= json_encode($tl) ?>,
-            datasets:[{
-                label:'Total Entry',
-                data:<?= json_encode($tv) ?>,
-                backgroundColor:'rgba(0,141,76,0.7)',
-                borderColor:'#008d4c',
-                borderWidth:1,
-                borderRadius:8,
-                borderSkipped:false
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            scales:{
-                y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f0f0f0'}},
-                x:{grid:{display:false}}
+    function initTable() {
+        dtKoordinator = $('#tblLogKoordinator').DataTable({
+            processing: true,
+            serverSide: false,
+            destroy: true,
+            pageLength: 25,
+            order: [[5, 'desc']], // Urut berdasarkan Capaian % tertinggi
+            ajax: {
+                url: "<?= base_url('ajax-log-koordinator') ?>",
+                type: "GET",
+                data: function(d) {
+                    d.bulan = $('#filterBulan').val();
+                    d.tahun = $('#filterTahun').val();
+                },
+                dataSrc: function(json) {
+                    if (json && json.kpi) {
+                        updateKPI(json.kpi);
+                        updateLeaderboard(json.kpi);
+                    }
+                    return json.data || [];
+                },
+                error: function(xhr, status, error) {
+                    console.error("Ajax Log Koordinator Error:", error);
+                }
             },
-            plugins:{legend:{display:false}}
+            columns: [
+                {
+                    data: 'no',
+                    className: 'text-center fw-bold text-muted'
+                },
+                {
+                    data: null,
+                    render: function(data, type, row) {
+                        var html = '<strong class="text-dark">' + escapeHtml(row.nama) + '</strong>';
+                        if (row.no_hp) {
+                            var waUrl = 'https://wa.me/' + row.no_hp.replace(/^0/, '62').replace(/[^0-9]/g, '');
+                            html += '<br><a href="' + waUrl + '" target="_blank" class="small text-success text-decoration-none"><i class="bi bi-whatsapp"></i> ' + escapeHtml(row.no_hp) + '</a>';
+                        }
+                        return html;
+                    }
+                },
+                {
+                    data: 'jml_rumah',
+                    className: 'text-center',
+                    render: function(data) {
+                        return '<span class="badge bg-light text-dark border px-2 py-1">' + data + ' Rumah</span>';
+                    }
+                },
+                {
+                    data: 'jml_lunas',
+                    className: 'text-center',
+                    render: function(data) {
+                        return '<span class="badge bg-success-subtle text-success fw-bold px-2 py-1 fs-6"><i class="ti ti-check me-1"></i>' + data + '</span>';
+                    }
+                },
+                {
+                    data: 'jml_nunggak',
+                    className: 'text-center',
+                    render: function(data) {
+                        if (data > 0) {
+                            return '<span class="badge bg-danger-subtle text-danger fw-bold px-2 py-1 fs-6"><i class="ti ti-x me-1"></i>' + data + '</span>';
+                        }
+                        return '<span class="badge bg-light text-success fw-bold px-2 py-1">0 (Tuntas)</span>';
+                    }
+                },
+                {
+                    data: 'persen_lunas',
+                    render: function(data) {
+                        var barColor = data >= 75 ? 'bg-success' : (data >= 50 ? 'bg-warning' : 'bg-danger');
+                        return '<div class="d-flex align-items-center gap-2">' +
+                            '<div class="progress flex-grow-1" style="height:8px">' +
+                                '<div class="progress-bar ' + barColor + '" style="width:' + data + '%"></div>' +
+                            '</div>' +
+                            '<span class="fw-bold small text-nowrap">' + data + '%</span>' +
+                        '</div>';
+                    }
+                },
+                {
+                    data: 'total_nominal_rp',
+                    className: 'text-end text-nowrap fw-bold text-dark'
+                },
+                {
+                    data: 'last_entry_formatted',
+                    className: 'small text-nowrap',
+                    render: function(data) {
+                        if (data && data !== '-') {
+                            return '<span class="text-dark"><i class="bi bi-clock text-muted me-1"></i>' + data + '</span>';
+                        }
+                        return '<span class="text-danger"><i class="bi bi-dash-circle me-1"></i>Belum ada</span>';
+                    }
+                },
+                {
+                    data: null,
+                    className: 'text-center text-nowrap',
+                    render: function(data, type, row) {
+                        return '<span class="badge ' + row.badge_class + ' px-2 py-1" style="font-size:0.75rem">' + escapeHtml(row.label_rajin) + '</span>';
+                    }
+                },
+                {
+                    data: null,
+                    className: 'text-center text-nowrap',
+                    orderable: false,
+                    render: function(data, type, row) {
+                        return '<button type="button" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm btn-detail-koor" data-id="' + row.id + '">' +
+                            '<i class="ti ti-eye me-1"></i> Detail Rekap' +
+                        '</button>';
+                    }
+                }
+            ],
+            language: {
+                search: "Cari Koordinator:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ koordinator",
+                paginate: { previous: "Sebelumnya", next: "Selanjutnya" },
+                emptyTable: "Tidak ada data koordinator",
+                zeroRecords: "Koordinator tidak ditemukan",
+                processing: '<div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat data...'
+            }
+        });
+    }
+
+    // Helper escape html
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Update 4 KPI Cards
+    function updateKPI(kpi) {
+        $('#kpiTotalKoor').text(kpi.total_koordinator || 0);
+        $('#kpiTotalRajin').text(kpi.total_rajin || 0);
+        $('#kpiBelumEntry').text(kpi.total_belum_entry || 0);
+        $('#kpiPersenPerumahan').text((kpi.persen_total_perumahan || 0) + '%');
+        $('#kpiRumahRatio').text('(' + (kpi.total_lunas_all || 0) + '/' + (kpi.total_rumah_all || 0) + ' rumah)');
+        $('#kpiProgressBar').css('width', (kpi.persen_total_perumahan || 0) + '%');
+    }
+
+    // Update Leaderboard Cards
+    function updateLeaderboard(kpi) {
+        var medals = ['🥇', '🥈', '🥉'];
+
+        // 1. Top 3
+        var htmlTop = '';
+        if (!kpi.top3 || kpi.top3.length === 0 || kpi.top3[0].jml_lunas === 0) {
+            htmlTop = '<div class="text-center py-4 text-muted"><i class="ti ti-clipboard-x fs-8 d-block mb-1"></i>Belum ada entri tercatat di periode ini.</div>';
+        } else {
+            $.each(kpi.top3, function(i, tk) {
+                if (tk.jml_lunas === 0) return true;
+                var medal = medals[i] || '⭐';
+                htmlTop += '<div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:#f0fdf4; border: 1px solid #bbf7d0;">' +
+                    '<span style="font-size:1.5rem;width:36px;text-align:center">' + medal + '</span>' +
+                    '<div class="flex-grow-1">' +
+                        '<div class="d-flex justify-content-between align-items-center">' +
+                            '<strong>' + escapeHtml(tk.nama) + '</strong>' +
+                            '<span class="badge bg-success">' + tk.persen_lunas + '% Tuntas</span>' +
+                        '</div>' +
+                        '<div class="d-flex align-items-center gap-2 mt-1">' +
+                            '<div class="progress flex-grow-1" style="height:7px">' +
+                                '<div class="progress-bar bg-success" style="width:' + tk.persen_lunas + '%"></div>' +
+                            '</div>' +
+                            '<small class="text-muted text-nowrap">' + tk.jml_lunas + ' dari ' + tk.jml_rumah + ' rumah</small>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            });
         }
+        $('#containerTop3').html(htmlTop);
+
+        // 2. Bottom 3
+        var htmlBottom = '';
+        if (!kpi.bottom3 || kpi.bottom3.length === 0) {
+            htmlBottom = '<div class="text-center py-4 text-muted">Semua koordinator sudah tuntas entri.</div>';
+        } else {
+            $.each(kpi.bottom3, function(i, bk) {
+                var isZero = (bk.jml_lunas === 0);
+                var icon = isZero ? '🔴' : '🟡';
+                var bg = isZero ? '#fff1f2' : '#fefce8';
+                var border = isZero ? '#fecdd3' : '#fef08a';
+                var badgeClass = isZero ? 'bg-danger' : 'bg-warning text-dark';
+                var barClass = isZero ? 'bg-danger' : 'bg-warning';
+
+                htmlBottom += '<div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:' + bg + '; border: 1px solid ' + border + ';">' +
+                    '<span style="font-size:1.3rem;width:36px;text-align:center">' + icon + '</span>' +
+                    '<div class="flex-grow-1">' +
+                        '<div class="d-flex justify-content-between align-items-center">' +
+                            '<strong>' + escapeHtml(bk.nama) + '</strong>' +
+                            '<span class="badge ' + badgeClass + '">' + bk.jml_nunggak + ' Rumah Belum Entri (' + bk.persen_lunas + '%)</span>' +
+                        '</div>' +
+                        '<div class="d-flex align-items-center gap-2 mt-1">' +
+                            '<div class="progress flex-grow-1" style="height:7px">' +
+                                '<div class="progress-bar ' + barClass + '" style="width:' + Math.max(bk.persen_lunas, 4) + '%"></div>' +
+                            '</div>' +
+                            '<small class="text-muted text-nowrap">' + bk.jml_lunas + '/' + bk.jml_rumah + ' rumah</small>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            });
+        }
+        $('#containerBottom3').html(htmlBottom);
+    }
+
+    // Submit Filter
+    $('#formFilterKoor').on('submit', function(e){
+        e.preventDefault();
+        if (dtKoordinator) {
+            dtKoordinator.ajax.reload();
+        }
+    });
+
+    // Inisialisasi awal
+    initTable();
+
+    // Event Klik "Detail Rekap"
+    $(document).on('click', '.btn-detail-koor', function(){
+        var koorId = $(this).data('id');
+        var bulan = $('#filterBulan').val();
+        var tahun = $('#filterTahun').val();
+
+        $('#modalKoorBody').html('<div class="text-center py-5"><div class="spinner-border text-primary mb-2" role="status"></div><div class="text-muted fw-semibold">Memuat rincian data rumah...</div></div>');
+        $('#modalKoorWaBtn').html('');
+        $('#modalDetailKoor').modal('show');
+
+        $.ajax({
+            url: "<?= base_url('ajax-detail-log-koordinator') ?>",
+            type: "GET",
+            data: { id: koorId, bulan: bulan, tahun: tahun },
+            dataType: "json",
+            success: function(res) {
+                if (res.status !== 'success') {
+                    $('#modalKoorBody').html('<div class="alert alert-danger mb-0">' + escapeHtml(res.message || 'Gagal mengambil data.') + '</div>');
+                    return;
+                }
+
+                var k = res.koordinator;
+                $('#modalKoorTitle').html('<i class="ti ti-user-check text-primary me-1"></i> Rincian Entri: ' + escapeHtml(k.nama));
+                $('#modalKoorSubtitle').html('Periode: <strong>' + escapeHtml(k.bulan_label) + ' ' + k.tahun + '</strong> &bull; Total ' + k.jml_rumah + ' Rumah Binaan');
+
+                // WhatsApp Button
+                if (k.wa_link) {
+                    $('#modalKoorWaBtn').html('<a href="' + k.wa_link + '" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-whatsapp me-1"></i> Ingatkan Koordinator via WA</a>');
+                } else {
+                    $('#modalKoorWaBtn').html('');
+                }
+
+                // Render Modal Body
+                var bodyHtml = '';
+
+                // Ringkasan Mini
+                bodyHtml += '<div class="row g-2 mb-3">' +
+                    '<div class="col-4">' +
+                        '<div class="p-2 rounded-3 text-center" style="background:#ecfdf5; border:1px solid #a7f3d0">' +
+                            '<small class="text-muted d-block" style="font-size:0.72rem">SUDAH ENTRI / LUNAS</small>' +
+                            '<span class="fw-bold text-success fs-5">' + k.jml_lunas + ' Rumah</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="col-4">' +
+                        '<div class="p-2 rounded-3 text-center" style="background:#fff1f2; border:1px solid #fecdd3">' +
+                            '<small class="text-muted d-block" style="font-size:0.72rem">MASIH NUNGGAK</small>' +
+                            '<span class="fw-bold text-danger fs-5">' + k.jml_nunggak + ' Rumah</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="col-4">' +
+                        '<div class="p-2 rounded-3 text-center" style="background:#f8fafc; border:1px solid #e2e8f0">' +
+                            '<small class="text-muted d-block" style="font-size:0.72rem">PERSENTASE</small>' +
+                            '<span class="fw-bold text-primary fs-5">' + k.persen_lunas + '%</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+                // Tabs
+                bodyHtml += '<ul class="nav nav-pills mb-3 gap-2" role="tablist">' +
+                    '<li class="nav-item">' +
+                        '<button class="nav-link active rounded-pill px-3 py-1 fw-semibold small" data-bs-toggle="pill" data-bs-target="#tabDetailNunggak" type="button">' +
+                            '<i class="ti ti-x text-danger me-1"></i> Masih Nunggak (' + k.jml_nunggak + ')' +
+                        '</button>' +
+                    '</li>' +
+                    '<li class="nav-item">' +
+                        '<button class="nav-link rounded-pill px-3 py-1 fw-semibold small" data-bs-toggle="pill" data-bs-target="#tabDetailLunas" type="button">' +
+                            '<i class="ti ti-check text-success me-1"></i> Sudah Entri (' + k.jml_lunas + ')' +
+                        '</button>' +
+                    '</li>' +
+                '</ul>';
+
+                bodyHtml += '<div class="tab-content">';
+
+                // TAB 1: NUNGGAK
+                bodyHtml += '<div class="tab-pane fade show active" id="tabDetailNunggak">';
+                if (!res.list_nunggak || res.list_nunggak.length === 0) {
+                    bodyHtml += '<div class="alert alert-success d-flex align-items-center mb-0">' +
+                        '<i class="ti ti-circle-check fs-5 me-2"></i>' +
+                        '<div>Luar biasa! Semua warga di binaan koordinator ini telah lunas/dientri untuk bulan ' + escapeHtml(k.bulan_label) + ' ' + k.tahun + '.</div>' +
+                    '</div>';
+                } else {
+                    bodyHtml += '<div class="table-responsive"><table class="table table-sm table-bordered table-striped align-middle mb-0">' +
+                        '<thead class="table-danger text-dark">' +
+                            '<tr>' +
+                                '<th width="30" class="text-center">No</th>' +
+                                '<th>Nomor Rumah / Alamat</th>' +
+                                '<th>Nama Warga</th>' +
+                                '<th>Kontak WA</th>' +
+                                '<th class="text-center">Status</th>' +
+                            '</tr>' +
+                        '</thead>' +
+                        '<tbody>';
+                    $.each(res.list_nunggak, function(idx, ngk){
+                        var waCell = '<span class="text-muted small">-</span>';
+                        if (ngk.no_hp) {
+                            var linkWa = 'https://wa.me/' + ngk.no_hp.replace(/^0/, '62').replace(/[^0-9]/g, '');
+                            waCell = '<a href="' + linkWa + '" target="_blank" class="badge bg-success-subtle text-success text-decoration-none"><i class="bi bi-whatsapp"></i> ' + escapeHtml(ngk.no_hp) + '</a>';
+                        }
+                        bodyHtml += '<tr>' +
+                            '<td class="text-center small">' + (idx + 1) + '</td>' +
+                            '<td><strong>' + escapeHtml(ngk.alamat) + '</strong></td>' +
+                            '<td>' + escapeHtml(ngk.nama || '-') + '</td>' +
+                            '<td>' + waCell + '</td>' +
+                            '<td class="text-center"><span class="badge bg-danger">Belum Bayar</span></td>' +
+                        '</tr>';
+                    });
+                    bodyHtml += '</tbody></table></div>';
+                }
+                bodyHtml += '</div>';
+
+                // TAB 2: SUDAH ENTRI
+                bodyHtml += '<div class="tab-pane fade" id="tabDetailLunas">';
+                if (!res.list_lunas || res.list_lunas.length === 0) {
+                    bodyHtml += '<div class="alert alert-warning mb-0"><i class="ti ti-alert-triangle me-1"></i> Belum ada data entri pembayaran untuk bulan ' + escapeHtml(k.bulan_label) + ' ' + k.tahun + '.</div>';
+                } else {
+                    bodyHtml += '<div class="table-responsive"><table class="table table-sm table-bordered table-striped align-middle mb-0">' +
+                        '<thead class="table-success text-dark">' +
+                            '<tr>' +
+                                '<th width="30" class="text-center">No</th>' +
+                                '<th>Nomor Rumah</th>' +
+                                '<th>Nama Warga</th>' +
+                                '<th class="text-end">Jumlah</th>' +
+                                '<th>Tgl Bayar</th>' +
+                                '<th class="text-center">Via</th>' +
+                                '<th class="text-center">Status</th>' +
+                            '</tr>' +
+                        '</thead>' +
+                        '<tbody>';
+                    $.each(res.list_lunas, function(idx, lns){
+                        var viaBadge = (lns.pembayaran_via === 'koordinator') ? 'bg-info' : 'bg-primary';
+                        var statusBadge = (lns.status === 'verified') ? 'bg-success' : 'bg-warning text-dark';
+                        var nominalFmt = 'Rp' + (Number(lns.jumlah_bayar) || 0).toLocaleString('id-ID');
+                        bodyHtml += '<tr>' +
+                            '<td class="text-center small">' + (idx + 1) + '</td>' +
+                            '<td><strong>' + escapeHtml(lns.alamat) + '</strong></td>' +
+                            '<td>' + escapeHtml(lns.nama || '-') + '</td>' +
+                            '<td class="text-end text-nowrap fw-semibold">' + nominalFmt + '</td>' +
+                            '<td class="small">' + (lns.tanggal_bayar || '-') + '</td>' +
+                            '<td class="text-center"><span class="badge ' + viaBadge + '">' + escapeHtml(lns.pembayaran_via || '-') + '</span></td>' +
+                            '<td class="text-center"><span class="badge ' + statusBadge + '">' + escapeHtml(lns.status || '-') + '</span></td>' +
+                        '</tr>';
+                    });
+                    bodyHtml += '</tbody></table></div>';
+                }
+                bodyHtml += '</div>';
+
+                bodyHtml += '</div>'; // Tutup tab-content
+
+                $('#modalKoorBody').html(bodyHtml);
+            },
+            error: function(xhr, status, error) {
+                $('#modalKoorBody').html('<div class="alert alert-danger mb-0">Terjadi kesalahan koneksi server: ' + escapeHtml(error) + '</div>');
+            }
+        });
     });
 });
 </script>
