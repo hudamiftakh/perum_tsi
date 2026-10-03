@@ -52,21 +52,75 @@ $nama_bulan = [
         </div>
     </div>
 
+    <style>
+        .kpi-card {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 16px;
+            box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.06);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+            border-color: #64748b !important;
+        }
+        .kpi-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+        .kpi-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .kpi-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+        .kpi-sub {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+    </style>
+
     <!-- 4 KPI Summary Cards -->
     <div class="row mb-4">
         <!-- Card 1: Total Koordinator -->
         <div class="col-6 col-lg-3 mb-3">
-            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #0284c7 !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#e0f2fe;color:#0284c7;font-size:1.3rem;flex-shrink:0">
+            <div class="card kpi-card h-100" style="border-top: 3.5px solid #0284c7 !important;">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="kpi-icon-box" style="background:#e0f2fe; color:#0284c7;">
                             <i class="ti ti-users"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small fw-semibold">Total Koordinator</span>
-                            <h3 class="fw-bold mb-0 text-dark" id="kpiTotalKoor">-</h3>
-                            <small class="text-muted">Blok Perumahan</small>
-                        </div>
+                        <span class="badge rounded-pill" style="background:#e0f2fe; color:#0284c7; font-size:0.68rem; font-weight:600;">Wilayah</span>
+                    </div>
+                    <div>
+                        <div class="kpi-title" title="Total Koordinator">Total Koordinator</div>
+                        <div class="kpi-value text-dark" id="kpiTotalKoor">-</div>
+                        <div class="kpi-sub"><i class="ti ti-building-community text-muted"></i> Blok Perumahan</div>
                     </div>
                 </div>
             </div>
@@ -74,17 +128,18 @@ $nama_bulan = [
 
         <!-- Card 2: Koordinator Rajin -->
         <div class="col-6 col-lg-3 mb-3">
-            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #16a34a !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#dcfce7;color:#16a34a;font-size:1.3rem;flex-shrink:0">
+            <div class="card kpi-card h-100" style="border-top: 3.5px solid #15803d !important;">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="kpi-icon-box" style="background:#dcfce7; color:#15803d;">
                             <i class="ti ti-trophy"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small fw-semibold">Koordinator Rajin</span>
-                            <h3 class="fw-bold mb-0 text-success" id="kpiTotalRajin">-</h3>
-                            <small class="text-success fw-semibold">&ge; 75% entri tuntas</small>
-                        </div>
+                        <span class="badge rounded-pill" style="background:#dcfce7; color:#15803d; font-size:0.68rem; font-weight:600;">Disiplin</span>
+                    </div>
+                    <div>
+                        <div class="kpi-title" title="Koordinator Rajin">Koordinator Rajin</div>
+                        <div class="kpi-value text-success" id="kpiTotalRajin">-</div>
+                        <div class="kpi-sub"><i class="ti ti-circle-check text-success"></i> &ge; 75% entri tuntas</div>
                     </div>
                 </div>
             </div>
@@ -92,17 +147,18 @@ $nama_bulan = [
 
         <!-- Card 3: Belum Entri -->
         <div class="col-6 col-lg-3 mb-3">
-            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #e11d48 !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#ffe4e6;color:#f43f5e;font-size:1.3rem;flex-shrink:0">
+            <div class="card kpi-card h-100" style="border-top: 3.5px solid #b91c1c !important;">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="kpi-icon-box" style="background:#fee2e2; color:#b91c1c;">
                             <i class="ti ti-alert-triangle"></i>
                         </div>
-                        <div>
-                            <span class="text-muted small fw-semibold">Belum Entri</span>
-                            <h3 class="fw-bold mb-0 text-danger" id="kpiBelumEntry">-</h3>
-                            <small class="text-danger fw-semibold">0% entri di periode ini</small>
-                        </div>
+                        <span class="badge rounded-pill" style="background:#fee2e2; color:#b91c1c; font-size:0.68rem; font-weight:600;">Pending</span>
+                    </div>
+                    <div>
+                        <div class="kpi-title" title="Belum Entri">Belum Entri</div>
+                        <div class="kpi-value text-danger" id="kpiBelumEntry">-</div>
+                        <div class="kpi-sub"><i class="ti ti-clock text-danger"></i> 0% entri di periode ini</div>
                     </div>
                 </div>
             </div>
@@ -110,21 +166,22 @@ $nama_bulan = [
 
         <!-- Card 4: Progress Entri Perumahan -->
         <div class="col-6 col-lg-3 mb-3">
-            <div class="card border-0 shadow-sm h-100 rounded-4" style="border-left: 4px solid #8b5cf6 !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:46px;height:46px;background:#ede9fe;color:#8b5cf6;font-size:1.3rem;flex-shrink:0">
+            <div class="card kpi-card h-100" style="border-top: 3.5px solid #7c3aed !important;">
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="kpi-icon-box" style="background:#ede9fe; color:#7c3aed;">
                             <i class="ti ti-chart-pie"></i>
                         </div>
-                        <div class="w-100">
-                            <span class="text-muted small fw-semibold">Terkumpul Perumahan</span>
-                            <div class="d-flex align-items-baseline gap-2">
-                                <h3 class="fw-bold mb-0" style="color:#8b5cf6" id="kpiPersenPerumahan">0%</h3>
-                                <small class="text-muted" id="kpiRumahRatio">(0/0 rumah)</small>
-                            </div>
-                            <div class="progress mt-1" style="height:6px">
-                                <div id="kpiProgressBar" class="progress-bar" style="width:0%;background:#8b5cf6"></div>
-                            </div>
+                        <span class="badge rounded-pill" style="background:#ede9fe; color:#7c3aed; font-size:0.68rem; font-weight:600;">Capaian</span>
+                    </div>
+                    <div>
+                        <div class="kpi-title" title="Terkumpul Perumahan">Terkumpul Perumahan</div>
+                        <div class="d-flex align-items-baseline gap-2">
+                            <div class="kpi-value" style="color:#7c3aed;" id="kpiPersenPerumahan">0%</div>
+                            <small class="text-muted" id="kpiRumahRatio" style="font-size:0.75rem;">(0/0 rumah)</small>
+                        </div>
+                        <div class="progress mt-2" style="height:6px; border-radius:10px; background:#f1f5f9;">
+                            <div id="kpiProgressBar" class="progress-bar rounded-pill" style="width:0%; background:#7c3aed;"></div>
                         </div>
                     </div>
                 </div>

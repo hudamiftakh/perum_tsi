@@ -84,7 +84,9 @@ $route['laporan-rekap-rapel'] = 'dashboard/laporan_rekap_rapel';
 $route['analisis-pembayaran'] = 'dashboard/analisis_pembayaran';
 // Log
 $route['log-login'] = 'dashboard/log_login';
+$route['ajax-log-login'] = 'dashboard/ajax_log_login';
 $route['log-verifikasi'] = 'dashboard/log_verifikasi';
+$route['ajax-log-verifikasi'] = 'dashboard/ajax_log_verifikasi';
 $route['log-koordinator'] = 'dashboard/log_koordinator';
 $route['ajax-log-koordinator'] = 'dashboard/ajax_log_koordinator';
 $route['ajax-detail-log-koordinator'] = 'dashboard/ajax_detail_log_koordinator';
@@ -96,6 +98,7 @@ $route['rekap-menunggak-pdf'] = 'dashboard/rekap_menunggak_pdf';
 $route['kirim-teguran-wa'] = 'dashboard/kirim_teguran_wa';
 $route['kirim-konfirmasi-wa'] = 'dashboard/kirim_konfirmasi_wa';
 $route['setting'] = 'dashboard/setting';
+$route['ajax-setting-rumah'] = 'dashboard/ajax_setting_rumah';
 $route['setting/update-user'] = 'dashboard/update_user';
 $route['setting/update-rumah'] = 'dashboard/update_rumah';
 $route['pembayaran/kirim_ipl/(:any)'] = 'dashboard/kirim_ipl/$1';

@@ -275,6 +275,245 @@ class Dashboard extends CI_Controller
 		$this->load->view('modul', $data);
 	}
 
+	/**
+	 * Server-side DataTables Endpoint untuk Log Verifikasi
+	 */
+	public function ajax_log_verifikasi()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$this->_create_log_tables();
+
+		$draw = intval($this->input->post_get('draw'));
+		$start = intval($this->input->post_get('start'));
+		$length = intval($this->input->post_get('length') ?: 25);
+		$search_val = trim($this->input->post_get('search')['value'] ?? '');
+		$order_col_idx = intval($this->input->post_get('order')[0]['column'] ?? 1);
+		$order_dir = strtolower($this->input->post_get('order')[0]['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
+
+		$cols = [
+			0 => 'id',
+			1 => 'created_at',
+			2 => 'admin_nama',
+			3 => 'aksi',
+			4 => 'warga_nama',
+			5 => 'bulan_bayar',
+			6 => 'jumlah_bayar',
+			7 => 'pembayaran_via',
+			8 => 'wa_status',
+			9 => 'wa_no_tujuan',
+			10 => 'id'
+		];
+		$order_col = $cols[$order_col_idx] ?? 'created_at';
+
+		$total_records = $this->db->count_all('log_verifikasi');
+
+		if (!empty($search_val)) {
+			$this->db->group_start();
+			$this->db->like('admin_nama', $search_val);
+			$this->db->or_like('admin_username', $search_val);
+			$this->db->or_like('warga_nama', $search_val);
+			$this->db->or_like('warga_alamat', $search_val);
+			$this->db->or_like('aksi', $search_val);
+			$this->db->or_like('pembayaran_via', $search_val);
+			$this->db->or_like('wa_status', $search_val);
+			$this->db->or_like('wa_no_tujuan', $search_val);
+			$this->db->or_like('created_at', $search_val);
+			$this->db->group_end();
+		}
+
+		$filtered_records = $this->db->count_all_results('log_verifikasi', FALSE);
+
+		$this->db->order_by($order_col, $order_dir);
+		$this->db->limit($length, $start);
+		$logs = $this->db->get()->result();
+
+		$data = [];
+		$no = $start + 1;
+		foreach ($logs as $log) {
+			// Aksi badge
+			if ($log->aksi === 'verified') {
+				$badge_aksi = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>';
+			} elseif ($log->aksi === 'rejected') {
+				$badge_aksi = '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Rejected</span>';
+			} else {
+				$badge_aksi = '<span class="badge bg-secondary">' . htmlspecialchars($log->aksi ?? '-') . '</span>';
+			}
+
+			// Via badge
+			if ($log->pembayaran_via === 'koordinator') {
+				$badge_via = '<span class="badge bg-info">Koordinator</span>';
+			} elseif (in_array($log->pembayaran_via, ['transfer', 'transfer_2'])) {
+				$badge_via = '<span class="badge bg-primary">Transfer</span>';
+			} else {
+				$badge_via = '<span class="badge bg-secondary">' . htmlspecialchars($log->pembayaran_via ?? '-') . '</span>';
+			}
+
+			// WA Status badge
+			if ($log->wa_status === 'success') {
+				$badge_wa = '<span class="badge bg-success"><i class="bi bi-check-all"></i> Terkirim</span>';
+			} elseif ($log->wa_status === 'failed') {
+				$badge_wa = '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Gagal</span>';
+			} elseif ($log->wa_status === 'queue') {
+				$badge_wa = '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Antrean</span>';
+			} else {
+				$badge_wa = '<span class="badge bg-secondary"><i class="bi bi-dash"></i> Lewati</span>';
+			}
+
+			// No HP format
+			if (!empty($log->wa_no_tujuan)) {
+				$clean_hp = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $log->wa_no_tujuan));
+				$hp_display = '<a href="https://wa.me/' . $clean_hp . '" target="_blank" class="text-success text-decoration-none fw-semibold"><i class="bi bi-whatsapp"></i> ' . htmlspecialchars($log->wa_no_tujuan) . '</a>';
+			} else {
+				$hp_display = '<span class="text-muted small">-</span>';
+			}
+
+			// Json data for modal
+			$detail_json = htmlspecialchars(json_encode([
+				'id'              => $log->id,
+				'created_at'      => $log->created_at ? date('d/m/Y H:i:s', strtotime($log->created_at)) : '-',
+				'admin_nama'      => $log->admin_nama ?? '-',
+				'admin_username'  => $log->admin_username ?? '-',
+				'admin_role'      => $log->admin_role ?? '-',
+				'aksi'            => $log->aksi ?? '-',
+				'status_sebelum'  => $log->status_sebelum ?? '-',
+				'status_sesudah'  => $log->status_sesudah ?? '-',
+				'warga_nama'      => $log->warga_nama ?? '-',
+				'warga_alamat'    => $log->warga_alamat ?? '-',
+				'bulan_bayar'     => $log->bulan_bayar ? date('F Y', strtotime($log->bulan_bayar)) : '-',
+				'jumlah_bayar_rp' => 'Rp' . number_format($log->jumlah_bayar ?? 0, 0, ',', '.'),
+				'pembayaran_via'  => $log->pembayaran_via ?? '-',
+				'tanggal_bayar'   => $log->tanggal_bayar ? date('d/m/Y', strtotime($log->tanggal_bayar)) : '-',
+				'wa_status'       => $log->wa_status ?? '-',
+				'wa_no_tujuan'    => $log->wa_no_tujuan ?? '-',
+				'wa_response'     => $log->wa_response ?? '-',
+				'wa_error'        => $log->wa_error ?? '',
+				'ip_address'      => $log->ip_address ?? '-',
+				'user_agent'      => $log->user_agent ?? '-',
+			]), ENT_QUOTES, 'UTF-8');
+
+			$btn_detail = '<button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 btn-detail-verifikasi" data-log=\'' . $detail_json . '\'><i class="bi bi-eye"></i> Detail</button>';
+
+			$data[] = [
+				'no'           => $no++,
+				'waktu'        => '<small class="text-nowrap"><i class="bi bi-clock text-muted"></i> ' . date('d/m/Y H:i:s', strtotime($log->created_at)) . '</small>',
+				'admin'        => '<strong>' . htmlspecialchars($log->admin_nama ?? '-') . '</strong><br><small class="text-muted">' . htmlspecialchars($log->admin_username ?? '') . '</small>',
+				'aksi'         => $badge_aksi,
+				'warga'        => '<strong>' . htmlspecialchars($log->warga_nama ?? '-') . '</strong><br><small class="text-muted">' . htmlspecialchars($log->warga_alamat ?? '') . '</small>',
+				'bulan'        => '<span class="text-nowrap">' . ($log->bulan_bayar ? date('M Y', strtotime($log->bulan_bayar)) : '-') . '</span>',
+				'jumlah'       => '<span class="text-nowrap fw-bold text-dark">Rp' . number_format($log->jumlah_bayar ?? 0, 0, ',', '.') . '</span>',
+				'via'          => $badge_via,
+				'wa_status'    => $badge_wa,
+				'wa_no_tujuan' => $hp_display,
+				'aksi_btn'     => $btn_detail
+			];
+		}
+
+		echo json_encode([
+			'draw'            => $draw,
+			'recordsTotal'    => $total_records,
+			'recordsFiltered' => $filtered_records,
+			'data'            => $data
+		]);
+	}
+
+	/**
+	 * Server-side DataTables Endpoint untuk Log Login
+	 */
+	public function ajax_log_login()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$this->_create_log_tables();
+
+		$draw = intval($this->input->post_get('draw'));
+		$start = intval($this->input->post_get('start'));
+		$length = intval($this->input->post_get('length') ?: 25);
+		$search_val = trim($this->input->post_get('search')['value'] ?? '');
+		$order_col_idx = intval($this->input->post_get('order')[0]['column'] ?? 1);
+		$order_dir = strtolower($this->input->post_get('order')[0]['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
+
+		$cols = [
+			0 => 'id',
+			1 => 'login_at',
+			2 => 'username',
+			3 => 'nama',
+			4 => 'role',
+			5 => 'status',
+			6 => 'ip_address',
+			7 => 'user_agent',
+			8 => 'keterangan'
+		];
+		$order_col = $cols[$order_col_idx] ?? 'login_at';
+
+		$total_records = $this->db->count_all('log_login');
+
+		if (!empty($search_val)) {
+			$this->db->group_start();
+			$this->db->like('username', $search_val);
+			$this->db->or_like('nama', $search_val);
+			$this->db->or_like('role', $search_val);
+			$this->db->or_like('status', $search_val);
+			$this->db->or_like('ip_address', $search_val);
+			$this->db->or_like('user_agent', $search_val);
+			$this->db->or_like('keterangan', $search_val);
+			$this->db->or_like('login_at', $search_val);
+			$this->db->group_end();
+		}
+
+		$filtered_records = $this->db->count_all_results('log_login', FALSE);
+
+		$this->db->order_by($order_col, $order_dir);
+		$this->db->limit($length, $start);
+		$logs = $this->db->get()->result();
+
+		$data = [];
+		$no = $start + 1;
+		foreach ($logs as $log) {
+			// Role badge
+			if ($log->role === 'admin') {
+				$badge_role = '<span class="badge bg-primary">Admin</span>';
+			} elseif ($log->role === 'koordinator') {
+				$badge_role = '<span class="badge bg-warning text-dark">Koordinator</span>';
+			} elseif ($log->role === 'bendahara') {
+				$badge_role = '<span class="badge bg-info">Bendahara</span>';
+			} else {
+				$badge_role = '<span class="badge bg-secondary">' . htmlspecialchars($log->role ?? '-') . '</span>';
+			}
+
+			// Status badge
+			if ($log->status === 'success') {
+				$badge_status = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Berhasil</span>';
+			} else {
+				$badge_status = '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Gagal</span>';
+			}
+
+			$ua_short = htmlspecialchars(mb_strimwidth($log->user_agent ?? '-', 0, 55, '...'));
+			$ua_full = htmlspecialchars($log->user_agent ?? '');
+
+			$data[] = [
+				'no'          => $no++,
+				'waktu'       => '<span class="text-nowrap small"><i class="bi bi-clock text-muted me-1"></i>' . date('d/m/Y H:i:s', strtotime($log->login_at)) . '</span>',
+				'username'    => '<code>' . htmlspecialchars($log->username ?? '-') . '</code>',
+				'nama'        => htmlspecialchars($log->nama ?? '-'),
+				'role'        => $badge_role,
+				'status'      => $badge_status,
+				'ip_address'  => '<small class="text-muted">' . htmlspecialchars($log->ip_address ?? '-') . '</small>',
+				'user_agent'  => '<small class="text-muted" title="' . $ua_full . '">' . $ua_short . '</small>',
+				'keterangan'  => '<small>' . htmlspecialchars($log->keterangan ?? '-') . '</small>',
+			];
+		}
+
+		echo json_encode([
+			'draw'            => $draw,
+			'recordsTotal'    => $total_records,
+			'recordsFiltered' => $filtered_records,
+			'data'            => $data
+		]);
+	}
+
 	public function hook_web()
 	{
 		header('Content-Type: application/json');
@@ -1768,8 +2007,213 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				WHERE kl.status_rumah IS NOT NULL AND kl.status_rumah != ''");
 		}
 		
+		// Auto-sinkronisasi nomor HP warga dari master_keluarga ke master_rumah
+		$this->_sync_rumah_no_hp();
+		
 		$data['halaman'] = 'dashboard/setting';
 		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * Sinkronisasi nomor WhatsApp dari master_keluarga ke master_rumah
+	 */
+	private function _sync_rumah_no_hp()
+	{
+		// 1. Sinkronisasi langsung berdasarkan nomor_rumah = alamat
+		$this->db->query("UPDATE master_rumah r 
+			JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci 
+			SET r.no_hp = kl.no_hp 
+			WHERE (r.no_hp IS NULL OR r.no_hp = '') AND kl.no_hp IS NOT NULL AND kl.no_hp != ''");
+
+		// 2. Sinkronisasi berdasarkan id_rumah jika kolom tersedia
+		if ($this->db->field_exists('id_rumah', 'master_keluarga')) {
+			$this->db->query("UPDATE master_rumah r 
+				JOIN master_keluarga kl ON kl.id_rumah = r.id 
+				SET r.no_hp = kl.no_hp 
+				WHERE (r.no_hp IS NULL OR r.no_hp = '') AND kl.no_hp IS NOT NULL AND kl.no_hp != ''");
+		}
+
+		// 3. Normalisasi dash dan multi-nomor rumah (A1-05|A1-06)
+		$empty_houses = $this->db->query("SELECT id, alamat FROM master_rumah WHERE no_hp IS NULL OR no_hp = ''")->result_array();
+		if (!empty($empty_houses)) {
+			$all_keluarga = $this->db->query("SELECT no_hp, nomor_rumah FROM master_keluarga WHERE no_hp IS NOT NULL AND no_hp != ''")->result_array();
+			if (!empty($all_keluarga)) {
+				$normalize = function($addr) {
+					$addr = preg_replace('/[‐-‒–—−]/u', '-', $addr);
+					$addr = strtolower(trim($addr));
+					$addr = preg_replace('/\s+/', ' ', $addr);
+					return $addr;
+				};
+
+				$map = [];
+				foreach ($all_keluarga as $k) {
+					$parts = preg_split('/[|,]/', $k['nomor_rumah']);
+					foreach ($parts as $part) {
+						$norm = $normalize($part);
+						if (!empty($norm) && !isset($map[$norm])) {
+							$map[$norm] = $k['no_hp'];
+						}
+					}
+				}
+
+				foreach ($empty_houses as $eh) {
+					$norm_eh = $normalize($eh['alamat']);
+					if (isset($map[$norm_eh])) {
+						$this->db->where('id', $eh['id'])->update('master_rumah', ['no_hp' => $map[$norm_eh]]);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Server-side DataTables Endpoint untuk Setting Data Rumah
+	 */
+	public function ajax_setting_rumah()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		// Jalankan auto-sync agar nomor HP selalu terupdate
+		$this->_sync_rumah_no_hp();
+
+		$Auth = $this->session->userdata['username'];
+		$is_admin = ($Auth['role'] === 'admin');
+
+		$draw = intval($this->input->post_get('draw'));
+		$start = intval($this->input->post_get('start'));
+		$length = intval($this->input->post_get('length') ?: 25);
+		$search_val = trim($this->input->post_get('search')['value'] ?? '');
+		$order_col_idx = intval($this->input->post_get('order')[0]['column'] ?? 1);
+		$order_dir = strtolower($this->input->post_get('order')[0]['dir'] ?? 'asc') === 'desc' ? 'DESC' : 'ASC';
+
+		// Custom filters
+		$filter_koor = $this->input->post_get('filter_koordinator');
+		$filter_status = $this->input->post_get('filter_status');
+
+		$cols = [
+			0 => 'r.id',
+			1 => 'r.alamat',
+			2 => 'r.nama',
+			3 => 'r.status_rumah',
+			4 => 'r.no_hp',
+			5 => 'k.nama',
+			6 => 'r.id'
+		];
+		$order_col = $cols[$order_col_idx] ?? 'r.alamat';
+
+		// Base query for total count
+		$this->db->from('master_rumah r');
+		if (!$is_admin) {
+			$this->db->where('r.id_koordinator', $Auth['id']);
+		}
+		$total_records = $this->db->count_all_results();
+
+		// Query for filtered records
+		$this->db->select("r.id, r.alamat, r.nama, r.id_koordinator, k.nama as koordinator, 
+						  COALESCE(r.status_rumah, 'Rumah Sendiri') as status_rumah, 
+						  r.no_hp");
+		$this->db->from('master_rumah r');
+		$this->db->join('master_koordinator_blok k', 'r.id_koordinator = k.id', 'left');
+
+		if (!$is_admin) {
+			$this->db->where('r.id_koordinator', $Auth['id']);
+		} elseif (!empty($filter_koor)) {
+			$this->db->where('r.id_koordinator', $filter_koor);
+		}
+
+		if (!empty($filter_status)) {
+			if ($filter_status === 'Rumah Sendiri') {
+				$this->db->group_start();
+				$this->db->where('r.status_rumah', 'Rumah Sendiri');
+				$this->db->or_where('r.status_rumah IS NULL');
+				$this->db->or_where('r.status_rumah', '');
+				$this->db->group_end();
+			} else {
+				$this->db->like('r.status_rumah', $filter_status);
+			}
+		}
+
+		if (!empty($search_val)) {
+			$this->db->group_start();
+			$this->db->like('r.alamat', $search_val);
+			$this->db->or_like('r.nama', $search_val);
+			$this->db->or_like('r.no_hp', $search_val);
+			$this->db->or_like('k.nama', $search_val);
+			$this->db->or_like('r.status_rumah', $search_val);
+			$this->db->group_end();
+		}
+
+		$filtered_records = $this->db->count_all_results('', FALSE);
+
+		$this->db->order_by($order_col, $order_dir);
+		$this->db->limit($length, $start);
+		$rows = $this->db->get()->result();
+
+		$this->load->helper('wa');
+
+		$data = [];
+		$no = $start + 1;
+		foreach ($rows as $row) {
+			$curr_status = trim($row->status_rumah ?? '');
+			if (empty($curr_status)) {
+				$curr_status = 'Rumah Sendiri';
+			}
+			$is_kontrak = (stripos($curr_status, 'kontrak') !== false || stripos($curr_status, 'sewa') !== false);
+			$is_musiman = (stripos($curr_status, 'musiman') !== false);
+
+			if ($is_kontrak) {
+				$badge_status = '<span class="badge-status-kontrak"><i class="bi bi-key-fill me-1"></i>Sewa / Kontrak</span>';
+			} elseif ($is_musiman) {
+				$badge_status = '<span class="badge-status-musiman"><i class="bi bi-clock-history me-1"></i>Musiman</span>';
+			} else {
+				$badge_status = '<span class="badge-status-sendiri"><i class="bi bi-house-check-fill me-1"></i>Rumah Sendiri</span>';
+			}
+
+			// Fallback cek nomor HP jika di master_rumah masih kosong
+			$no_hp = trim($row->no_hp ?? '');
+			if (empty($no_hp) && function_exists('get_no_hp_warga')) {
+				$no_hp = get_no_hp_warga($row->id, $row->alamat);
+				if (!empty($no_hp)) {
+					$this->db->where('id', $row->id)->update('master_rumah', ['no_hp' => $no_hp]);
+				}
+			}
+
+			// No HP format
+			if (!empty($no_hp)) {
+				$wa_num = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $no_hp));
+				$no_hp_html = '<a href="https://wa.me/' . $wa_num . '" target="_blank" class="text-decoration-none text-success fw-semibold"><i class="bi bi-whatsapp me-1"></i>' . htmlspecialchars($no_hp) . '</a>';
+			} else {
+				$no_hp_html = '<span class="text-muted small"><i class="bi bi-dash"></i> Belum ada</span>';
+			}
+
+			// Action button
+			$btn_edit = '<button type="button" class="btn btn-sm btn-outline-success btn-edit-rumah rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" ' .
+				'data-id="' . $row->id . '" ' .
+				'data-alamat="' . htmlspecialchars($row->alamat ?? '', ENT_QUOTES) . '" ' .
+				'data-nama="' . htmlspecialchars($row->nama ?? '', ENT_QUOTES) . '" ' .
+				'data-status="' . htmlspecialchars($curr_status, ENT_QUOTES) . '" ' .
+				'data-nohp="' . htmlspecialchars($no_hp, ENT_QUOTES) . '" ' .
+				'data-idkoor="' . htmlspecialchars($row->id_koordinator ?? '', ENT_QUOTES) . '">' .
+				'<i class="bi bi-pencil-square"></i> <span>Edit</span></button>';
+
+			$data[] = [
+				'<div class="text-center fw-bold text-muted">' . $no++ . '</div>',
+				'<span class="fw-bold text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i>' . htmlspecialchars($row->alamat ?? '-') . '</span>',
+				'<strong><i class="bi bi-person-fill text-primary me-1"></i>' . htmlspecialchars($row->nama ?? '-') . '</strong>',
+				$badge_status,
+				$no_hp_html,
+				'<span class="badge bg-light text-secondary border px-2 py-1"><i class="bi bi-person-badge me-1"></i>' . htmlspecialchars($row->koordinator ?? '-') . '</span>',
+				'<div class="text-center">' . $btn_edit . '</div>'
+			];
+		}
+
+		echo json_encode([
+			'draw' => $draw,
+			'recordsTotal' => $total_records,
+			'recordsFiltered' => $filtered_records,
+			'data' => $data
+		]);
 	}
 
 	/**
@@ -1784,11 +2228,18 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$nama = trim($this->input->post('nama', true));
 		$no_hp = trim($this->input->post('no_hp', true));
 
+		$is_ajax = $this->input->is_ajax_request();
+
 		// Validasi tabel
 		$allowed_tables = ['master_admin', 'master_koordinator_blok'];
 		if (!in_array($table, $allowed_tables) || empty($id) || empty($nama)) {
+			if ($is_ajax) {
+				header('Content-Type: application/json');
+				echo json_encode(['status' => 'error', 'message' => 'Data tidak valid atau nama tidak boleh kosong.']);
+				return;
+			}
 			$this->session->set_flashdata('error', 'Data tidak valid.');
-			redirect('setting');
+			redirect('setting?tab=users');
 			return;
 		}
 
@@ -1799,6 +2250,15 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 		$this->db->where('id', $id);
 		$this->db->update($table, $update_data);
+
+		if ($is_ajax) {
+			header('Content-Type: application/json');
+			echo json_encode([
+				'status' => 'success',
+				'message' => 'Data user ' . $nama . ' berhasil diperbarui!'
+			]);
+			return;
+		}
 
 		if ($this->db->affected_rows() >= 0) {
 			$this->session->set_flashdata('success', 'Data user berhasil diperbarui.');
@@ -1820,22 +2280,38 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$nama = trim($this->input->post('nama', true));
 		$no_hp = trim($this->input->post('no_hp', true));
 		$status_rumah = trim($this->input->post('status_rumah', true));
+		$id_koordinator = $this->input->post('id_koordinator', true);
+
 		if (empty($status_rumah)) {
 			$status_rumah = 'Rumah Sendiri';
 		}
 
+		$is_ajax = $this->input->is_ajax_request();
+
 		if (empty($id)) {
+			if ($is_ajax) {
+				header('Content-Type: application/json');
+				echo json_encode(['status' => 'error', 'message' => 'ID rumah tidak valid.']);
+				return;
+			}
 			$this->session->set_flashdata('error', 'ID rumah tidak valid.');
 			redirect('setting?tab=rumah');
 			return;
 		}
 
-		$this->db->where('id', $id);
-		$this->db->update('master_rumah', [
+		$update_payload = [
 			'nama' => $nama,
 			'no_hp' => $no_hp,
 			'status_rumah' => $status_rumah
-		]);
+		];
+
+		// If admin and id_koordinator passed
+		if (!empty($id_koordinator) && $this->session->userdata['username']['role'] === 'admin') {
+			$update_payload['id_koordinator'] = $id_koordinator;
+		}
+
+		$this->db->where('id', $id);
+		$this->db->update('master_rumah', $update_payload);
 
 		// Sinkronisasi ke master_keluarga jika diperlukan
 		$rumah = $this->db->get_where('master_rumah', ['id' => $id])->row_array();
@@ -1846,6 +2322,15 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			}
 			$this->db->where('nomor_rumah', $rumah['alamat']);
 			$this->db->update('master_keluarga', $update_keluarga);
+		}
+
+		if ($is_ajax) {
+			header('Content-Type: application/json');
+			echo json_encode([
+				'status' => 'success',
+				'message' => 'Data rumah ' . ($rumah['alamat'] ?? '') . ' berhasil disimpan!'
+			]);
+			return;
 		}
 
 		if ($this->db->affected_rows() >= 0) {

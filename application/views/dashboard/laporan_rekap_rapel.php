@@ -192,7 +192,56 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
         margin: 1px;
     }
 
-    /* Warna cell sama persis dengan laporan_pembayaran.php (Bootstrap subtle) */
+    .kpi-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 16px;
+        box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.06);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+        border-color: #64748b !important;
+    }
+    .kpi-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+    .kpi-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .kpi-value {
+        font-size: 1.45rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin-bottom: 2px;
+    }
+    .kpi-sub {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
 </style>
 
 <?php if ($this->session->flashdata('success')): ?>
@@ -215,13 +264,18 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
 <div class="row mb-4">
     <!-- Total Koordinator SD -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
-        <div class="card border border-secondary shadow rounded-4 bg-light">
-            <div class="card-body d-flex align-items-start">
-                <i class="bi bi-person-badge-fill text-primary display-6 me-3"></i>
+        <div class="card kpi-card h-100" style="border-top: 3.5px solid #0284c7 !important;">
+            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="kpi-icon-box" style="background:#e0f2fe; color:#0284c7;">
+                        <i class="ti ti-users"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background:#e0f2fe; color:#0284c7; font-size:0.68rem; font-weight:600;">Akumulasi <?= $selected_tahun ?></span>
+                </div>
                 <div>
-                    <h6 class="mb-1">Total Koordinator</h6>
-                    <h5 class="fw-bold text-primary">Rp <?= number_format($card_koor_sd) ?></h5>
-                    <small class="text-muted">Akumulasi <?= $selected_tahun ?></small>
+                    <div class="kpi-title" title="Total Via Koordinator">Total Via Koordinator</div>
+                    <div class="kpi-value text-dark">Rp <?= number_format($card_koor_sd, 0, ',', '.') ?></div>
+                    <div class="kpi-sub"><i class="ti ti-user-check text-primary"></i> Setoran via koordinator</div>
                 </div>
             </div>
         </div>
@@ -229,13 +283,18 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
 
     <!-- Total Transfer SD -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
-        <div class="card border border-success shadow rounded-4 bg-light">
-            <div class="card-body d-flex align-items-start">
-                <i class="bi bi-bank2 text-success display-6 me-3"></i>
+        <div class="card kpi-card h-100" style="border-top: 3.5px solid #16a34a !important;">
+            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="kpi-icon-box" style="background:#dcfce7; color:#15803d;">
+                        <i class="ti ti-building-bank"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background:#dcfce7; color:#15803d; font-size:0.68rem; font-weight:600;">Akumulasi <?= $selected_tahun ?></span>
+                </div>
                 <div>
-                    <h6 class="mb-1">Total Transfer</h6>
-                    <h5 class="fw-bold text-success">Rp <?= number_format($card_transfer_sd) ?></h5>
-                    <small class="text-muted">Akumulasi <?= $selected_tahun ?></small>
+                    <div class="kpi-title" title="Total Via Transfer">Total Via Transfer</div>
+                    <div class="kpi-value text-success">Rp <?= number_format($card_transfer_sd, 0, ',', '.') ?></div>
+                    <div class="kpi-sub"><i class="ti ti-check text-success"></i> Setoran via bank/transfer</div>
                 </div>
             </div>
         </div>
@@ -243,13 +302,18 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
 
     <!-- Koordinator Bulan Ini -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
-        <div class="card border border-warning shadow rounded-4 bg-light">
-            <div class="card-body d-flex align-items-start">
-                <i class="bi bi-calendar-check text-warning display-6 me-3"></i>
+        <div class="card kpi-card h-100" style="border-top: 3.5px solid #d97706 !important;">
+            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="kpi-icon-box" style="background:#fef3c7; color:#d97706;">
+                        <i class="ti ti-calendar-time"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background:#fef3c7; color:#d97706; font-size:0.68rem; font-weight:600;">Bulan Ini</span>
+                </div>
                 <div>
-                    <h6 class="mb-1">Koordinator Bulan Ini</h6>
-                    <h5 class="fw-bold text-warning">Rp <?= number_format($card_koor_bulan_ini) ?></h5>
-                    <small class="text-muted">Periode bulan berjalan</small>
+                    <div class="kpi-title" title="Koordinator Bulan Ini">Koordinator Bulan Ini</div>
+                    <div class="kpi-value" style="color:#d97706;">Rp <?= number_format($card_koor_bulan_ini, 0, ',', '.') ?></div>
+                    <div class="kpi-sub"><i class="ti ti-clock text-warning"></i> Periode bulan berjalan</div>
                 </div>
             </div>
         </div>
@@ -257,13 +321,18 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
 
     <!-- Transfer Bulan Ini -->
     <div class="col-12 col-md-6 col-lg-3 mb-3">
-        <div class="card border border-danger shadow rounded-4 bg-light">
-            <div class="card-body d-flex align-items-start">
-                <i class="bi bi-cash-coin text-danger display-6 me-3"></i>
+        <div class="card kpi-card h-100" style="border-top: 3.5px solid #7c3aed !important;">
+            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="kpi-icon-box" style="background:#ede9fe; color:#7c3aed;">
+                        <i class="ti ti-credit-card"></i>
+                    </div>
+                    <span class="badge rounded-pill" style="background:#ede9fe; color:#7c3aed; font-size:0.68rem; font-weight:600;">Bulan Ini</span>
+                </div>
                 <div>
-                    <h6 class="mb-1">Transfer Bulan Ini</h6>
-                    <h5 class="fw-bold text-danger">Rp <?= number_format($card_transfer_bulan_ini) ?></h5>
-                    <small class="text-muted">Periode bulan berjalan</small>
+                    <div class="kpi-title" title="Transfer Bulan Ini">Transfer Bulan Ini</div>
+                    <div class="kpi-value" style="color:#7c3aed;">Rp <?= number_format($card_transfer_bulan_ini, 0, ',', '.') ?></div>
+                    <div class="kpi-sub"><i class="ti ti-receipt text-primary"></i> Periode bulan berjalan</div>
                 </div>
             </div>
         </div>
