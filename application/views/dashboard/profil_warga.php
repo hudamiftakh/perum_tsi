@@ -129,53 +129,43 @@ if ($Auth['role'] === 'koordinator') {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    padding: 14px 12px;
+    padding: 12px 10px;
     border: none;
     vertical-align: middle;
+    white-space: nowrap !important;
 }
 .table-premium thead th:first-child { border-top-left-radius: 12px; }
 .table-premium thead th:last-child { border-top-right-radius: 12px; }
 .table-premium tbody td {
-    padding: 14px 12px;
+    padding: 10px 10px;
     vertical-align: middle;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
+    white-space: nowrap !important;
 }
 .table-premium tbody tr:hover {
     background-color: #f8fafc;
 }
-.avatar-initial {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.8rem;
-    margin-right: 8px;
-    background: #f1f5f9;
-    color: #475569;
-}
 
-/* Proper Checkbox Sizing & Centering */
+/* Proper Compact Checkbox Sizing & Centering */
 .table-premium input[type="checkbox"],
 #checkAllTunggak,
 .check-tunggak,
 .check-modal-koor {
-    width: 17px !important;
-    height: 17px !important;
-    min-width: 17px !important;
-    min-height: 17px !important;
-    max-width: 17px !important;
-    max-height: 17px !important;
+    width: 15px !important;
+    height: 15px !important;
+    min-width: 15px !important;
+    min-height: 15px !important;
+    max-width: 15px !important;
+    max-height: 15px !important;
     margin: 0 auto !important;
+    padding: 0 !important;
     vertical-align: middle !important;
     cursor: pointer !important;
     border: 1.5px solid #94a3b8 !important;
-    border-radius: 4px !important;
+    border-radius: 3px !important;
     background-color: #fff !important;
-    display: inline-block !important;
+    display: block !important;
     box-shadow: none !important;
 }
 
@@ -194,18 +184,23 @@ if ($Auth['role'] === 'koordinator') {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
 }
 
-/* Hilangkan icon sorting DataTables pada kolom checkbox */
+/* Hilangkan icon sorting DataTables pada kolom checkbox & no-sort */
 #tblMenunggak thead th:first-child::before,
 #tblMenunggak thead th:first-child::after,
 #tblMenunggak thead th.no-sort::before,
-#tblMenunggak thead th.no-sort::after {
+#tblMenunggak thead th.no-sort::after,
+#tblRajin thead th.no-sort::before,
+#tblRajin thead th.no-sort::after,
+#tblDimuka thead th.no-sort::before,
+#tblDimuka thead th.no-sort::after {
     display: none !important;
     content: "" !important;
 }
 #tblMenunggak thead th:first-child {
     background-image: none !important;
-    padding-right: 12px !important;
-    width: 40px !important;
+    padding: 10px 4px !important;
+    width: 36px !important;
+    max-width: 36px !important;
     text-align: center !important;
 }
 </style>
@@ -440,18 +435,18 @@ if ($Auth['role'] === 'koordinator') {
                         <table class="table table-hover table-premium w-100" id="tblMenunggak">
                             <thead>
                                 <tr>
-                                    <th width="40" class="text-center no-sort" style="width:40px !important; max-width:40px; vertical-align:middle; text-align:center;">
+                                    <th class="text-center no-sort" style="width:36px; max-width:36px; vertical-align:middle; text-align:center;">
                                         <input type="checkbox" id="checkAllTunggak" class="form-check-input" style="cursor:pointer;" title="Pilih Semua">
                                     </th>
-                                    <th width="45" class="text-center" style="vertical-align:middle;">No</th>
-                                    <th>Nomor Rumah / Alamat</th>
-                                    <th>Nama Warga</th>
-                                    <th>Kontak WA</th>
-                                    <th>Koordinator</th>
-                                    <th class="text-center">Terbayar</th>
-                                    <th class="text-center">Tunggakan</th>
-                                    <th class="text-center">Status</th>
-                                    <th class="text-center" width="130">Aksi</th>
+                                    <th class="text-center" style="width:42px; vertical-align:middle;">No</th>
+                                    <th style="width:135px;">Nomor Rumah / Alamat</th>
+                                    <th style="width:160px;">Nama Warga</th>
+                                    <th style="width:125px;">Kontak WA</th>
+                                    <th style="width:150px;">Koordinator</th>
+                                    <th class="text-center" style="width:85px;">Terbayar</th>
+                                    <th class="text-center" style="width:90px;">Tunggakan</th>
+                                    <th class="text-center" style="width:105px;">Status</th>
+                                    <th class="text-center no-sort" style="width:135px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -469,16 +464,16 @@ if ($Auth['role'] === 'koordinator') {
                         <table class="table table-hover table-premium w-100" id="tblRajin">
                             <thead>
                                 <tr>
-                                    <th width="40" class="text-center">No</th>
-                                    <th>Nomor Rumah / Alamat</th>
-                                    <th>Nama Warga</th>
-                                    <th>Kontak WA</th>
-                                    <th>Koordinator</th>
-                                    <th class="text-center">Terbayar</th>
-                                    <th class="text-end">Total Nominal</th>
-                                    <th class="text-center">Terakhir Bayar</th>
-                                    <th class="text-center">Kitir Terkirim</th>
-                                    <th class="text-center" width="120">Aksi</th>
+                                    <th class="text-center" style="width:45px;">No</th>
+                                    <th style="width:140px;">Nomor Rumah / Alamat</th>
+                                    <th style="width:160px;">Nama Warga</th>
+                                    <th style="width:125px;">Kontak WA</th>
+                                    <th style="width:150px;">Koordinator</th>
+                                    <th class="text-center" style="width:90px;">Terbayar</th>
+                                    <th class="text-end" style="width:110px;">Total Nominal</th>
+                                    <th class="text-center" style="width:100px;">Terakhir Bayar</th>
+                                    <th class="text-center" style="width:90px;">Kitir Terkirim</th>
+                                    <th class="text-center no-sort" style="width:115px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -496,16 +491,16 @@ if ($Auth['role'] === 'koordinator') {
                         <table class="table table-hover table-premium w-100" id="tblDimuka">
                             <thead>
                                 <tr>
-                                    <th width="40" class="text-center">No</th>
-                                    <th>Nomor Rumah / Alamat</th>
-                                    <th>Nama Warga</th>
-                                    <th>Kontak WA</th>
-                                    <th>Koordinator</th>
-                                    <th class="text-center">Bayar Sampai</th>
-                                    <th class="text-center">Surplus Bulan</th>
-                                    <th class="text-end">Total Nominal</th>
-                                    <th class="text-center">Kitir Terkirim</th>
-                                    <th class="text-center" width="120">Aksi</th>
+                                    <th class="text-center" style="width:45px;">No</th>
+                                    <th style="width:140px;">Nomor Rumah / Alamat</th>
+                                    <th style="width:160px;">Nama Warga</th>
+                                    <th style="width:125px;">Kontak WA</th>
+                                    <th style="width:150px;">Koordinator</th>
+                                    <th class="text-center" style="width:105px;">Bayar Sampai</th>
+                                    <th class="text-center" style="width:95px;">Surplus Bulan</th>
+                                    <th class="text-end" style="width:110px;">Total Nominal</th>
+                                    <th class="text-center" style="width:90px;">Kitir Terkirim</th>
+                                    <th class="text-center no-sort" style="width:115px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -679,20 +674,20 @@ function loadData() {
                 else if (w.tunggakan <= 3) badgeClass = 'bg-danger-subtle text-danger';
 
                 rows1.push([
-                    '<input type="checkbox" value="'+w.id+'" class="form-check-input check-tunggak" style="cursor:pointer;">',
+                    '<input type="checkbox" value="'+w.id+'" class="form-check-input check-tunggak">',
                     '<span class="text-muted fw-bold">' + (i+1) + '</span>',
                     '<div><i class="bi bi-geo-alt-fill text-danger me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
-                    '<div><span class="avatar-initial">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong></div>',
+                    '<span class="fw-bold text-dark">' + (w.nama||'-') + '</span>',
                     formatHp(w.no_hp),
                     '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
                     '<span class="badge bg-info-subtle text-info fw-bold px-2 py-1">' + (w.jumlah_bulan_bayar || 0) + ' / ' + tbw + ' Bln</span>',
                     '<span class="badge ' + badgeClass + ' px-2 py-1">' + (w.tunggakan || 0) + ' Bulan</span>',
                     '<small class="fw-semibold text-danger">' + (w.status_tunggak||'Nunggak') + '</small>',
-                    '<div class="d-flex gap-1 justify-content-center">' +
-                        '<a href="'+BASE+'surat-teguran-pdf?id_rumah='+w.id+'&tahun='+tahun+'&bulan='+bulan+'" target="_blank" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:30px;height:30px" title="Cetak Surat PDF"><i class="bi bi-file-earmark-pdf"></i></a>' +
-                        '<a href="'+waLink+'" target="_blank" class="btn btn-sm btn-outline-success rounded-circle p-1" style="width:30px;height:30px" title="Kirim WA Manual"><i class="bi bi-whatsapp"></i></a>' +
-                        '<button onclick="sendWaOtomatis('+w.id+')" class="btn btn-sm btn-success rounded-circle p-1" style="width:30px;height:30px" title="Kirim WA Otomatis (API)"><i class="bi bi-send-check"></i></button>' +
-                        '<a href="'+BASE+'pembayaran/'+w.id+'" class="btn btn-sm btn-outline-primary rounded-circle p-1" style="width:30px;height:30px" title="Input Pembayaran"><i class="bi bi-cash-coin"></i></a>' +
+                    '<div class="d-inline-flex gap-1 justify-content-center">' +
+                        '<a href="'+BASE+'surat-teguran-pdf?id_rumah='+w.id+'&tahun='+tahun+'&bulan='+bulan+'" target="_blank" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;" title="Cetak Surat PDF"><i class="bi bi-file-earmark-pdf"></i></a>' +
+                        '<a href="'+waLink+'" target="_blank" class="btn btn-sm btn-outline-success rounded-circle p-1" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;" title="Kirim WA Manual"><i class="bi bi-whatsapp"></i></a>' +
+                        '<button onclick="sendWaOtomatis('+w.id+')" class="btn btn-sm btn-success rounded-circle p-1" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;" title="Kirim WA Otomatis (API)"><i class="bi bi-send-check"></i></button>' +
+                        '<a href="'+BASE+'pembayaran/'+w.id+'" class="btn btn-sm btn-outline-primary rounded-circle p-1" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;" title="Input Pembayaran"><i class="bi bi-cash-coin"></i></a>' +
                     '</div>'
                 ]);
             });
@@ -712,9 +707,16 @@ function loadData() {
                     zeroRecords: "Tidak ditemukan"
                 },
                 columnDefs: [
-                    { targets: 0, orderable: false, searchable: false, width: '40px', className: 'text-center align-middle' },
-                    { targets: [1,6,7,8,9], className: 'text-center align-middle' },
-                    { targets: 9, orderable: false }
+                    { targets: 0, orderable: false, searchable: false, width: '36px', className: 'text-center align-middle' },
+                    { targets: 1, width: '42px', className: 'text-center align-middle' },
+                    { targets: 2, width: '135px', className: 'align-middle' },
+                    { targets: 3, width: '160px', className: 'align-middle' },
+                    { targets: 4, width: '125px', className: 'align-middle' },
+                    { targets: 5, width: '150px', className: 'align-middle' },
+                    { targets: 6, width: '85px', className: 'text-center align-middle' },
+                    { targets: 7, width: '90px', className: 'text-center align-middle' },
+                    { targets: 8, width: '105px', className: 'text-center align-middle' },
+                    { targets: 9, orderable: false, width: '135px', className: 'text-center align-middle' }
                 ]
             });
 
@@ -724,7 +726,7 @@ function loadData() {
                 rows2.push([
                     '<span class="text-muted fw-bold">' + (i+1) + '</span>',
                     '<div><i class="bi bi-geo-alt-fill text-success me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
-                    '<div><span class="avatar-initial" style="background:#dcfce7;color:#15803d">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong> <i class="bi bi-patch-check-fill text-success"></i></div>',
+                    '<span class="fw-bold text-dark">' + (w.nama||'-') + '</span> <i class="bi bi-patch-check-fill text-success" title="Lunas"></i>',
                     formatHp(w.no_hp),
                     '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
                     '<span class="badge bg-success-subtle text-success fw-bold px-2 py-1">' + (w.jumlah_bulan_bayar || 0) + ' Bulan ✓</span>',
@@ -749,8 +751,16 @@ function loadData() {
                     zeroRecords: "Tidak ditemukan"
                 },
                 columnDefs: [
-                    { targets: [0,5,7,8,9], className: 'text-center' },
-                    { targets: [6], className: 'text-end' }
+                    { targets: 0, width: '45px', className: 'text-center align-middle' },
+                    { targets: 1, width: '140px', className: 'align-middle' },
+                    { targets: 2, width: '160px', className: 'align-middle' },
+                    { targets: 3, width: '125px', className: 'align-middle' },
+                    { targets: 4, width: '150px', className: 'align-middle' },
+                    { targets: 5, width: '90px', className: 'text-center align-middle' },
+                    { targets: 6, width: '110px', className: 'text-end align-middle' },
+                    { targets: 7, width: '100px', className: 'text-center align-middle' },
+                    { targets: 8, width: '90px', className: 'text-center align-middle' },
+                    { targets: 9, orderable: false, width: '115px', className: 'text-center align-middle' }
                 ]
             });
 
@@ -760,7 +770,7 @@ function loadData() {
                 rows3.push([
                     '<span class="text-muted fw-bold">' + (i+1) + '</span>',
                     '<div><i class="bi bi-geo-alt-fill text-primary me-1"></i><strong>' + (w.alamat||'-') + '</strong></div>',
-                    '<div><span class="avatar-initial" style="background:#ede9fe;color:#6b21a8">' + (w.nama ? w.nama.substring(0,2).toUpperCase() : 'W') + '</span><strong>' + (w.nama||'-') + '</strong> ⭐</div>',
+                    '<span class="fw-bold text-dark">' + (w.nama||'-') + '</span> <span title="Surplus">⭐</span>',
                     formatHp(w.no_hp),
                     '<span class="badge bg-light text-dark border">' + (w.koordinator||'-') + '</span>',
                     '<span class="badge rounded-pill" style="background:#7c3aed;color:#fff">' + (w.bayar_sampai || '-') + '</span>',
@@ -785,8 +795,16 @@ function loadData() {
                     zeroRecords: "Tidak ditemukan"
                 },
                 columnDefs: [
-                    { targets: [0,5,6,8,9], className: 'text-center' },
-                    { targets: [7], className: 'text-end' }
+                    { targets: 0, width: '45px', className: 'text-center align-middle' },
+                    { targets: 1, width: '140px', className: 'align-middle' },
+                    { targets: 2, width: '160px', className: 'align-middle' },
+                    { targets: 3, width: '125px', className: 'align-middle' },
+                    { targets: 4, width: '150px', className: 'align-middle' },
+                    { targets: 5, width: '105px', className: 'text-center align-middle' },
+                    { targets: 6, width: '95px', className: 'text-center align-middle' },
+                    { targets: 7, width: '110px', className: 'text-end align-middle' },
+                    { targets: 8, width: '90px', className: 'text-center align-middle' },
+                    { targets: 9, orderable: false, width: '115px', className: 'text-center align-middle' }
                 ]
             });
 
