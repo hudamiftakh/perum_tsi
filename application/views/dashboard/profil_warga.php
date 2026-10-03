@@ -147,11 +147,10 @@ if ($Auth['role'] === 'koordinator') {
     background-color: #f8fafc;
 }
 
-/* Proper Compact Checkbox Sizing & Centering */
+/* Table Checkbox (Red accent for Menunggak) */
 .table-premium input[type="checkbox"],
 #checkAllTunggak,
-.check-tunggak,
-.check-modal-koor {
+.check-tunggak {
     width: 15px !important;
     height: 15px !important;
     min-width: 15px !important;
@@ -167,6 +166,8 @@ if ($Auth['role'] === 'koordinator') {
     background-color: #fff !important;
     display: block !important;
     box-shadow: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
 }
 
 .table-premium input[type="checkbox"]:focus,
@@ -182,6 +183,53 @@ if ($Auth['role'] === 'koordinator') {
     background-color: #ef4444 !important;
     border-color: #ef4444 !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 11px 11px !important;
+}
+
+/* Modal Koordinator Checkbox (Blue/Primary accent) */
+.check-modal-koor {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    margin: 0 10px 0 0 !important;
+    padding: 0 !important;
+    vertical-align: middle !important;
+    cursor: pointer !important;
+    border: 1.5px solid #94a3b8 !important;
+    border-radius: 4px !important;
+    background-color: #fff !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+.check-modal-koor:focus {
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+    outline: none !important;
+}
+
+.check-modal-koor:checked {
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 12px 12px !important;
+}
+
+.koor-card-item {
+    transition: all 0.15s ease-in-out;
+}
+.koor-card-item:hover {
+    background-color: #f8fafc !important;
+    border-color: #94a3b8 !important;
 }
 
 /* Hilangkan icon sorting DataTables pada kolom checkbox & no-sort */
@@ -959,10 +1007,11 @@ function sendWaKonfirmasi(id_rumah, tipe) {
 }
 
 function downloadRekapMenunggakPdf() {
+    updateKoorCount();
     $('#modalDownloadRekap').modal('show');
 }
 function selectAllModalKoor(check) {
-    $('.check-modal-koor').prop('checked', check);
+    $('.check-modal-koor').prop('checked', check).trigger('change');
     updateKoorCount();
 }
 function updateKoorCount() {
