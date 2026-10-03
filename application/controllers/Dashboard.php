@@ -292,6 +292,12 @@ class Dashboard extends CI_Controller
 		$order_col_idx = intval($this->input->post_get('order')[0]['column'] ?? 1);
 		$order_dir = strtolower($this->input->post_get('order')[0]['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
 
+		$periode     = trim($this->input->post_get('periode') ?: 'semua');
+		$tgl_mulai   = trim($this->input->post_get('tgl_mulai') ?? '');
+		$tgl_selesai = trim($this->input->post_get('tgl_selesai') ?? '');
+		$aksi        = trim($this->input->post_get('aksi') ?? '');
+		$wa_status   = trim($this->input->post_get('wa_status') ?? '');
+
 		$cols = [
 			0 => 'id',
 			1 => 'created_at',
@@ -308,6 +314,9 @@ class Dashboard extends CI_Controller
 		$order_col = $cols[$order_col_idx] ?? 'created_at';
 
 		$total_records = $this->db->count_all('log_verifikasi');
+
+		// Terapkan filter tanggal & status
+		$this->_apply_log_verifikasi_filter($periode, $tgl_mulai, $tgl_selesai, $aksi, $wa_status);
 
 		if (!empty($search_val)) {
 			$this->db->group_start();
@@ -410,12 +419,83 @@ class Dashboard extends CI_Controller
 			];
 		}
 
+		// Hitung KPI periode aktif untuk log_verifikasi
+		$this->_apply_log_verifikasi_filter($periode, $tgl_mulai, $tgl_selesai);
+		$kpi_total = $this->db->count_all_results('log_verifikasi');
+
+		$this->_apply_log_verifikasi_filter($periode, $tgl_mulai, $tgl_selesai, 'verified');
+		$kpi_verified = $this->db->count_all_results('log_verifikasi');
+
+		$this->_apply_log_verifikasi_filter($periode, $tgl_mulai, $tgl_selesai, 'rejected');
+		$kpi_rejected = $this->db->count_all_results('log_verifikasi');
+
+		$this->_apply_log_verifikasi_filter($periode, $tgl_mulai, $tgl_selesai, null, 'success');
+		$kpi_wa_success = $this->db->count_all_results('log_verifikasi');
+
+		$this->_apply_log_verifikasi_filter($periode, $tgl_mulai, $tgl_selesai, null, 'failed');
+		$kpi_wa_failed = $this->db->count_all_results('log_verifikasi');
+
+		$periode_labels = [
+			'hari_ini'   => 'Hari Ini (' . date('d M Y') . ')',
+			'kemarin'    => 'Kemarin (' . date('d M Y', strtotime('-1 day')) . ')',
+			'minggu_ini' => 'Minggu Ini',
+			'bulan_ini'  => 'Bulan ' . date('F Y'),
+			'custom'     => (!empty($tgl_mulai) && !empty($tgl_selesai)) ? date('d/m/y', strtotime($tgl_mulai)) . ' - ' . date('d/m/y', strtotime($tgl_selesai)) : 'Rentang Kustom',
+			'semua'      => 'Semua Riwayat'
+		];
+		$periode_label = $periode_labels[$periode] ?? 'Semua Riwayat';
+
 		echo json_encode([
 			'draw'            => $draw,
 			'recordsTotal'    => $total_records,
 			'recordsFiltered' => $filtered_records,
-			'data'            => $data
+			'data'            => $data,
+			'kpi'             => [
+				'total'         => number_format($kpi_total, 0, ',', '.'),
+				'verified'      => number_format($kpi_verified, 0, ',', '.'),
+				'rejected'      => number_format($kpi_rejected, 0, ',', '.'),
+				'wa_success'    => number_format($kpi_wa_success, 0, ',', '.'),
+				'wa_failed'     => number_format($kpi_wa_failed, 0, ',', '.'),
+				'periode_label' => $periode_label
+			]
 		]);
+	}
+
+	/**
+	 * Helper untuk menyaring kriteria log verifikasi
+	 */
+	private function _apply_log_verifikasi_filter($periode = 'semua', $tgl_mulai = null, $tgl_selesai = null, $aksi = null, $wa_status = null)
+	{
+		if ($periode === 'hari_ini') {
+			$this->db->where('DATE(created_at) = CURDATE()', NULL, FALSE);
+		} elseif ($periode === 'kemarin') {
+			$this->db->where('DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)', NULL, FALSE);
+		} elseif ($periode === 'minggu_ini') {
+			$this->db->where('YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)', NULL, FALSE);
+		} elseif ($periode === 'bulan_ini') {
+			$this->db->where('DATE_FORMAT(created_at, "%Y-%m") = DATE_FORMAT(CURDATE(), "%Y-%m")', NULL, FALSE);
+		} elseif ($periode === 'custom') {
+			if (!empty($tgl_mulai) && !empty($tgl_selesai)) {
+				$this->db->where('DATE(created_at) >=', $tgl_mulai);
+				$this->db->where('DATE(created_at) <=', $tgl_selesai);
+			} elseif (!empty($tgl_mulai)) {
+				$this->db->where('DATE(created_at) >=', $tgl_mulai);
+			} elseif (!empty($tgl_selesai)) {
+				$this->db->where('DATE(created_at) <=', $tgl_selesai);
+			}
+		}
+
+		if (!empty($aksi) && in_array($aksi, ['verified', 'rejected'])) {
+			$this->db->where('aksi', $aksi);
+		}
+
+		if (!empty($wa_status)) {
+			if ($wa_status === 'skipped') {
+				$this->db->where_in('wa_status', ['skipped', 'queue', null]);
+			} else {
+				$this->db->where('wa_status', $wa_status);
+			}
+		}
 	}
 
 	/**
@@ -435,6 +515,12 @@ class Dashboard extends CI_Controller
 		$order_col_idx = intval($this->input->post_get('order')[0]['column'] ?? 1);
 		$order_dir = strtolower($this->input->post_get('order')[0]['dir'] ?? 'desc') === 'asc' ? 'ASC' : 'DESC';
 
+		$periode     = trim($this->input->post_get('periode') ?: 'semua');
+		$tgl_mulai   = trim($this->input->post_get('tgl_mulai') ?? '');
+		$tgl_selesai = trim($this->input->post_get('tgl_selesai') ?? '');
+		$status      = trim($this->input->post_get('status') ?? '');
+		$role        = trim($this->input->post_get('role') ?? '');
+
 		$cols = [
 			0 => 'id',
 			1 => 'login_at',
@@ -449,6 +535,9 @@ class Dashboard extends CI_Controller
 		$order_col = $cols[$order_col_idx] ?? 'login_at';
 
 		$total_records = $this->db->count_all('log_login');
+
+		// Terapkan filter tanggal, status, dan role
+		$this->_apply_log_login_filter($periode, $tgl_mulai, $tgl_selesai, $status, $role);
 
 		if (!empty($search_val)) {
 			$this->db->group_start();
@@ -469,40 +558,61 @@ class Dashboard extends CI_Controller
 		$this->db->limit($length, $start);
 		$logs = $this->db->get()->result();
 
+		// Hitung KPI ringkasan untuk filter periode aktif (tanpa filter search atau pagination)
+		$this->_apply_log_login_filter($periode, $tgl_mulai, $tgl_selesai, null, $role);
+		$kpi_total = $this->db->count_all_results('log_login');
+
+		$this->_apply_log_login_filter($periode, $tgl_mulai, $tgl_selesai, 'success', $role);
+		$kpi_success = $this->db->count_all_results('log_login');
+
+		$this->_apply_log_login_filter($periode, $tgl_mulai, $tgl_selesai, 'failed', $role);
+		$kpi_failed = $this->db->count_all_results('log_login');
+
+		// Label nama periode untuk tampilan badge KPI
+		$periode_labels = [
+			'hari_ini'   => 'Hari Ini (' . date('d M Y') . ')',
+			'kemarin'    => 'Kemarin (' . date('d M Y', strtotime('-1 day')) . ')',
+			'minggu_ini' => 'Minggu Ini',
+			'bulan_ini'  => 'Bulan ' . date('F Y'),
+			'custom'     => (!empty($tgl_mulai) && !empty($tgl_selesai)) ? date('d/m/y', strtotime($tgl_mulai)) . ' - ' . date('d/m/y', strtotime($tgl_selesai)) : 'Rentang Kustom',
+			'semua'      => 'Semua Riwayat'
+		];
+		$periode_label = $periode_labels[$periode] ?? 'Semua Riwayat';
+
 		$data = [];
 		$no = $start + 1;
 		foreach ($logs as $log) {
 			// Role badge
 			if ($log->role === 'admin') {
-				$badge_role = '<span class="badge bg-primary">Admin</span>';
+				$badge_role = '<span class="badge bg-primary text-white">Admin</span>';
 			} elseif ($log->role === 'koordinator') {
 				$badge_role = '<span class="badge bg-warning text-dark">Koordinator</span>';
 			} elseif ($log->role === 'bendahara') {
-				$badge_role = '<span class="badge bg-info">Bendahara</span>';
+				$badge_role = '<span class="badge bg-info text-white">Bendahara</span>';
 			} else {
-				$badge_role = '<span class="badge bg-secondary">' . htmlspecialchars($log->role ?? '-') . '</span>';
+				$badge_role = '<span class="badge bg-secondary text-white">' . htmlspecialchars($log->role ?? '-') . '</span>';
 			}
 
 			// Status badge
 			if ($log->status === 'success') {
-				$badge_status = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Berhasil</span>';
+				$badge_status = '<span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1"><i class="ti ti-circle-check me-1"></i>Berhasil</span>';
 			} else {
-				$badge_status = '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Gagal</span>';
+				$badge_status = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold px-2 py-1"><i class="ti ti-alert-triangle me-1"></i>Gagal</span>';
 			}
 
-			$ua_short = htmlspecialchars(mb_strimwidth($log->user_agent ?? '-', 0, 55, '...'));
+			$ua_short = htmlspecialchars(mb_strimwidth($log->user_agent ?? '-', 0, 50, '...'));
 			$ua_full = htmlspecialchars($log->user_agent ?? '');
 
 			$data[] = [
 				'no'          => $no++,
-				'waktu'       => '<span class="text-nowrap small"><i class="bi bi-clock text-muted me-1"></i>' . date('d/m/Y H:i:s', strtotime($log->login_at)) . '</span>',
-				'username'    => '<code>' . htmlspecialchars($log->username ?? '-') . '</code>',
-				'nama'        => htmlspecialchars($log->nama ?? '-'),
+				'waktu'       => '<span class="text-nowrap small fw-semibold text-dark"><i class="ti ti-clock text-muted me-1"></i>' . date('d/m/Y H:i:s', strtotime($log->login_at)) . '</span>',
+				'username'    => '<span class="badge bg-light text-dark border font-monospace">' . htmlspecialchars($log->username ?? '-') . '</span>',
+				'nama'        => '<span class="fw-semibold">' . htmlspecialchars($log->nama ?? '-') . '</span>',
 				'role'        => $badge_role,
 				'status'      => $badge_status,
-				'ip_address'  => '<small class="text-muted">' . htmlspecialchars($log->ip_address ?? '-') . '</small>',
-				'user_agent'  => '<small class="text-muted" title="' . $ua_full . '">' . $ua_short . '</small>',
-				'keterangan'  => '<small>' . htmlspecialchars($log->keterangan ?? '-') . '</small>',
+				'ip_address'  => '<code class="text-primary small">' . htmlspecialchars($log->ip_address ?? '-') . '</code>',
+				'user_agent'  => '<span class="small text-muted" title="' . $ua_full . '" style="cursor:help;">' . $ua_short . '</span>',
+				'keterangan'  => '<small class="text-muted">' . htmlspecialchars($log->keterangan ?? '-') . '</small>',
 			];
 		}
 
@@ -510,8 +620,47 @@ class Dashboard extends CI_Controller
 			'draw'            => $draw,
 			'recordsTotal'    => $total_records,
 			'recordsFiltered' => $filtered_records,
-			'data'            => $data
+			'data'            => $data,
+			'kpi'             => [
+				'total'         => number_format($kpi_total, 0, ',', '.'),
+				'success'       => number_format($kpi_success, 0, ',', '.'),
+				'failed'        => number_format($kpi_failed, 0, ',', '.'),
+				'periode_label' => $periode_label
+			]
 		]);
+	}
+
+	/**
+	 * Helper untuk menyaring kriteria log login
+	 */
+	private function _apply_log_login_filter($periode = 'semua', $tgl_mulai = null, $tgl_selesai = null, $status = null, $role = null)
+	{
+		if ($periode === 'hari_ini') {
+			$this->db->where('DATE(login_at) = CURDATE()', NULL, FALSE);
+		} elseif ($periode === 'kemarin') {
+			$this->db->where('DATE(login_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)', NULL, FALSE);
+		} elseif ($periode === 'minggu_ini') {
+			$this->db->where('YEARWEEK(login_at, 1) = YEARWEEK(CURDATE(), 1)', NULL, FALSE);
+		} elseif ($periode === 'bulan_ini') {
+			$this->db->where('DATE_FORMAT(login_at, "%Y-%m") = DATE_FORMAT(CURDATE(), "%Y-%m")', NULL, FALSE);
+		} elseif ($periode === 'custom') {
+			if (!empty($tgl_mulai) && !empty($tgl_selesai)) {
+				$this->db->where('DATE(login_at) >=', $tgl_mulai);
+				$this->db->where('DATE(login_at) <=', $tgl_selesai);
+			} elseif (!empty($tgl_mulai)) {
+				$this->db->where('DATE(login_at) >=', $tgl_mulai);
+			} elseif (!empty($tgl_selesai)) {
+				$this->db->where('DATE(login_at) <=', $tgl_selesai);
+			}
+		}
+
+		if (!empty($status) && in_array($status, ['success', 'failed'])) {
+			$this->db->where('status', $status);
+		}
+
+		if (!empty($role)) {
+			$this->db->where('role', $role);
+		}
 	}
 
 	public function hook_web()
@@ -1444,12 +1593,19 @@ class Dashboard extends CI_Controller
 		if (in_array($pembayaran_via, array('transfer', 'transfer_2'))) {
 			// Cek apakah ada file yang diupload
 			if (!empty($_FILES['bukti']['name'])) {
-				$config['upload_path']   = './uploads/bukti/';
+				$upload_target = './uploads/bukti/';
+				if (!is_dir($upload_target)) {
+					@mkdir($upload_target, 0777, true);
+				}
+
+				$config = array();
+				$config['upload_path']   = $upload_target;
 				$config['allowed_types'] = 'jpg|jpeg|png|pdf';
-				$config['max_size']      = 50048; // 50MB (ganti sesuai kebutuhan)
+				$config['max_size']      = 50048; // 50MB
 				$config['encrypt_name']  = TRUE;
 
-				$this->load->library('upload', $config);
+				$this->load->library('upload');
+				$this->upload->initialize($config, true);
 
 				if (!$this->upload->do_upload('bukti')) {
 					$this->session->set_flashdata('error', 'Upload bukti gagal: ' . $this->upload->display_errors('', ''));
@@ -1461,18 +1617,18 @@ class Dashboard extends CI_Controller
 
 					// Kompres jika gambar
 					if (in_array(strtolower($upload_data['file_ext']), ['.jpg', '.jpeg', '.png'])) {
-						$config['image_library'] = 'gd2';
-						$config['source_image'] = $upload_data['full_path'];
-						$config['quality'] = '70%'; // Kompres kualitas 70%
-						$config['maintain_ratio'] = TRUE;
+						$config_img = array();
+						$config_img['image_library'] = 'gd2';
+						$config_img['source_image']  = $upload_data['full_path'];
+						$config_img['quality']       = 75;
+						$config_img['maintain_ratio']= TRUE;
+						$config_img['width']         = 1600;
+						$config_img['height']        = 1600;
 
-						$this->load->library('image_lib', $config);
-
-						if (!$this->image_lib->resize()) {
-							$this->session->set_flashdata('error', 'Gagal kompres gambar: ' . $this->image_lib->display_errors('', ''));
-							redirect('pembayaran');
-							return;
-						}
+						$this->load->library('image_lib');
+						$this->image_lib->initialize($config_img);
+						@$this->image_lib->resize();
+						$this->image_lib->clear();
 					}
 
 					// Simpan nama file ke dalam data update
@@ -1566,6 +1722,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				$this->load->helper('wa');
 				$res = send_wa($wa_no_hp, $wa_text);
 				$wa_status = (isset($res['status']) && ($res['status'] === true || $res['status'] == '1')) ? 'success' : 'failed';
+				$this->db->where('id', $pembayaran_id)->update('master_pembayaran', ['wa_send' => $wa_status]);
 			}
 		} catch (Exception $e) {
 			// Gagal kirim WA tidak menggagalkan proses simpan

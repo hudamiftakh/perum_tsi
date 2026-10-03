@@ -1,0 +1,9 @@
+{
+    "telegram_token": "8918199149:AAFQOhXSdctb2G6yTmN9NRCkTIa-al4CQH8",
+    "gemini_api_key": "AIzaSyC1e_cMdjNglsfO-JYhzsR9-kWQRvyllWg",
+    "gemini_model": "gemini-2.5-flash",
+    "chat_ids": [],
+    "web_root": "/home/wabotweb/perumtsi.wabot.web.id",
+    "throttle_seconds": 600,
+    "max_lines_per_error": 25
+}

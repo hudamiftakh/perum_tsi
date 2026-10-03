@@ -645,6 +645,18 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
             const previewContent = document.getElementById('previewContent');
             const modalPreview = new bootstrap.Modal(document.getElementById('modalPreview'));
 
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        setTimeout(() => {
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses data & notifikasi...';
+                        }, 50);
+                    }
+                });
+            }
+
             btnPreview.addEventListener('click', function(e) {
                 e.preventDefault();
 

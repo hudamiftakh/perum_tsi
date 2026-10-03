@@ -1,10 +1,11 @@
 <?php if (function_exists('ensure_log_tables_exist')) { ensure_log_tables_exist(); } ?>
 <div class="container-fluid">
+    <!-- Header Page -->
     <div class="card bg-light-info shadow-none position-relative overflow-hidden mb-4">
         <div class="card-body px-4 py-3">
             <div class="row align-items-center">
-                <div class="col-9">
-                    <h4 class="fw-semibold mb-1">📋 Log Login</h4>
+                <div class="col-md-8 col-12">
+                    <h4 class="fw-semibold mb-1"><i class="ti ti-shield-lock text-primary me-2"></i> Log Aktivitas Login</h4>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0">
                             <li class="breadcrumb-item"><a href="<?php echo base_url('dashboard') ?>">Dashboard</a></li>
@@ -12,6 +13,11 @@
                             <li class="breadcrumb-item active" aria-current="page">Log Login</li>
                         </ol>
                     </nav>
+                </div>
+                <div class="col-md-4 col-12 text-md-end mt-2 mt-md-0">
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm fw-semibold" onclick="reloadTableLog()">
+                        <i class="ti ti-refresh me-1"></i> Refresh Data
+                    </button>
                 </div>
             </div>
         </div>
@@ -68,27 +74,55 @@
             gap: 4px;
             white-space: nowrap;
         }
+
+        /* Segmented Button Group untuk Filter Periode */
+        .filter-period-tabs {
+            display: inline-flex;
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 3px;
+            gap: 2px;
+            border: 1px solid #cbd5e1;
+            flex-wrap: wrap;
+        }
+        .period-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 14px;
+            border-radius: 7px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .period-btn:hover {
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .period-btn.active {
+            background: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 1px 4px rgba(2, 132, 199, 0.25);
+        }
+
+        /* Hide default DataTables search, we use unified custom search */
+        #tblLogLogin_wrapper .dataTables_filter {
+            display: none;
+        }
     </style>
 
     <?php
-    $today = date('Y-m-d');
-    $this->db->where('DATE(login_at)', $today);
-    $today_count = $this->db->count_all_results('log_login');
-
-    $this->db->where('DATE(login_at)', $today);
-    $this->db->where('status', 'success');
-    $success_count = $this->db->count_all_results('log_login');
-
-    $this->db->where('DATE(login_at)', $today);
-    $this->db->where('status', 'failed');
-    $failed_count = $this->db->count_all_results('log_login');
-
     $total_count = $this->db->count_all('log_login');
     ?>
 
-    <!-- Filter & Stats Row -->
+    <!-- 4 KPI Cards Row -->
     <div class="row mb-4">
-        <!-- Total Login Hari Ini -->
+        <!-- Card 1: Total Aktivitas Login Periode Aktif -->
         <div class="col-xl-3 col-md-6 col-6 mb-3">
             <div class="card kpi-card h-100" style="border-top: 3.5px solid #0284c7 !important;">
                 <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -96,56 +130,56 @@
                         <div class="kpi-icon-box" style="background:#e0f2fe; color:#0284c7;">
                             <i class="ti ti-calendar-event"></i>
                         </div>
-                        <span class="badge rounded-pill" style="background:#e0f2fe; color:#0284c7; font-size:0.68rem; font-weight:600;">Hari Ini</span>
+                        <span class="badge rounded-pill" id="kpiBadgePeriode" style="background:#e0f2fe; color:#0284c7; font-size:0.68rem; font-weight:700;">Semua Log</span>
                     </div>
                     <div>
-                        <div class="kpi-title" title="Total Login Hari Ini">Total Login Hari Ini</div>
-                        <div class="kpi-value text-dark"><?= number_format($today_count, 0, ',', '.') ?></div>
-                        <div class="kpi-sub"><i class="ti ti-clock-hour-4 text-muted"></i> Aktivitas hari ini</div>
+                        <div class="kpi-title" title="Total Aktivitas Login">Total Aktivitas Login</div>
+                        <div class="kpi-value text-dark" id="kpiTotal"><?= number_format($total_count, 0, ',', '.') ?></div>
+                        <div class="kpi-sub"><i class="ti ti-clock-hour-4 text-muted"></i> Percobaan masuk akun</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Login Berhasil Hari Ini -->
+        <!-- Card 2: Login Berhasil -->
         <div class="col-xl-3 col-md-6 col-6 mb-3">
-            <div class="card kpi-card h-100" style="border-top: 3.5px solid #15803d !important;">
+            <div class="card kpi-card h-100" style="border-top: 3.5px solid #16a34a !important;">
                 <div class="card-body p-3 d-flex flex-column justify-content-between">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="kpi-icon-box" style="background:#dcfce7; color:#15803d;">
+                        <div class="kpi-icon-box" style="background:#dcfce7; color:#16a34a;">
                             <i class="ti ti-shield-check"></i>
                         </div>
-                        <span class="badge rounded-pill" style="background:#dcfce7; color:#15803d; font-size:0.68rem; font-weight:600;">Sukses</span>
+                        <span class="badge rounded-pill" style="background:#dcfce7; color:#16a34a; font-size:0.68rem; font-weight:700;">Sukses</span>
                     </div>
                     <div>
-                        <div class="kpi-title" title="Login Berhasil Hari Ini">Login Berhasil</div>
-                        <div class="kpi-value text-success"><?= number_format($success_count, 0, ',', '.') ?></div>
+                        <div class="kpi-title" title="Login Berhasil">Login Berhasil</div>
+                        <div class="kpi-value text-success" id="kpiSuccess">-</div>
                         <div class="kpi-sub"><i class="ti ti-check text-success"></i> Autentikasi valid</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Login Gagal Hari Ini -->
+        <!-- Card 3: Login Gagal -->
         <div class="col-xl-3 col-md-6 col-6 mb-3">
-            <div class="card kpi-card h-100" style="border-top: 3.5px solid #b91c1c !important;">
+            <div class="card kpi-card h-100" style="border-top: 3.5px solid #dc2626 !important;">
                 <div class="card-body p-3 d-flex flex-column justify-content-between">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="kpi-icon-box" style="background:#fee2e2; color:#b91c1c;">
+                        <div class="kpi-icon-box" style="background:#fee2e2; color:#dc2626;">
                             <i class="ti ti-shield-x"></i>
                         </div>
-                        <span class="badge rounded-pill" style="background:#fee2e2; color:#b91c1c; font-size:0.68rem; font-weight:600;">Gagal</span>
+                        <span class="badge rounded-pill" style="background:#fee2e2; color:#dc2626; font-size:0.68rem; font-weight:700;">Gagal</span>
                     </div>
                     <div>
-                        <div class="kpi-title" title="Login Gagal Hari Ini">Login Gagal</div>
-                        <div class="kpi-value text-danger"><?= number_format($failed_count, 0, ',', '.') ?></div>
+                        <div class="kpi-title" title="Login Gagal">Login Gagal</div>
+                        <div class="kpi-value text-danger" id="kpiFailed">-</div>
                         <div class="kpi-sub"><i class="ti ti-alert-circle text-danger"></i> Sandi/user keliru</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Total Semua Log -->
+        <!-- Card 4: Total Semua Log di Database -->
         <div class="col-xl-3 col-md-6 col-6 mb-3">
             <div class="card kpi-card h-100" style="border-top: 3.5px solid #7c3aed !important;">
                 <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -153,34 +187,120 @@
                         <div class="kpi-icon-box" style="background:#ede9fe; color:#7c3aed;">
                             <i class="ti ti-history"></i>
                         </div>
-                        <span class="badge rounded-pill" style="background:#ede9fe; color:#7c3aed; font-size:0.68rem; font-weight:600;">Akumulasi</span>
+                        <span class="badge rounded-pill" style="background:#ede9fe; color:#7c3aed; font-size:0.68rem; font-weight:700;">Database</span>
                     </div>
                     <div>
-                        <div class="kpi-title" title="Total Semua Log">Total Semua Log</div>
+                        <div class="kpi-title" title="Total Akumulasi Log">Akumulasi Database</div>
                         <div class="kpi-value" style="color:#7c3aed;"><?= number_format($total_count, 0, ',', '.') ?></div>
-                        <div class="kpi-sub"><i class="ti ti-database text-muted"></i> Seluruh riwayat</div>
+                        <div class="kpi-sub"><i class="ti ti-database text-muted"></i> Seluruh riwayat log</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Table Card -->
-    <div class="card shadow-sm border-0 rounded-4">
-        <div class="card-body">
+    <!-- Main Card: Table with Clean Integrated Toolbar -->
+    <div class="card shadow-sm rounded-4 mb-4" style="border: 1.5px solid #cbd5e1 !important;">
+        <!-- Header with Filter Controls -->
+        <div class="card-header bg-white py-3 px-4 border-bottom">
+            <!-- Row 1: Period Segmented Tabs & Active Info -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <div class="filter-period-tabs" id="groupPeriodeTabs">
+                    <button type="button" class="period-btn active" data-periode="semua">
+                        <i class="ti ti-database"></i> Semua Log
+                    </button>
+                    <button type="button" class="period-btn" data-periode="hari_ini">
+                        <i class="ti ti-calendar"></i> Hari Ini
+                    </button>
+                    <button type="button" class="period-btn" data-periode="kemarin">
+                        <i class="ti ti-calendar-minus"></i> Kemarin
+                    </button>
+                    <button type="button" class="period-btn" data-periode="minggu_ini">
+                        <i class="ti ti-calendar-event"></i> Minggu Ini
+                    </button>
+                    <button type="button" class="period-btn" data-periode="bulan_ini">
+                        <i class="ti ti-calendar-stats"></i> Bulan Ini
+                    </button>
+                    <button type="button" class="period-btn" data-periode="custom" id="btnCustomTrigger">
+                        <i class="ti ti-calendar-search"></i> Custom 📅
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-dark border px-3 py-2 fw-semibold" id="activeFilterBadge">
+                        <i class="ti ti-check text-success me-1"></i> Semua Riwayat
+                    </span>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold d-none" id="btnResetFilter" onclick="resetAllFilters()">
+                        <i class="ti ti-rotate-clockwise me-1"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Date Range Bar (Muncul saat klik Custom) -->
+            <div id="boxCustomDate" class="p-3 mb-3 rounded-3" style="display:none; background:#f8fafc; border:1px dashed #cbd5e1;">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="small fw-bold text-dark"><i class="ti ti-calendar-event text-primary me-1"></i>Pilih Rentang:</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="date" id="tglMulai" class="form-control form-control-sm" style="width:145px;" value="<?= date('Y-m-01') ?>">
+                        <span class="text-muted small fw-semibold">s/d</span>
+                        <input type="date" id="tglSelesai" class="form-control form-control-sm" style="width:145px;" value="<?= date('Y-m-d') ?>">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary px-3 fw-bold shadow-sm" onclick="applyCustomDate()">
+                        <i class="ti ti-check me-1"></i> Terapkan
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light border px-3" onclick="cancelCustomDate()">
+                        Batal
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 2: Secondary Dropdowns (Role, Status, Real-Time Search) -->
+            <div class="row g-2 align-items-center pt-2 border-top">
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="ti ti-user-check"></i></span>
+                        <select id="filterRole" class="form-select form-select-sm border-start-0 fw-semibold text-dark">
+                            <option value="">Semua Role</option>
+                            <option value="admin">Admin</option>
+                            <option value="koordinator">Koordinator</option>
+                            <option value="bendahara">Bendahara</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="ti ti-shield-lock"></i></span>
+                        <select id="filterStatus" class="form-select form-select-sm border-start-0 fw-semibold text-dark">
+                            <option value="">Semua Status</option>
+                            <option value="success">✅ Login Berhasil Saja</option>
+                            <option value="failed">❌ Login Gagal Saja</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6 col-12">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="ti ti-search"></i></span>
+                        <input type="text" id="customSearchInput" class="form-control form-control-sm border-start-0" placeholder="Ketik nama user, username, IP, browser untuk mencari...">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()" title="Hapus Pencarian"><i class="ti ti-backspace"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Body -->
+        <div class="card-body p-3 p-md-4">
             <div class="table-responsive">
-                <table id="tblLogLogin" class="table table-striped table-hover align-middle w-100" style="font-size:0.9rem">
+                <table id="tblLogLogin" class="table table-striped table-hover align-middle w-100" style="font-size:0.88rem;">
                     <thead class="table-dark">
                         <tr>
-                            <th width="40" class="text-center">No</th>
-                            <th>Waktu Login</th>
-                            <th>Username</th>
-                            <th>Nama User</th>
-                            <th class="text-center">Role</th>
-                            <th class="text-center">Status</th>
-                            <th>IP Address</th>
-                            <th>Browser / Device</th>
-                            <th>Keterangan</th>
+                            <th width="40" class="text-center text-white" style="border-top-left-radius: 8px;">No</th>
+                            <th class="text-white text-nowrap">Waktu Login</th>
+                            <th class="text-white">Username</th>
+                            <th class="text-white">Nama User</th>
+                            <th class="text-center text-white">Role</th>
+                            <th class="text-center text-white">Status</th>
+                            <th class="text-white">IP Address</th>
+                            <th class="text-white">Browser / Perangkat</th>
+                            <th class="text-white" style="border-top-right-radius: 8px;">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -193,16 +313,31 @@
 </div>
 
 <script>
+var tblLogLogin = null;
+var currentPeriode = 'semua';
+var searchTimer = null;
+
 $(document).ready(function() {
-    $('#tblLogLogin').DataTable({
+    // Inisialisasi DataTables Server-Side
+    tblLogLogin = $('#tblLogLogin').DataTable({
         processing: true,
         serverSide: true,
         destroy: true,
         pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         order: [[1, 'desc']], // Urut berdasarkan login_at terbaru
+        dom: '<"row align-items-center mb-3"<"col-md-6 col-12"l><"col-md-6 col-12 text-md-end">>rt<"row align-items-center mt-3"<"col-md-6 col-12"i><"col-md-6 col-12 text-md-end"p>>',
         ajax: {
             url: "<?= base_url('ajax-log-login') ?>",
             type: "POST",
+            data: function(d) {
+                d.periode     = currentPeriode;
+                d.tgl_mulai   = $('#tglMulai').val();
+                d.tgl_selesai = $('#tglSelesai').val();
+                d.status      = $('#filterStatus').val();
+                d.role        = $('#filterRole').val();
+                d.search.value = $('#customSearchInput').val();
+            },
             error: function(xhr, status, error) {
                 console.error("Ajax Log Login Error:", error);
             }
@@ -218,15 +353,111 @@ $(document).ready(function() {
             { data: 'user_agent', orderable: false },
             { data: 'keterangan' }
         ],
+        drawCallback: function(settings) {
+            var json = settings.json;
+            if (json && json.kpi) {
+                $('#kpiTotal').text(json.kpi.total);
+                $('#kpiSuccess').text(json.kpi.success);
+                $('#kpiFailed').text(json.kpi.failed);
+                $('#kpiBadgePeriode').text(json.kpi.periode_label);
+                $('#activeFilterBadge').html('<i class="ti ti-check text-success me-1"></i> ' + json.kpi.periode_label);
+            }
+
+            // Tampilkan tombol reset jika bukan filter default
+            if (currentPeriode !== 'semua' || $('#filterStatus').val() !== '' || $('#filterRole').val() !== '' || $('#customSearchInput').val() !== '') {
+                $('#btnResetFilter').removeClass('d-none');
+            } else {
+                $('#btnResetFilter').addClass('d-none');
+            }
+        },
         language: {
-            search: "Cari Log:",
-            lengthMenu: "Tampilkan _MENU_ data",
+            lengthMenu: "Tampilkan _MENU_ baris",
             info: "Menampilkan _START_ - _END_ dari _TOTAL_ log",
+            infoEmpty: "Menampilkan 0 data",
             paginate: { previous: "Sebelumnya", next: "Selanjutnya" },
-            emptyTable: "Tidak ada data log login",
-            zeroRecords: "Data tidak ditemukan",
-            processing: '<div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat data dari server...'
+            emptyTable: "Tidak ada data log login untuk filter yang dipilih",
+            zeroRecords: "Data log login tidak ditemukan",
+            processing: '<div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat data...'
         }
     });
+
+    // Event Handler tombol segmented tabs periode
+    $('.period-btn').on('click', function() {
+        var selected = $(this).data('periode');
+        $('.period-btn').removeClass('active');
+        $(this).addClass('active');
+
+        if (selected === 'custom') {
+            $('#boxCustomDate').slideDown(180);
+        } else {
+            $('#boxCustomDate').slideUp(150);
+            currentPeriode = selected;
+            tblLogLogin.ajax.reload();
+        }
+    });
+
+    // Event Handler filter dropdown Status & Role
+    $('#filterStatus, #filterRole').on('change', function() {
+        tblLogLogin.ajax.reload();
+    });
+
+    // Event Handler live search dengan debounce
+    $('#customSearchInput').on('keyup', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            tblLogLogin.ajax.reload();
+        }, 300);
+    });
 });
+
+// Terapkan rentang tanggal kustom
+function applyCustomDate() {
+    var start = $('#tglMulai').val();
+    var end = $('#tglSelesai').val();
+    if (!start || !end) {
+        alert('Harap pilih Tanggal Mulai dan Tanggal Selesai.');
+        return;
+    }
+    if (start > end) {
+        alert('Tanggal Mulai tidak boleh lebih besar dari Tanggal Selesai.');
+        return;
+    }
+    currentPeriode = 'custom';
+    $('.period-btn').removeClass('active');
+    $('#btnCustomTrigger').addClass('active');
+    tblLogLogin.ajax.reload();
+}
+
+// Batal rentang kustom
+function cancelCustomDate() {
+    $('#boxCustomDate').slideUp(150);
+    $('.period-btn').removeClass('active');
+    $('[data-periode="semua"]').addClass('active');
+    currentPeriode = 'semua';
+    tblLogLogin.ajax.reload();
+}
+
+// Reset semua filter
+function resetAllFilters() {
+    $('#boxCustomDate').slideUp(150);
+    $('.period-btn').removeClass('active');
+    $('[data-periode="semua"]').addClass('active');
+    $('#filterStatus').val('');
+    $('#filterRole').val('');
+    $('#customSearchInput').val('');
+    currentPeriode = 'semua';
+    tblLogLogin.ajax.reload();
+}
+
+// Clear search input
+function clearSearch() {
+    $('#customSearchInput').val('').trigger('keyup');
+}
+
+// Reload table manual
+function reloadTableLog() {
+    if (tblLogLogin) {
+        tblLogLogin.ajax.reload(null, false);
+    }
+}
 </script>
