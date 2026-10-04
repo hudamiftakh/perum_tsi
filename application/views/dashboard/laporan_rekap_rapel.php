@@ -688,15 +688,54 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
                                                             <?php endforeach; ?>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                        <td class="fw-semibold align-middle">Foto Struk</td>
+                                                        <td>
+                                                            <?php if (!empty($dp['bukti'])): 
+                                                                $ext = strtolower(pathinfo($dp['bukti'], PATHINFO_EXTENSION));
+                                                                $url_bukti = base_url('uploads/bukti/' . $dp['bukti']);
+                                                            ?>
+                                                                <?php if ($ext === 'pdf'): ?>
+                                                                    <a href="<?= $url_bukti ?>" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1.5 shadow-2xs">
+                                                                        <i class="bi bi-file-earmark-pdf fs-6"></i> <span>Buka File PDF</span>
+                                                                    </a>
+                                                                <?php else: ?>
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1.5 shadow-2xs btn-preview-struk"
+                                                                        data-img="<?= $url_bukti ?>"
+                                                                        data-nama="<?= htmlspecialchars($data_rumah['nama'], ENT_QUOTES) ?>"
+                                                                        data-alamat="<?= htmlspecialchars($data_rumah['alamat'], ENT_QUOTES) ?>"
+                                                                        data-nominal="Rp <?= number_format($dp['jumlah_bayar']) ?>"
+                                                                        data-tgl="<?= !empty($dp['tanggal_bayar']) ? date('d/m/Y', strtotime($dp['tanggal_bayar'])) : '-' ?>">
+                                                                        <i class="bi bi-image fs-6 text-primary"></i> <span class="fw-semibold">Lihat Foto Struk</span>
+                                                                    </button>
+                                                                <?php endif; ?>
+                                                            <?php else: ?>
+                                                                <span class="text-muted small"><i class="bi bi-dash-circle me-1"></i>Tidak ada foto struk</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
                                                 </table>
-                                                <a href="<?= base_url('pembayaran/' . encrypt_url($dp['id_rumah']) . '/' . encrypt_url($dp['id_pembayaran'])) ?>"
-                                                    class="btn btn-warning">
-                                                    <i class="bi bi-pencil-square"></i> Revisi
-                                                </a>
-                                                <a href="<?= base_url('download_invoice/' . encrypt_url($dp['id_pembayaran'])) ?>"
-                                                    class="btn btn-primary" target="_blank">
-                                                    <i class="bi bi-printer"></i> Cetak Kitir
-                                                </a>
+                                                <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                                                    <?php if (!empty($dp['bukti']) && strtolower(pathinfo($dp['bukti'], PATHINFO_EXTENSION)) !== 'pdf'): ?>
+                                                        <button type="button" class="btn btn-info text-white rounded-3 shadow-sm btn-preview-struk d-inline-flex align-items-center gap-1"
+                                                            data-img="<?= base_url('uploads/bukti/' . $dp['bukti']) ?>"
+                                                            data-nama="<?= htmlspecialchars($data_rumah['nama'], ENT_QUOTES) ?>"
+                                                            data-alamat="<?= htmlspecialchars($data_rumah['alamat'], ENT_QUOTES) ?>"
+                                                            data-nominal="Rp <?= number_format($dp['jumlah_bayar']) ?>"
+                                                            data-tgl="<?= !empty($dp['tanggal_bayar']) ? date('d/m/Y', strtotime($dp['tanggal_bayar'])) : '-' ?>"
+                                                            title="Lihat Foto Struk Pembayaran">
+                                                            <i class="bi bi-image"></i> <span>Foto Struk</span>
+                                                        </button>
+                                                    <?php endif; ?>
+                                                    <a href="<?= base_url('pembayaran/' . encrypt_url($dp['id_rumah']) . '/' . encrypt_url($dp['id_pembayaran'])) ?>"
+                                                        class="btn btn-warning rounded-3 shadow-sm">
+                                                        <i class="bi bi-pencil-square"></i> Revisi
+                                                    </a>
+                                                    <a href="<?= base_url('download_invoice/' . encrypt_url($dp['id_pembayaran'])) ?>"
+                                                        class="btn btn-primary rounded-3 shadow-sm" target="_blank">
+                                                        <i class="bi bi-printer"></i> Cetak Kitir
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -784,7 +823,45 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
                                                             <?php endif; ?>
                                                         </td>
                                                     </tr>
+                                                    <tr>
+                                                        <td class="fw-semibold align-middle">Foto Struk</td>
+                                                        <td>
+                                                            <?php if (!empty($dp['bukti'])): 
+                                                                $ext_p = strtolower(pathinfo($dp['bukti'], PATHINFO_EXTENSION));
+                                                                $url_bukti_p = base_url('uploads/bukti/' . $dp['bukti']);
+                                                            ?>
+                                                                <?php if ($ext_p === 'pdf'): ?>
+                                                                    <a href="<?= $url_bukti_p ?>" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1.5 shadow-2xs">
+                                                                        <i class="bi bi-file-earmark-pdf fs-6"></i> <span>Buka File PDF</span>
+                                                                    </a>
+                                                                <?php else: ?>
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 d-inline-flex align-items-center gap-1.5 shadow-2xs btn-preview-struk"
+                                                                        data-img="<?= $url_bukti_p ?>"
+                                                                        data-nama="<?= htmlspecialchars($data_rumah['nama'], ENT_QUOTES) ?>"
+                                                                        data-alamat="<?= htmlspecialchars($data_rumah['alamat'], ENT_QUOTES) ?>"
+                                                                        data-nominal="Rp <?= number_format($dp['jumlah_bayar']) ?>"
+                                                                        data-tgl="<?= !empty($dp['tanggal_bayar']) ? date('d/m/Y', strtotime($dp['tanggal_bayar'])) : '-' ?>">
+                                                                        <i class="bi bi-image fs-6 text-primary"></i> <span class="fw-semibold">Lihat Foto Struk</span>
+                                                                    </button>
+                                                                <?php endif; ?>
+                                                            <?php else: ?>
+                                                                <span class="text-muted small"><i class="bi bi-dash-circle me-1"></i>Tidak ada foto struk</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                    </tr>
                                                 </table>
+                                                <?php if (!empty($dp['bukti']) && strtolower(pathinfo($dp['bukti'], PATHINFO_EXTENSION)) !== 'pdf'): ?>
+                                                    <div class="text-center mb-2">
+                                                        <button type="button" class="btn btn-info text-white rounded-3 shadow-sm btn-preview-struk d-inline-flex align-items-center gap-1"
+                                                            data-img="<?= base_url('uploads/bukti/' . $dp['bukti']) ?>"
+                                                            data-nama="<?= htmlspecialchars($data_rumah['nama'], ENT_QUOTES) ?>"
+                                                            data-alamat="<?= htmlspecialchars($data_rumah['alamat'], ENT_QUOTES) ?>"
+                                                            data-nominal="Rp <?= number_format($dp['jumlah_bayar']) ?>"
+                                                            data-tgl="<?= !empty($dp['tanggal_bayar']) ? date('d/m/Y', strtotime($dp['tanggal_bayar'])) : '-' ?>">
+                                                            <i class="bi bi-image"></i> <span>Lihat Foto Struk</span>
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <div class="text-center mt-1">
                                                     <small class="text-muted">Pembayaran ini perlu diverifikasi oleh admin.</small>
                                                 </div>
@@ -905,3 +982,126 @@ $card_transfer_sd = $get_total_via('transfer', null, $selected_tahun);
         </tbody>
     </table>
 </div>
+
+<!-- ============================================ -->
+<!-- MODAL: PREVIEW FOTO STRUK PEMBAYARAN        -->
+<!-- ============================================ -->
+<div class="modal fade" id="modalPreviewStruk" tabindex="-1" aria-labelledby="modalPreviewStrukLabel" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <!-- Header Soft -->
+            <div class="modal-header py-3 px-4" style="background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%); border-bottom: 1.5px solid #e2e8f0;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-2 d-inline-flex align-items-center justify-content-center" style="background:#dcfce7; color:#15803d; width:44px; height:44px;">
+                        <i class="bi bi-receipt-cutoff fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0" id="modalPreviewStrukLabel">Foto Bukti / Struk Pembayaran</h5>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge rounded-pill fw-semibold" style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; font-size:0.76rem;" id="previewStrukWarga">-</span>
+                            <span class="badge rounded-pill fw-semibold bg-light text-secondary border font-monospace" style="font-size:0.74rem;" id="previewStrukAlamat">-</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-3 p-md-4 text-center">
+                <!-- Info Ringkas Pembayaran -->
+                <div class="d-flex flex-wrap justify-content-center gap-3 mb-3 p-2.5 rounded-3 bg-light border font-monospace small">
+                    <div><span class="text-muted">Nominal:</span> <strong class="text-success" id="previewStrukNominal">-</strong></div>
+                    <div class="text-muted">|</div>
+                    <div><span class="text-muted">Tgl Bayar:</span> <strong class="text-dark" id="previewStrukTgl">-</strong></div>
+                </div>
+
+                <!-- Container Gambar Foto Struk -->
+                <div class="position-relative p-2 rounded-4" style="background:#f1f5f9; border: 1.5px dashed #cbd5e1; min-height: 250px; display:flex; align-items:center; justify-content:center;">
+                    <div id="previewStrukSpinner" class="spinner-border text-primary my-5" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <img id="previewStrukImg" src="" alt="Bukti Pembayaran" class="img-fluid rounded-3 shadow-sm d-none" style="max-height: 65vh; max-width: 100%; object-fit: contain;">
+                    <div id="previewStrukError" class="d-none text-danger py-5">
+                        <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                        <span class="fw-semibold">Gambar bukti transfer tidak dapat dimuat atau belum diupload.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="modal-footer py-2.5 px-4 bg-light d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 small" id="btnBackToDetailModal">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Detail
+                </button>
+                <div class="d-flex gap-2">
+                    <a id="btnBukaTabBaruStruk" href="#" target="_blank" class="btn btn-primary rounded-pill px-3 py-1.5 small shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-up-right"></i> <span>Buka Penuh</span>
+                    </a>
+                    <a id="btnDownloadStruk" href="#" download class="btn btn-outline-success rounded-pill px-3 py-1.5 small shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-download"></i> <span>Download</span>
+                    </a>
+                    <button type="button" class="btn btn-light border rounded-pill px-3 py-1.5 small" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    let lastDetailModalId = null;
+
+    // Klik tombol / baris Foto Struk
+    $(document).on('click', '.btn-preview-struk', function(e) {
+        e.preventDefault();
+        const imgUrl = $(this).data('img');
+        const nama = $(this).data('nama') || '-';
+        const alamat = $(this).data('alamat') || '-';
+        const nominal = $(this).data('nominal') || '-';
+        const tgl = $(this).data('tgl') || '-';
+
+        // Simpan modal detail asal jika dipanggil dari dalam modal
+        const parentModal = $(this).closest('.modal');
+        if (parentModal.length && parentModal.attr('id') !== 'modalPreviewStruk') {
+            lastDetailModalId = parentModal.attr('id');
+            parentModal.modal('hide');
+        }
+
+        $('#previewStrukWarga').text(nama);
+        $('#previewStrukAlamat').text(alamat);
+        $('#previewStrukNominal').text(nominal);
+        $('#previewStrukTgl').text(tgl);
+
+        $('#btnBukaTabBaruStruk').attr('href', imgUrl);
+        $('#btnDownloadStruk').attr('href', imgUrl);
+
+        $('#previewStrukSpinner').removeClass('d-none');
+        $('#previewStrukImg').addClass('d-none').attr('src', '');
+        $('#previewStrukError').addClass('d-none');
+
+        const img = new Image();
+        img.onload = function() {
+            $('#previewStrukSpinner').addClass('d-none');
+            $('#previewStrukImg').attr('src', imgUrl).removeClass('d-none');
+        };
+        img.onerror = function() {
+            $('#previewStrukSpinner').addClass('d-none');
+            $('#previewStrukError').removeClass('d-none');
+        };
+        img.src = imgUrl;
+
+        setTimeout(function() {
+            $('#modalPreviewStruk').modal('show');
+        }, 250);
+    });
+
+    // Tombol Kembali ke Detail
+    $('#btnBackToDetailModal').on('click', function() {
+        $('#modalPreviewStruk').modal('hide');
+        if (lastDetailModalId) {
+            setTimeout(function() {
+                $('#' + lastDetailModalId).modal('show');
+            }, 300);
+        }
+    });
+});
+</script>
