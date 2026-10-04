@@ -426,6 +426,50 @@ if (!function_exists('ensure_setting_table_exists')) {
 	}
 }
 
+if (!function_exists('ensure_tarif_table_exists')) {
+	function ensure_tarif_table_exists() {
+		$ci =& get_instance();
+		if (!$ci->db->table_exists('master_tarif_ipl')) {
+			$ci->db->query("CREATE TABLE IF NOT EXISTS `master_tarif_ipl` (
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`nama_tarif` VARCHAR(100) NOT NULL,
+				`nominal` INT(11) NOT NULL,
+				`periode_mulai` VARCHAR(7) NOT NULL,
+				`periode_selesai` VARCHAR(7) DEFAULT NULL,
+				`is_active` TINYINT(1) DEFAULT 1,
+				`keterangan` TEXT DEFAULT NULL,
+				`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+				`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (`id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+			// Data Default Awal
+			$defaults = [
+				[
+					'nama_tarif' => 'Tarif Awal Paguyuban TSI',
+					'nominal' => 125000,
+					'periode_mulai' => '2025-01',
+					'periode_selesai' => '2026-10',
+					'is_active' => 1,
+					'keterangan' => 'Tarif standar iuran lingkungan sebelum penyesuaian'
+				],
+				[
+					'nama_tarif' => 'Penyesuaian Tarif Baru IPL',
+					'nominal' => 140000,
+					'periode_mulai' => '2026-11',
+					'periode_selesai' => NULL,
+					'is_active' => 1,
+					'keterangan' => 'Penyesuaian tarif iuran bulanan warga menjadi Rp 140.000'
+				]
+			];
+
+			foreach ($defaults as $d) {
+				$ci->db->insert('master_tarif_ipl', $d);
+			}
+		}
+	}
+}
+
 if (!function_exists('get_setting')) {
 	function get_setting($key, $default = null) {
 		$ci =& get_instance();
@@ -458,21 +502,101 @@ if (!function_exists('set_setting')) {
 	}
 }
 
+if (!function_exists('get_all_tarif_ipl')) {
+	function get_all_tarif_ipl() {
+		$ci =& get_instance();
+		ensure_tarif_table_exists();
+		return $ci->db->order_by('periode_mulai', 'DESC')->order_by('id', 'DESC')->get('master_tarif_ipl')->result_array();
+	}
+}
+
 if (!function_exists('get_tarif_ipl')) {
 	function get_tarif_ipl($tahun_bulan = null) {
+		$ci =& get_instance();
+		ensure_tarif_table_exists();
+
+		if (empty($tahun_bulan)) {
+			$tahun_bulan = date('Y-m');
+		}
+
+		$ym = substr(trim($tahun_bulan), 0, 7);
+
+		// 1. Cek dari database master_tarif_ipl berdasarkan rentang periode aktif
+		$row = $ci->db->query("
+			SELECT nominal FROM master_tarif_ipl 
+			WHERE is_active = 1 
+			  AND periode_mulai <= ? 
+			  AND (periode_selesai IS NULL OR periode_selesai = '' OR periode_selesai >= ?)
+			ORDER BY periode_mulai DESC, id DESC 
+			LIMIT 1
+		", [$ym, $ym])->row_array();
+
+		if ($row && !empty($row['nominal'])) {
+			return (float)$row['nominal'];
+		}
+
+		// 2. Jika tidak ada range yang match tapi $ym lebih kecil dari periode awal
+		$earliest = $ci->db->query("
+			SELECT nominal FROM master_tarif_ipl 
+			WHERE is_active = 1 
+			ORDER BY periode_mulai ASC, id ASC 
+			LIMIT 1
+		")->row_array();
+
+		if ($earliest && !empty($earliest['nominal'])) {
+			return (float)$earliest['nominal'];
+		}
+
+		// 3. Fallback ke master_setting
 		$nominal_baru = (float)get_setting('nominal_ipl', 140000);
 		$bulan_berlaku = get_setting('bulan_berlaku_nominal', '2026-11');
 		$nominal_lama = (float)get_setting('nominal_ipl_lama', 125000);
 
-		if (empty($tahun_bulan)) {
-			return $nominal_baru;
-		}
-
-		$ym = substr(trim($tahun_bulan), 0, 7);
 		if ($ym < $bulan_berlaku) {
 			return $nominal_lama;
 		}
 		return $nominal_baru;
+	}
+}
+
+if (!function_exists('get_info_tarif_aktif')) {
+	function get_info_tarif_aktif() {
+		$ci =& get_instance();
+		ensure_tarif_table_exists();
+		$bulan_now = date('Y-m');
+		$bulan_next = date('Y-m', strtotime('+1 month'));
+
+		$tarif_now = get_tarif_ipl($bulan_now);
+		$tarif_next = get_tarif_ipl($bulan_next);
+
+		// Periode aktif saat ini di database
+		$record_now = $ci->db->query("
+			SELECT * FROM master_tarif_ipl 
+			WHERE is_active = 1 
+			  AND periode_mulai <= ? 
+			  AND (periode_selesai IS NULL OR periode_selesai = '' OR periode_selesai >= ?)
+			ORDER BY periode_mulai DESC 
+			LIMIT 1
+		", [$bulan_now, $bulan_now])->row_array();
+
+		// Periode baru / mendatang (jika ada yang periode_mulai > bulan_now)
+		$record_next = $ci->db->query("
+			SELECT * FROM master_tarif_ipl 
+			WHERE is_active = 1 
+			  AND periode_mulai > ? 
+			ORDER BY periode_mulai ASC 
+			LIMIT 1
+		", [$bulan_now])->row_array();
+
+		return [
+			'bulan_sekarang' => $bulan_now,
+			'tarif_sekarang' => $tarif_now,
+			'record_sekarang' => $record_now,
+			'bulan_berikutnya' => $bulan_next,
+			'tarif_berikutnya' => $tarif_next,
+			'record_berikutnya' => $record_next,
+			'total_record' => $ci->db->count_all('master_tarif_ipl')
+		];
 	}
 }
 

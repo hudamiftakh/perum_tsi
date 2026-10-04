@@ -2172,51 +2172,146 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 
 	/**
-	 * Simpan Pengaturan Tarif IPL (Admin Only)
+	 * Simpan / Tambah / Update Periode Tarif IPL ke Database (Admin Only)
 	 */
 	public function save_setting_tarif()
 	{
 		$this->checkSession();
+		header('Content-Type: application/json');
+
 		if ($this->session->userdata('username')['role'] !== 'admin') {
 			echo json_encode(['status' => 'error', 'message' => 'Hanya admin yang berhak mengubah pengaturan tarif.']);
 			return;
 		}
 
-		$nominal_baru = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal_ipl'));
-		$bulan_berlaku = trim($this->input->post('bulan_berlaku_nominal'));
-		$nominal_lama = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal_ipl_lama'));
-		$catatan = trim($this->input->post('catatan_tarif'));
+		ensure_tarif_table_exists();
 
-		if (empty($nominal_baru) || (int)$nominal_baru <= 0) {
-			echo json_encode(['status' => 'error', 'message' => 'Nominal tarif baru harus diisi dengan angka valid.']);
+		$id_tarif = $this->input->post('id_tarif');
+		$nama_tarif = trim($this->input->post('nama_tarif') ?: '');
+		$nominal = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal'));
+		$periode_mulai = trim($this->input->post('periode_mulai') ?: '');
+		$periode_selesai = trim($this->input->post('periode_selesai') ?: '');
+		$is_active = $this->input->post('is_active') !== null ? (int)$this->input->post('is_active') : 1;
+		$keterangan = trim($this->input->post('keterangan') ?: '');
+
+		// Fallback jika form lama yang disubmit
+		if (empty($nominal) && $this->input->post('nominal_ipl') !== null) {
+			$nominal = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal_ipl'));
+		}
+		if (empty($periode_mulai) && $this->input->post('bulan_berlaku_nominal') !== null) {
+			$periode_mulai = trim($this->input->post('bulan_berlaku_nominal'));
+		}
+		if (empty($nama_tarif)) {
+			$nama_tarif = 'Penyesuaian Tarif Periode ' . $periode_mulai;
+		}
+
+		if (empty($nominal) || (int)$nominal <= 0) {
+			echo json_encode(['status' => 'error', 'message' => 'Nominal tarif harus diisi dengan angka valid lebih dari 0.']);
 			return;
 		}
 
-		if (empty($bulan_berlaku) || !preg_match('/^\d{4}-\d{2}$/', $bulan_berlaku)) {
-			echo json_encode(['status' => 'error', 'message' => 'Format bulan mulai berlaku harus YYYY-MM (misal 2026-11).']);
+		if (empty($periode_mulai) || !preg_match('/^\d{4}-\d{2}$/', $periode_mulai)) {
+			echo json_encode(['status' => 'error', 'message' => 'Format periode mulai harus YYYY-MM (misal: 2026-11).']);
 			return;
 		}
 
-		if (empty($nominal_lama) || (int)$nominal_lama <= 0) {
-			$nominal_lama = 125000;
+		if (!empty($periode_selesai)) {
+			if (!preg_match('/^\d{4}-\d{2}$/', $periode_selesai)) {
+				echo json_encode(['status' => 'error', 'message' => 'Format periode selesai harus YYYY-MM (misal: 2026-12).']);
+				return;
+			}
+			if ($periode_selesai < $periode_mulai) {
+				echo json_encode(['status' => 'error', 'message' => 'Periode selesai tidak boleh mendahului periode mulai.']);
+				return;
+			}
+		} else {
+			$periode_selesai = NULL;
 		}
 
-		set_setting('nominal_ipl', $nominal_baru, 'Nominal Tarif IPL Baru');
-		set_setting('bulan_berlaku_nominal', $bulan_berlaku, 'Bulan Mulai Berlaku Tarif Baru');
-		set_setting('nominal_ipl_lama', $nominal_lama, 'Nominal Tarif IPL Lama/Sebelumnya');
-		set_setting('catatan_tarif', $catatan, 'Catatan Penyesuaian Tarif');
+		$data_tarif = [
+			'nama_tarif' => $nama_tarif,
+			'nominal' => (int)$nominal,
+			'periode_mulai' => $periode_mulai,
+			'periode_selesai' => $periode_selesai,
+			'is_active' => $is_active,
+			'keterangan' => $keterangan,
+			'updated_at' => date('Y-m-d H:i:s')
+		];
+
+		if (!empty($id_tarif)) {
+			// Update
+			$this->db->where('id', $id_tarif)->update('master_tarif_ipl', $data_tarif);
+			$action_msg = 'Data periode tarif berhasil diperbarui!';
+		} else {
+			// Insert
+			$data_tarif['created_at'] = date('Y-m-d H:i:s');
+			$this->db->insert('master_tarif_ipl', $data_tarif);
+			$action_msg = 'Periode tarif baru berhasil ditambahkan!';
+		}
+
+		// Sinkronisasi setting fallback
+		set_setting('nominal_ipl', $nominal, 'Nominal Tarif IPL Baru');
+		set_setting('bulan_berlaku_nominal', $periode_mulai, 'Bulan Mulai Berlaku Tarif Baru');
+		if ($this->input->post('nominal_ipl_lama')) {
+			$nom_lama = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal_ipl_lama'));
+			if ($nom_lama > 0) set_setting('nominal_ipl_lama', $nom_lama, 'Nominal Tarif IPL Lama/Sebelumnya');
+		}
+		if (!empty($keterangan)) {
+			set_setting('catatan_tarif', $keterangan, 'Catatan Penyesuaian Tarif');
+		}
 
 		echo json_encode([
 			'status' => 'success',
-			'message' => 'Pengaturan tarif IPL berhasil disimpan!',
-			'data' => [
-				'nominal_ipl' => $nominal_baru,
-				'nominal_ipl_formatted' => 'Rp ' . number_format($nominal_baru, 0, ',', '.'),
-				'bulan_berlaku_nominal' => $bulan_berlaku,
-				'nominal_ipl_lama' => $nominal_lama,
-				'nominal_ipl_lama_formatted' => 'Rp ' . number_format($nominal_lama, 0, ',', '.'),
-				'catatan_tarif' => $catatan
-			]
+			'message' => $action_msg,
+			'data' => $data_tarif
+		]);
+	}
+
+	/**
+	 * Get Data Single Tarif IPL by ID (JSON for Modal Edit)
+	 */
+	public function get_tarif($id)
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		ensure_tarif_table_exists();
+		$row = $this->db->get_where('master_tarif_ipl', ['id' => (int)$id])->row_array();
+		if (!$row) {
+			echo json_encode(['status' => 'error', 'message' => 'Data tarif tidak ditemukan.']);
+			return;
+		}
+
+		echo json_encode([
+			'status' => 'success',
+			'data' => $row
+		]);
+	}
+
+	/**
+	 * Hapus Tarif IPL (Admin Only)
+	 */
+	public function delete_tarif($id)
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		if ($this->session->userdata('username')['role'] !== 'admin') {
+			echo json_encode(['status' => 'error', 'message' => 'Hanya admin yang berhak menghapus pengaturan tarif.']);
+			return;
+		}
+
+		ensure_tarif_table_exists();
+		$count = $this->db->count_all('master_tarif_ipl');
+		if ($count <= 1) {
+			echo json_encode(['status' => 'error', 'message' => 'Tidak dapat menghapus. Minimal harus tersisa 1 kebijakan tarif di sistem.']);
+			return;
+		}
+
+		$this->db->where('id', (int)$id)->delete('master_tarif_ipl');
+		echo json_encode([
+			'status' => 'success',
+			'message' => 'Periode tarif berhasil dihapus!'
 		]);
 	}
 
