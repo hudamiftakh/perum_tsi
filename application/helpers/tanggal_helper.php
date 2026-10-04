@@ -394,3 +394,116 @@ if (!function_exists('decrypt_url')) {
 		return $bulan . ' ' . $tahun;
 	}
 }
+
+/**
+ * =========================================================================
+ * HELPER PENGATURAN & TARIF IPL PERUMAHAN
+ * =========================================================================
+ */
+if (!function_exists('ensure_setting_table_exists')) {
+	function ensure_setting_table_exists() {
+		$ci =& get_instance();
+		if (!$ci->db->table_exists('master_setting')) {
+			$ci->db->query("CREATE TABLE IF NOT EXISTS `master_setting` (
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`setting_key` VARCHAR(100) NOT NULL UNIQUE,
+				`setting_value` TEXT DEFAULT NULL,
+				`keterangan` VARCHAR(255) DEFAULT NULL,
+				`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (`id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+			$defaults = [
+				['setting_key' => 'nominal_ipl', 'setting_value' => '140000', 'keterangan' => 'Nominal Tarif IPL Baru'],
+				['setting_key' => 'bulan_berlaku_nominal', 'setting_value' => '2026-11', 'keterangan' => 'Bulan Mulai Berlaku Tarif Baru (YYYY-MM)'],
+				['setting_key' => 'nominal_ipl_lama', 'setting_value' => '125000', 'keterangan' => 'Nominal Tarif IPL Lama/Sebelumnya'],
+				['setting_key' => 'catatan_tarif', 'setting_value' => 'Penyesuaian nominal iuran IPL mulai November 2026', 'keterangan' => 'Catatan Tambahan Tarif'],
+			];
+			foreach ($defaults as $d) {
+				$ci->db->query("INSERT IGNORE INTO master_setting (setting_key, setting_value, keterangan) VALUES (?, ?, ?)", [$d['setting_key'], $d['setting_value'], $d['keterangan']]);
+			}
+		}
+	}
+}
+
+if (!function_exists('get_setting')) {
+	function get_setting($key, $default = null) {
+		$ci =& get_instance();
+		ensure_setting_table_exists();
+		$row = $ci->db->get_where('master_setting', ['setting_key' => $key])->row_array();
+		if ($row !== null && isset($row['setting_value']) && $row['setting_value'] !== '') {
+			return $row['setting_value'];
+		}
+		return $default;
+	}
+}
+
+if (!function_exists('set_setting')) {
+	function set_setting($key, $value, $keterangan = null) {
+		$ci =& get_instance();
+		ensure_setting_table_exists();
+		$cek = $ci->db->get_where('master_setting', ['setting_key' => $key])->row_array();
+		if ($cek) {
+			$update_data = ['setting_value' => (string)$value, 'updated_at' => date('Y-m-d H:i:s')];
+			if ($keterangan !== null) $update_data['keterangan'] = $keterangan;
+			return $ci->db->where('setting_key', $key)->update('master_setting', $update_data);
+		} else {
+			return $ci->db->insert('master_setting', [
+				'setting_key' => $key,
+				'setting_value' => (string)$value,
+				'keterangan' => $keterangan,
+				'updated_at' => date('Y-m-d H:i:s')
+			]);
+		}
+	}
+}
+
+if (!function_exists('get_tarif_ipl')) {
+	function get_tarif_ipl($tahun_bulan = null) {
+		$nominal_baru = (float)get_setting('nominal_ipl', 140000);
+		$bulan_berlaku = get_setting('bulan_berlaku_nominal', '2026-11');
+		$nominal_lama = (float)get_setting('nominal_ipl_lama', 125000);
+
+		if (empty($tahun_bulan)) {
+			return $nominal_baru;
+		}
+
+		$ym = substr(trim($tahun_bulan), 0, 7);
+		if ($ym < $bulan_berlaku) {
+			return $nominal_lama;
+		}
+		return $nominal_baru;
+	}
+}
+
+if (!function_exists('terbilang')) {
+	function terbilang($angka) {
+		$angka = abs((float)$angka);
+		$baca = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+		$terbilang = '';
+
+		if ($angka < 12) {
+			$terbilang = ' ' . $baca[(int)$angka];
+		} elseif ($angka < 20) {
+			$terbilang = terbilang($angka - 10) . ' belas';
+		} elseif ($angka < 100) {
+			$terbilang = terbilang($angka / 10) . ' puluh' . terbilang($angka % 10);
+		} elseif ($angka < 200) {
+			$terbilang = ' seratus' . terbilang($angka - 100);
+		} elseif ($angka < 1000) {
+			$terbilang = terbilang($angka / 100) . ' ratus' . terbilang($angka % 100);
+		} elseif ($angka < 2000) {
+			$terbilang = ' seribu' . terbilang($angka - 1000);
+		} elseif ($angka < 1000000) {
+			$terbilang = terbilang($angka / 1000) . ' ribu' . terbilang($angka % 1000);
+		} elseif ($angka < 1000000000) {
+			$terbilang = terbilang($angka / 1000000) . ' juta' . terbilang($angka % 1000000);
+		} elseif ($angka < 1000000000000) {
+			$terbilang = terbilang($angka / 1000000000) . ' milyar' . terbilang(fmod($angka, 1000000000));
+		} elseif ($angka < 1000000000000000) {
+			$terbilang = terbilang($angka / 1000000000000) . ' triliun' . terbilang(fmod($angka, 1000000000000));
+		}
+
+		return trim($terbilang);
+	}
+}

@@ -447,14 +447,14 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Total Iuran yang Dicicil</label>
                             <input type="text" name="total_cicilan" id="total_cicilan" class="form-control" placeholder="Contoh: 1500000">
-                            <div class="info-small">Rp125.000 x 12 bulan = Rp1.500.000</div>
+                            <div class="info-small">Kalkulasi mengikuti tarif IPL aktif (Rp <?= number_format(get_tarif_ipl(), 0, ',', '.') ?>/bulan)</div>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="jumlah_bayar" class="form-label">Jumlah yang Dibayar Hari Ini</label>
                         <?php
-                        $jumlah_bayar_value = isset($data_update['jumlah_bayar']) ? number_format($data_update['jumlah_bayar'], 0, ',', '.') : '125.000';
+                        $jumlah_bayar_value = isset($data_update['jumlah_bayar']) ? number_format($data_update['jumlah_bayar'], 0, ',', '.') : number_format(get_tarif_ipl($bulan_mulai_value), 0, ',', '.');
                         ?>
                         <input type="text" class="form-control" name="jumlah_bayar" value="<?= $jumlah_bayar_value; ?>" id="jumlah_bayar" required autocomplete="off">
                     </div>
@@ -593,7 +593,15 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
             const jumlahBayar = document.getElementById('jumlah_bayar');
             const metode = document.getElementById('metode');
             const bulanRapelCheckboxes = document.getElementById('bulanRapelCheckboxes');
-            const hargaPerBulan = 125000;
+            const cfgNominalBaru = <?= (float)get_setting('nominal_ipl', 140000) ?>;
+            const cfgBulanBerlaku = '<?= get_setting('bulan_berlaku_nominal', '2026-11') ?>';
+            const cfgNominalLama = <?= (float)get_setting('nominal_ipl_lama', 125000) ?>;
+
+            function getTarifBulan(ym) {
+                if (!ym) return cfgNominalBaru;
+                const cleanYm = ym.substring(0, 7);
+                return (cleanYm < cfgBulanBerlaku) ? cfgNominalLama : cfgNominalBaru;
+            }
 
             function updateJumlahBayar() {
                 let metodeVal = metode.value;
@@ -601,14 +609,21 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                 if (rapelMatch) {
                     let bulanCount = parseInt(rapelMatch[1]);
                     if (bulanCount > 1 && bulanRapelCheckboxes) {
-                        let checked = bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]:checked').length;
-                        if (checked > 0) {
-                            jumlahBayar.value = (checked * hargaPerBulan).toLocaleString('id-ID');
+                        let checkedBoxes = bulanRapelCheckboxes.querySelectorAll('input[type="checkbox"]:checked');
+                        if (checkedBoxes.length > 0) {
+                            let total = 0;
+                            checkedBoxes.forEach(cb => {
+                                total += getTarifBulan(cb.value);
+                            });
+                            jumlahBayar.value = total.toLocaleString('id-ID');
                         } else {
                             jumlahBayar.value = '';
                         }
                     } else if (bulanCount === 1) {
-                        jumlahBayar.value = hargaPerBulan.toLocaleString('id-ID');
+                        let bulanSingleSelect = document.getElementById('bulan_single');
+                        let selectedYm = (bulanSingleSelect && bulanSingleSelect.value) ? bulanSingleSelect.value : (document.getElementById('bulan_mulai')?.value || '');
+                        let nominal = getTarifBulan(selectedYm);
+                        jumlahBayar.value = nominal.toLocaleString('id-ID');
                     }
                 } else {
                     jumlahBayar.value = '';
@@ -617,6 +632,10 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
 
             if (bulanRapelCheckboxes) {
                 bulanRapelCheckboxes.addEventListener('change', updateJumlahBayar);
+            }
+            const bulanSingleSelectEl = document.getElementById('bulan_single');
+            if (bulanSingleSelectEl) {
+                bulanSingleSelectEl.addEventListener('change', updateJumlahBayar);
             }
             if (metode) {
                 metode.addEventListener('change', function() {

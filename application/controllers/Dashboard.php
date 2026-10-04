@@ -2172,6 +2172,55 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 
 	/**
+	 * Simpan Pengaturan Tarif IPL (Admin Only)
+	 */
+	public function save_setting_tarif()
+	{
+		$this->checkSession();
+		if ($this->session->userdata('username')['role'] !== 'admin') {
+			echo json_encode(['status' => 'error', 'message' => 'Hanya admin yang berhak mengubah pengaturan tarif.']);
+			return;
+		}
+
+		$nominal_baru = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal_ipl'));
+		$bulan_berlaku = trim($this->input->post('bulan_berlaku_nominal'));
+		$nominal_lama = preg_replace('/[^0-9]/', '', (string)$this->input->post('nominal_ipl_lama'));
+		$catatan = trim($this->input->post('catatan_tarif'));
+
+		if (empty($nominal_baru) || (int)$nominal_baru <= 0) {
+			echo json_encode(['status' => 'error', 'message' => 'Nominal tarif baru harus diisi dengan angka valid.']);
+			return;
+		}
+
+		if (empty($bulan_berlaku) || !preg_match('/^\d{4}-\d{2}$/', $bulan_berlaku)) {
+			echo json_encode(['status' => 'error', 'message' => 'Format bulan mulai berlaku harus YYYY-MM (misal 2026-11).']);
+			return;
+		}
+
+		if (empty($nominal_lama) || (int)$nominal_lama <= 0) {
+			$nominal_lama = 125000;
+		}
+
+		set_setting('nominal_ipl', $nominal_baru, 'Nominal Tarif IPL Baru');
+		set_setting('bulan_berlaku_nominal', $bulan_berlaku, 'Bulan Mulai Berlaku Tarif Baru');
+		set_setting('nominal_ipl_lama', $nominal_lama, 'Nominal Tarif IPL Lama/Sebelumnya');
+		set_setting('catatan_tarif', $catatan, 'Catatan Penyesuaian Tarif');
+
+		echo json_encode([
+			'status' => 'success',
+			'message' => 'Pengaturan tarif IPL berhasil disimpan!',
+			'data' => [
+				'nominal_ipl' => $nominal_baru,
+				'nominal_ipl_formatted' => 'Rp ' . number_format($nominal_baru, 0, ',', '.'),
+				'bulan_berlaku_nominal' => $bulan_berlaku,
+				'nominal_ipl_lama' => $nominal_lama,
+				'nominal_ipl_lama_formatted' => 'Rp ' . number_format($nominal_lama, 0, ',', '.'),
+				'catatan_tarif' => $catatan
+			]
+		]);
+	}
+
+	/**
 	 * Sinkronisasi nomor WhatsApp dari master_keluarga ke master_rumah
 	 */
 	private function _sync_rumah_no_hp()
@@ -3146,14 +3195,17 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 
 		$tunggak_list = [];
+		$total_tunggakan = 0;
 		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir; $m++) {
 			$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
-			if (!isset($paid[$key])) $tunggak_list[] = $bulan_indo[$m] . ' ' . $tahun;
+			if (!isset($paid[$key])) {
+				$tunggak_list[] = $bulan_indo[$m] . ' ' . $tahun;
+				$total_tunggakan += get_tarif_ipl($key);
+			}
 		}
 
 		$jml_tunggak = count($tunggak_list);
 		if ($jml_tunggak == 0) { show_error('Warga ini tidak memiliki tunggakan.'); return; }
-		$total_tunggakan = $jml_tunggak * 125000;
 		$list_bulan_str = implode(', ', $tunggak_list);
 
 		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
@@ -3214,7 +3266,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$pdf->Cell(10, 6, '', 0, 0);
 		$pdf->Cell($lbl_d, 6, 'Dengan nominal', 0, 0);
 		$pdf->Cell(5, 6, ':', 0, 0);
-		$pdf->Cell(0, 6, 'Rp 125.000,- / bulan', 0, 1);
+		$pdf->Cell(0, 6, 'Rp ' . number_format(get_tarif_ipl(), 0, ',', '.') . ',- / bulan', 0, 1);
 
 		// Daftar bulan yang belum dibayar
 		$pdf->Cell(10, 6, '', 0, 0);
@@ -3424,13 +3476,16 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 
 		$tunggak_names = [];
+		$total_rupiah = 0;
 		for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_hitung; $m++) {
 			$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
-			if (!isset($bulan_lunas[$key])) $tunggak_names[] = $bulan_indo[$m];
+			if (!isset($bulan_lunas[$key])) {
+				$tunggak_names[] = $bulan_indo[$m];
+				$total_rupiah += get_tarif_ipl($key);
+			}
 		}
 		
 		$jml_tunggak = count($tunggak_names);
-		$total_rupiah = $jml_tunggak * 125000;
 		$list_bulan_str = implode(', ', $tunggak_names);
 
 		// 1. Generate PDF ke file fisik agar bisa diakses via URL

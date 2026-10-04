@@ -182,10 +182,15 @@
             </tr>
         </table>
         <div class="total-section">
+            <?php 
+            $tagihan_nominal = (!empty($pembayaran) && isset($pembayaran['jumlah_bayar']) && (float)$pembayaran['jumlah_bayar'] > 0) 
+                ? (float)$pembayaran['jumlah_bayar'] 
+                : get_tarif_ipl($bulan_mulai ?? null);
+            ?>
             <div class="total-line"  style="margin: 10px; background-color: #e7e6e6; padding: 10pt; font-weight: bold; border: 0.5pt solid #a5a5a5; margin-bottom: 10pt;">
-                Total Tagihan : Rp 125.000,00
+                Total Tagihan : Rp <?= number_format($tagihan_nominal, 2, ',', '.') ?>
             <br>
-            Terbilang : Seratus Dua Puluh Lima Ribu Rupiah
+            Terbilang : <?= ucwords(terbilang($tagihan_nominal)) ?> Rupiah
             </div>
                <ol>
                 <li>Iuran diatas sudah termasuk biaya administrasi</li>

@@ -19,6 +19,14 @@ $koordinator_users = $this->db->query("SELECT id, nama, username, 'koordinator' 
 $total_users = count($admin_users) + count($koordinator_users);
 
 // ============================================
+// DATA SETTING TARIF IPL
+// ============================================
+$tarif_baru = get_setting('tarif_ipl_baru', '140000');
+$bulan_mulai_berlaku = get_setting('tarif_ipl_bulan_mulai', '2026-11');
+$tarif_lama = get_setting('tarif_ipl_lama', '125000');
+$catatan_tarif = get_setting('tarif_ipl_keterangan', 'Penyesuaian tarif iuran IPL dari Rp 125.000 menjadi Rp 140.000');
+
+// ============================================
 // STATISTIK KPI RUMAH
 // ============================================
 $where_base = [];
@@ -340,6 +348,13 @@ $count_musiman = $this->db->count_all_results();
                                 <span class="badge rounded-pill bg-light text-dark ms-1" style="font-size:0.7rem"><?= $total_users ?></span>
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link <?= $active_tab == 'tarif' ? 'active' : '' ?>" id="tarif-tab" data-bs-toggle="tab" data-bs-target="#tarif-panel" type="button" role="tab">
+                                <i class="ti ti-coin"></i>
+                                <span>Tarif Iuran IPL</span>
+                                <span class="badge rounded-pill bg-primary ms-1" style="font-size:0.7rem">Setting</span>
+                            </button>
+                        </li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -603,6 +618,124 @@ $count_musiman = $this->db->count_all_results();
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 3: TARIF IURAN IPL (ADMIN ONLY)          -->
+            <!-- ============================================ -->
+            <div class="tab-pane fade <?= $active_tab == 'tarif' ? 'show active' : '' ?>" id="tarif-panel" role="tabpanel">
+                <div class="card card-custom mb-4">
+                    <div class="panel-header-soft d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                                <i class="ti ti-coin text-primary"></i> Pengaturan Nominal & Tarif Iuran IPL
+                            </h5>
+                            <span class="text-muted small">Atur besaran nominal iuran bulanan dan periode mulai berlakunya</span>
+                        </div>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fs-7 fw-semibold">
+                            <i class="ti ti-shield-check me-1"></i> Riwayat Transaksi Aman
+                        </span>
+                    </div>
+                    <div class="card-body p-3 p-md-4">
+                        <div class="row g-4">
+                            <!-- Left: Form Setting -->
+                            <div class="col-12 col-lg-7">
+                                <form id="formSettingTarif" method="post" action="<?= base_url('setting/save-tarif') ?>">
+                                    <div class="p-3 rounded-4 mb-4" style="background:#f8fafc; border: 1.5px solid #e2e8f0;">
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label fw-bold text-dark small mb-1">
+                                                    <i class="ti ti-cash text-success me-1"></i> Nominal Baru (Rp) <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light border-end-0 fw-bold">Rp</span>
+                                                    <input type="number" class="form-control form-control-modal" name="tarif_ipl_baru" id="inputTarifBaru" value="<?= htmlspecialchars($tarif_baru) ?>" required min="0" step="1000">
+                                                </div>
+                                                <small class="text-muted" id="previewTarifBaru">Rp <?= number_format((float)$tarif_baru, 0, ',', '.') ?></small>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label fw-bold text-dark small mb-1">
+                                                    <i class="ti ti-calendar-event text-primary me-1"></i> Bulan Mulai Berlaku <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="month" class="form-control form-control-modal" name="tarif_ipl_bulan_mulai" id="inputBulanMulai" value="<?= htmlspecialchars($bulan_mulai_berlaku) ?>" required>
+                                                <small class="text-muted">Format: YYYY-MM (misal: 2026-11)</small>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label fw-bold text-dark small mb-1">
+                                                    <i class="ti ti-history text-secondary me-1"></i> Nominal Sebelumnya / Lama (Rp)
+                                                </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text bg-light border-end-0 fw-bold">Rp</span>
+                                                    <input type="number" class="form-control form-control-modal" name="tarif_ipl_lama" id="inputTarifLama" value="<?= htmlspecialchars($tarif_lama) ?>" required min="0" step="1000">
+                                                </div>
+                                                <small class="text-muted">Untuk periode sebelum bulan mulai berlaku</small>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <label class="form-label fw-bold text-dark small mb-1">
+                                                    <i class="ti ti-info-circle text-info me-1"></i> Status Tarif
+                                                </label>
+                                                <div class="p-2 rounded-3 bg-white border d-flex align-items-center gap-2">
+                                                    <span class="badge bg-success rounded-pill px-2.5 py-1">Aktif Otomatis</span>
+                                                    <span class="small text-muted">Dinamis di form entry, kitir & WA</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold text-dark small mb-1">
+                                                    <i class="ti ti-notes text-secondary me-1"></i> Keterangan / Catatan Kebijakan
+                                                </label>
+                                                <textarea class="form-control form-control-modal" name="tarif_ipl_keterangan" rows="2" placeholder="Catatan perubahan tarif..."><?= htmlspecialchars($catatan_tarif) ?></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-semibold" id="btnSaveTarif">
+                                            <i class="ti ti-device-floppy me-1"></i> Simpan Pengaturan Tarif
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Right: Petunjuk & Keamanan Data -->
+                            <div class="col-12 col-lg-5">
+                                <div class="card border-0 rounded-4 shadow-none mb-3" style="background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border: 1.5px solid #bfdbfe !important;">
+                                    <div class="card-body p-4">
+                                        <h6 class="fw-bold text-primary mb-3 d-flex align-items-center gap-2">
+                                            <i class="ti ti-shield-lock fs-5"></i> Keamanan Riwayat Pembayaran
+                                        </h6>
+                                        <div class="d-flex flex-column gap-3 small text-secondary">
+                                            <div class="d-flex align-items-start gap-2">
+                                                <i class="ti ti-circle-check-filled text-success fs-5 mt-0.5"></i>
+                                                <div>
+                                                    <strong class="text-dark">Data Lama Tetap Rp 125.000:</strong><br>
+                                                    Semua transaksi pembayaran yang telah dilakukan sebelumnya tetap tersimpan utuh sesuai nominal saat transaksi dibayarkan.
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-start gap-2">
+                                                <i class="ti ti-circle-check-filled text-success fs-5 mt-0.5"></i>
+                                                <div>
+                                                    <strong class="text-dark">Otomatisasi Form Entry & Rapel:</strong><br>
+                                                    Saat koordinator memilih bulan sebelum <span class="badge bg-secondary"><?= htmlspecialchars($bulan_mulai_berlaku) ?></span>, sistem otomatis mengenakan <strong>Rp <?= number_format((float)$tarif_lama, 0, ',', '.') ?></strong>. Mulai bulan <span class="badge bg-primary"><?= htmlspecialchars($bulan_mulai_berlaku) ?></span> ke atas, otomatis mengenakan <strong>Rp <?= number_format((float)$tarif_baru, 0, ',', '.') ?></strong>.
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-start gap-2">
+                                                <i class="ti ti-circle-check-filled text-success fs-5 mt-0.5"></i>
+                                                <div>
+                                                    <strong class="text-dark">E-Kitir & Surat Teguran:</strong><br>
+                                                    Kuitansi e-kitir dan surat teguran tunggakan menghitung besaran nominal sesuai tarif bulan yang bersangkutan secara dinamis dan presisi.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1016,6 +1149,43 @@ $(document).ready(function() {
                     }, 800);
                 } else {
                     alert(res.message || 'Gagal menyimpan perubahan.');
+                }
+            },
+            error: function() {
+                btn.prop('disabled', false).html(oldHtml);
+                alert('Terjadi kendala saat menghubungi server.');
+            }
+        });
+    });
+
+    // ============================================
+    // 4. SUBMIT SETTING TARIF IPL
+    // ============================================
+    $('#inputTarifBaru').on('input', function() {
+        const val = parseFloat($(this).val()) || 0;
+        $('#previewTarifBaru').text('Rp ' + val.toLocaleString('id-ID'));
+    });
+
+    $('#formSettingTarif').on('submit', function(e) {
+        e.preventDefault();
+        const btn = $('#btnSaveTarif');
+        const oldHtml = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(res) {
+                btn.prop('disabled', false).html(oldHtml);
+                if (res.status === 'success') {
+                    showToast(res.message, true);
+                    setTimeout(function() {
+                        location.reload();
+                    }, 800);
+                } else {
+                    alert(res.message || 'Gagal menyimpan pengaturan tarif.');
                 }
             },
             error: function() {

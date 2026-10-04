@@ -101,6 +101,7 @@ $route['setting'] = 'dashboard/setting';
 $route['ajax-setting-rumah'] = 'dashboard/ajax_setting_rumah';
 $route['setting/update-user'] = 'dashboard/update_user';
 $route['setting/update-rumah'] = 'dashboard/update_rumah';
+$route['setting/save-tarif'] = 'dashboard/save_setting_tarif';
 $route['pembayaran/kirim_ipl/(:any)'] = 'dashboard/kirim_ipl/$1';
 $route['pembayaran/laporan-pembayaran'] = 'dashboard/laporan_rekap_rapel';
 $route['pembayaran/(:any)'] = 'dashboard/show_form_pembayaran';
