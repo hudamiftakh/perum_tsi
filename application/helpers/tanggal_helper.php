@@ -428,22 +428,35 @@ if (!function_exists('ensure_setting_table_exists')) {
 
 if (!function_exists('ensure_tarif_table_exists')) {
 	function ensure_tarif_table_exists() {
-		$ci =& get_instance();
-		if (!$ci->db->table_exists('master_tarif_ipl')) {
-			$ci->db->query("CREATE TABLE IF NOT EXISTS `master_tarif_ipl` (
-				`id` INT(11) NOT NULL AUTO_INCREMENT,
-				`nama_tarif` VARCHAR(100) NOT NULL,
-				`nominal` INT(11) NOT NULL,
-				`periode_mulai` VARCHAR(7) NOT NULL,
-				`periode_selesai` VARCHAR(7) DEFAULT NULL,
-				`is_active` TINYINT(1) DEFAULT 1,
-				`keterangan` TEXT DEFAULT NULL,
-				`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-				`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-				PRIMARY KEY (`id`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+		static $checked = false;
+		if ($checked) return;
+		$checked = true;
 
-			// Data Default Awal
+		$ci =& get_instance();
+		$ci->db->query("CREATE TABLE IF NOT EXISTS `master_tarif_ipl` (
+			`id` INT(11) NOT NULL AUTO_INCREMENT,
+			`nama_tarif` VARCHAR(100) NOT NULL,
+			`nominal` INT(11) NOT NULL,
+			`periode_mulai` VARCHAR(7) NOT NULL,
+			`periode_selesai` VARCHAR(7) DEFAULT NULL,
+			`is_active` TINYINT(1) DEFAULT 1,
+			`keterangan` TEXT DEFAULT NULL,
+			`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+			`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+		// Bersihkan duplikat jika ada (hanya simpan ID terkecil untuk periode_mulai yang sama)
+		$ci->db->query("
+			DELETE t1 FROM master_tarif_ipl t1
+			INNER JOIN master_tarif_ipl t2 
+			WHERE t1.id > t2.id 
+			  AND t1.periode_mulai = t2.periode_mulai
+		");
+
+		// Data Default Awal hanya dimasukkan jika tabel kosong
+		$count = $ci->db->query("SELECT COUNT(*) as cnt FROM master_tarif_ipl")->row()->cnt ?? 0;
+		if ((int)$count === 0) {
 			$defaults = [
 				[
 					'nama_tarif' => 'Tarif Awal Paguyuban TSI',
