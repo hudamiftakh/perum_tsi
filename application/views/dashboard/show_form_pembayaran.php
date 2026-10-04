@@ -258,17 +258,37 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
             display: block;
         }
 
-        /* Flatpickr Mobile Fix */
+        /* Flatpickr Mobile Fix & Time Styling */
         .flatpickr-calendar {
             border-radius: 16px !important;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important;
             border: 1.5px solid #cbd5e1 !important;
             font-family: inherit !important;
             z-index: 99999 !important;
+            overflow: hidden !important;
         }
         .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
             background: #0284c7 !important;
             border-color: #0284c7 !important;
+        }
+        .flatpickr-time {
+            height: 48px !important;
+            border-top: 1.5px solid #e2e8f0 !important;
+            background: #f8fafc !important;
+        }
+        .flatpickr-time input {
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            color: #0284c7 !important;
+        }
+        .flatpickr-time .flatpickr-time-separator {
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            color: #64748b !important;
+        }
+        .flatpickr-custom-footer {
+            background: #ffffff !important;
+            border-top: 1px solid #e2e8f0 !important;
         }
     </style>
 </head>
@@ -577,16 +597,16 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                     <!-- Hidden Bulan Mulai (Disinkronkan otomatis oleh field Untuk Bulan) -->
                     <input type="hidden" value="<?= $bulan_mulai_value ?>" id="bulan_mulai" name="bulan_mulai">
 
-                    <!-- Field Tanggal Pembayaran (Clean & Mobile-Friendly) -->
+                    <!-- Field Tanggal & Jam Pembayaran -->
                     <div class="mb-3">
                         <label for="tanggal_bayar" class="form-label d-flex align-items-center gap-1">
-                            <i class="bi bi-calendar-event text-primary"></i> Tanggal Pembayaran <span class="text-danger">*</span>
+                            <i class="bi bi-clock-history text-primary"></i> Tanggal & Jam Pembayaran <span class="text-danger">*</span>
                         </label>
                         <div class="input-group shadow-sm rounded-3">
-                            <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-calendar3"></i></span>
-                            <input type="text" class="form-control border-start-0" value="<?php echo isset($data_update['tanggal_bayar']) ? $data_update['tanggal_bayar'] : date('Y-m-d'); ?>" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal pembayaran" required readonly style="background-color:#ffffff; cursor:pointer; font-weight:500;">
+                            <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-clock"></i></span>
+                            <input type="text" class="form-control border-start-0" value="<?php echo isset($data_update['tanggal_bayar']) ? $data_update['tanggal_bayar'] : date('Y-m-d H:i'); ?>" id="tanggal_bayar" name="tanggal_bayar" placeholder="Pilih tanggal dan jam pembayaran" required readonly style="background-color:#ffffff; cursor:pointer; font-weight:500;">
                         </div>
-                        <div class="info-small mt-1">Tap untuk memilih tanggal transaksi pembayaran warga</div>
+                        <div class="info-small mt-1">Pilih tanggal serta jam transaksi pembayaran warga</div>
                     </div>
 
                     <div id="opsiCicilan" class="row d-none">
@@ -733,17 +753,26 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                 allowClear: true
             });
 
-            // Flatpickr Tanggal Bayar (Clean Date Picker murni tanpa jam dan tanpa tombol OK popup)
+            // Flatpickr Tanggal & Jam Bayar (Clean Datetime Picker dengan Jam & Menit)
             flatpickr("#tanggal_bayar", {
-                dateFormat: "Y-m-d",
+                enableTime: true,
+                time_24hr: true,
+                dateFormat: "Y-m-d H:i",
                 altInput: true,
-                altFormat: "j F Y",
+                altFormat: "j F Y, H:i WIB",
                 locale: "id",
                 allowInput: false,
-                disableMobile: false,
-                defaultDate: "<?= !empty($data_update['tanggal_bayar']) ? $data_update['tanggal_bayar'] : date('Y-m-d') ?>",
-                onChange: function(selectedDates, dateStr, instance) {
-                    instance.close();
+                disableMobile: true,
+                defaultDate: "<?= !empty($data_update['tanggal_bayar']) ? $data_update['tanggal_bayar'] : date('Y-m-d H:i') ?>",
+                onReady: function(selectedDates, dateStr, instance) {
+                    const footer = document.createElement("div");
+                    footer.className = "flatpickr-custom-footer p-2 text-center";
+                    footer.innerHTML = '<button type="button" class="btn btn-primary btn-sm rounded-pill w-100 py-1.5 fw-semibold shadow-sm"><i class="bi bi-check2-circle me-1"></i> Selesai Memilih Waktu</button>';
+                    footer.querySelector("button").addEventListener("click", function(e) {
+                        e.preventDefault();
+                        instance.close();
+                    });
+                    instance.calendarContainer.appendChild(footer);
                 }
             });
 
