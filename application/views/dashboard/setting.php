@@ -21,10 +21,10 @@ $total_users = count($admin_users) + count($koordinator_users);
 // ============================================
 // DATA SETTING TARIF IPL
 // ============================================
-$tarif_baru = get_setting('tarif_ipl_baru', '140000');
-$bulan_mulai_berlaku = get_setting('tarif_ipl_bulan_mulai', '2026-11');
-$tarif_lama = get_setting('tarif_ipl_lama', '125000');
-$catatan_tarif = get_setting('tarif_ipl_keterangan', 'Penyesuaian tarif iuran IPL dari Rp 125.000 menjadi Rp 140.000');
+$tarif_baru = get_setting('nominal_ipl', '140000');
+$bulan_mulai_berlaku = get_setting('bulan_berlaku_nominal', '2026-11');
+$tarif_lama = get_setting('nominal_ipl_lama', '125000');
+$catatan_tarif = get_setting('catatan_tarif', 'Penyesuaian tarif iuran IPL dari Rp 125.000 menjadi Rp 140.000');
 
 // ============================================
 // STATISTIK KPI RUMAH
@@ -652,7 +652,7 @@ $count_musiman = $this->db->count_all_results();
                                                 </label>
                                                 <div class="input-group">
                                                     <span class="input-group-text bg-light border-end-0 fw-bold">Rp</span>
-                                                    <input type="number" class="form-control form-control-modal" name="tarif_ipl_baru" id="inputTarifBaru" value="<?= htmlspecialchars($tarif_baru) ?>" required min="0" step="1000">
+                                                    <input type="number" class="form-control form-control-modal" name="nominal_ipl" id="inputTarifBaru" value="<?= htmlspecialchars($tarif_baru) ?>" required min="0" step="1000">
                                                 </div>
                                                 <small class="text-muted" id="previewTarifBaru">Rp <?= number_format((float)$tarif_baru, 0, ',', '.') ?></small>
                                             </div>
@@ -661,7 +661,7 @@ $count_musiman = $this->db->count_all_results();
                                                 <label class="form-label fw-bold text-dark small mb-1">
                                                     <i class="ti ti-calendar-event text-primary me-1"></i> Bulan Mulai Berlaku <span class="text-danger">*</span>
                                                 </label>
-                                                <input type="month" class="form-control form-control-modal" name="tarif_ipl_bulan_mulai" id="inputBulanMulai" value="<?= htmlspecialchars($bulan_mulai_berlaku) ?>" required>
+                                                <input type="month" class="form-control form-control-modal" name="bulan_berlaku_nominal" id="inputBulanMulai" value="<?= htmlspecialchars($bulan_mulai_berlaku) ?>" required>
                                                 <small class="text-muted">Format: YYYY-MM (misal: 2026-11)</small>
                                             </div>
 
@@ -671,7 +671,7 @@ $count_musiman = $this->db->count_all_results();
                                                 </label>
                                                 <div class="input-group">
                                                     <span class="input-group-text bg-light border-end-0 fw-bold">Rp</span>
-                                                    <input type="number" class="form-control form-control-modal" name="tarif_ipl_lama" id="inputTarifLama" value="<?= htmlspecialchars($tarif_lama) ?>" required min="0" step="1000">
+                                                    <input type="number" class="form-control form-control-modal" name="nominal_ipl_lama" id="inputTarifLama" value="<?= htmlspecialchars($tarif_lama) ?>" required min="0" step="1000">
                                                 </div>
                                                 <small class="text-muted">Untuk periode sebelum bulan mulai berlaku</small>
                                             </div>
@@ -690,7 +690,7 @@ $count_musiman = $this->db->count_all_results();
                                                 <label class="form-label fw-bold text-dark small mb-1">
                                                     <i class="ti ti-notes text-secondary me-1"></i> Keterangan / Catatan Kebijakan
                                                 </label>
-                                                <textarea class="form-control form-control-modal" name="tarif_ipl_keterangan" rows="2" placeholder="Catatan perubahan tarif..."><?= htmlspecialchars($catatan_tarif) ?></textarea>
+                                                <textarea class="form-control form-control-modal" name="catatan_tarif" rows="2" placeholder="Catatan perubahan tarif..."><?= htmlspecialchars($catatan_tarif) ?></textarea>
                                             </div>
                                         </div>
                                     </div>
