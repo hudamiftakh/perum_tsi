@@ -10,7 +10,9 @@ class auth extends CI_Controller
         parent::__construct();
         $this->load->database();
         $this->load->library('session');
-        if (function_exists('ensure_log_tables_exist')) {
+        if (function_exists('ensure_database_schema_exist')) {
+            ensure_database_schema_exist();
+        } elseif (function_exists('ensure_log_tables_exist')) {
             ensure_log_tables_exist();
         }
     }

@@ -6,3 +6,5 @@ application/sessions/
 /uploads/
 /vendor/
 composer.lock
+.workbuddy-ai/
+scratch/

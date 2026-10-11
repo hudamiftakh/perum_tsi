@@ -181,3 +181,185 @@ if (!function_exists('catat_log_aktivitas')) {
         $CI->db->insert('log_aktivitas', $data);
     }
 }
+
+/**
+ * Memastikan skema database dan tabel-tabel penting otomatis terbuat jika belum ada di database.
+ * Jika tabel inti belum ada (misal di server baru / SSH baru), otomatis mengimpor tsi.sql.
+ */
+if (!function_exists('ensure_database_schema_exist')) {
+    function ensure_database_schema_exist($force = false)
+    {
+        static $schema_checked = false;
+        if ($schema_checked && !$force) {
+            return;
+        }
+
+        $CI =& get_instance();
+        if (!isset($CI->db)) {
+            $CI->load->database();
+        }
+
+        // 1. Pastikan tabel-tabel log terbuat
+        ensure_log_tables_exist();
+
+        // 2. Cek apakah tabel master_rumah atau master_admin belum ada sama sekali
+        if (!$CI->db->table_exists('master_rumah') || !$CI->db->table_exists('master_admin')) {
+            $sql_file = FCPATH . 'tsi.sql';
+            if (file_exists($sql_file)) {
+                $sql_content = file_get_contents($sql_file);
+                // Bersihkan comment dan delimiter
+                $queries = explode(";\n", $sql_content);
+                foreach ($queries as $q) {
+                    $q = trim($q);
+                    if (!empty($q)) {
+                        @$CI->db->query($q);
+                    }
+                }
+            }
+        }
+
+        // 3. Pastikan kolom polygon_coords ada pada tabel master_rumah
+        if ($CI->db->table_exists('master_rumah')) {
+            if (!$CI->db->field_exists('polygon_coords', 'master_rumah')) {
+                @$CI->db->query("ALTER TABLE `master_rumah` ADD COLUMN `polygon_coords` LONGTEXT NULL DEFAULT NULL");
+            }
+            // Kolom polygon_coords siap digunakan untuk plotting presisi oleh admin
+            // (Auto-seed kasar dinonaktifkan agar denah tidak kotor oleh koordinat melenceng)
+        }
+
+        // 4. Pastikan tabel master_siteplan_meta ada (untuk setting/posisi default map)
+        if (!$CI->db->table_exists('master_siteplan_meta')) {
+            $CI->db->query("
+                CREATE TABLE IF NOT EXISTS `master_siteplan_meta` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `key_name` VARCHAR(100) NOT NULL UNIQUE,
+                    `value_data` LONGTEXT NULL,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+
+        // 5. Penyelarasan collation master_keluarga & master_rumah
+        try {
+            $cols = $CI->db->query("
+                SELECT TABLE_NAME, COLUMN_NAME, COLLATION_NAME 
+                FROM information_schema.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() 
+                AND TABLE_NAME IN ('master_keluarga', 'master_rumah') 
+                AND COLUMN_NAME IN ('nomor_rumah', 'alamat')
+            ")->result_array();
+
+            $needs_alter = false;
+            foreach ($cols as $c) {
+                if (!empty($c['COLLATION_NAME']) && $c['COLLATION_NAME'] !== 'utf8mb4_general_ci') {
+                    $needs_alter = true;
+                    break;
+                }
+            }
+
+            if ($needs_alter) {
+                @$CI->db->query("ALTER TABLE master_keluarga MODIFY nomor_rumah VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL");
+                @$CI->db->query("ALTER TABLE master_rumah MODIFY alamat VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL");
+            }
+        } catch (\Throwable $e) {
+        }
+
+        $schema_checked = true;
+    }
+}
+
+if (!function_exists('_seed_initial_siteplan_polygons')) {
+    function _seed_initial_siteplan_polygons($CI)
+    {
+        $houses = $CI->db->select('id, alamat')->order_by('id', 'ASC')->get('master_rumah')->result_array();
+        if (empty($houses)) return;
+
+        $block_configs = [
+            'Ruha' => ['lat_top' => 74.0, 'lat_bot' => 70.0, 'lng_left' => -20.0, 'lng_right' => 20.0],
+            'Blok I' => ['lat_top' => 69.0, 'lat_bot' => 66.0, 'lng_left' => -10.0, 'lng_right' => 25.0],
+            'Blok II' => ['lat_top' => 65.5, 'lat_bot' => 58.5, 'lng_left' => -12.0, 'lng_right' => 38.0],
+            'Blok III' => ['lat_top' => 57.0, 'lat_bot' => 49.0, 'lng_left' => -10.0, 'lng_right' => 38.0],
+            'Blok IIIB' => ['lat_top' => 48.0, 'lat_bot' => 43.0, 'lng_left' => -8.0, 'lng_right' => 35.0],
+            'Blok IV' => ['lat_top' => 42.0, 'lat_bot' => 33.0, 'lng_left' => -10.0, 'lng_right' => 40.0],
+            'Blok V' => ['lat_top' => 31.5, 'lat_bot' => 19.0, 'lng_left' => -10.0, 'lng_right' => 42.0],
+            'Blok VI' => ['lat_top' => 17.5, 'lat_bot' => 4.0, 'lng_left' => -10.0, 'lng_right' => 42.0],
+            'Blok VII' => ['lat_top' => 2.5, 'lat_bot' => -13.0, 'lng_left' => -10.0, 'lng_right' => 42.0],
+            'Blok VIII' => ['lat_top' => -14.5, 'lat_bot' => -30.0, 'lng_left' => -10.0, 'lng_right' => 42.0],
+            'Blok IX' => ['lat_top' => -31.5, 'lat_bot' => -46.0, 'lng_left' => -10.0, 'lng_right' => 40.0],
+            'Blok X' => ['lat_top' => -47.5, 'lat_bot' => -58.0, 'lng_left' => -10.0, 'lng_right' => 38.0],
+            'Blok XB' => ['lat_top' => -58.5, 'lat_bot' => -64.0, 'lng_left' => -8.0, 'lng_right' => 35.0],
+            'Blok XI' => ['lat_top' => -64.5, 'lat_bot' => -72.0, 'lng_left' => -10.0, 'lng_right' => 38.0],
+        ];
+
+        $grouped = [];
+        foreach ($houses as $h) {
+            $alamat = $h['alamat'];
+            $assigned = null;
+            if (stripos($alamat, 'Ruha') !== false) {
+                $assigned = 'Ruha';
+            } elseif (stripos($alamat, 'Raya') !== false) {
+                $assigned = 'Raya';
+            } else {
+                foreach ($block_configs as $bname => $cfg) {
+                    if (stripos($alamat, $bname) !== false) {
+                        $assigned = $bname;
+                        break;
+                    }
+                }
+            }
+            if (!$assigned) $assigned = 'Blok II';
+            $grouped[$assigned][] = $h;
+        }
+
+        if (isset($grouped['Raya'])) {
+            $rh = $grouped['Raya'];
+            $cnt = count($rh);
+            $lat_s = 72.0; $lat_e = -70.0;
+            $d_lat = ($lat_s - $lat_e) / max(1, $cnt);
+            for ($i = 0; $i < $cnt; $i++) {
+                $top = $lat_s - ($i * $d_lat);
+                $bot = $top - ($d_lat * 0.90);
+                $poly = [
+                    [round($top, 4), -41.0], [round($top, 4), -23.0],
+                    [round($bot, 4), -23.0], [round($bot, 4), -41.0]
+                ];
+                $CI->db->where('id', $rh[$i]['id'])->update('master_rumah', ['polygon_coords' => json_encode($poly)]);
+            }
+        }
+
+        foreach ($block_configs as $bname => $cfg) {
+            if (!isset($grouped[$bname])) continue;
+            $bh = $grouped[$bname];
+            $cnt = count($bh);
+            if ($cnt == 0) continue;
+
+            $half = ceil($cnt / 2);
+            $lat_mid = ($cfg['lat_top'] + $cfg['lat_bot']) / 2;
+
+            $d_lng_top = ($cfg['lng_right'] - $cfg['lng_left']) / max(1, $half);
+            for ($i = 0; $i < $half; $i++) {
+                $l = $cfg['lng_left'] + ($i * $d_lng_top);
+                $r = $l + ($d_lng_top * 0.92);
+                $poly = [
+                    [round($cfg['lat_top'], 4), round($l, 4)], [round($cfg['lat_top'], 4), round($r, 4)],
+                    [round($lat_mid + 0.4, 4), round($r, 4)], [round($lat_mid + 0.4, 4), round($l, 4)]
+                ];
+                $CI->db->where('id', $bh[$i]['id'])->update('master_rumah', ['polygon_coords' => json_encode($poly)]);
+            }
+
+            $bot_cnt = $cnt - $half;
+            if ($bot_cnt > 0) {
+                $d_lng_bot = ($cfg['lng_right'] - $cfg['lng_left']) / max(1, $bot_cnt);
+                for ($i = 0; $i < $bot_cnt; $i++) {
+                    $l = $cfg['lng_left'] + ($i * $d_lng_bot);
+                    $r = $l + ($d_lng_bot * 0.92);
+                    $poly = [
+                        [round($lat_mid - 0.4, 4), round($l, 4)], [round($lat_mid - 0.4, 4), round($r, 4)],
+                        [round($cfg['lat_bot'], 4), round($r, 4)], [round($cfg['lat_bot'], 4), round($l, 4)]
+                    ];
+                    $CI->db->where('id', $bh[$half + $i]['id'])->update('master_rumah', ['polygon_coords' => json_encode($poly)]);
+                }
+            }
+        }
+    }
+}

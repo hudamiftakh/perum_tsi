@@ -53,6 +53,15 @@ defined('BASEPATH') or exit('No direct script access allowed');
 */
 // session_start();
 $route['default_controller'] = 'auth';
+$route['home'] = 'home/index';
+$route['home/migrate'] = 'home/migrate';
+$route['siteplan'] = 'dashboard/siteplan';
+$route['siteplan/ajax_data'] = 'dashboard/ajax_siteplan_data';
+$route['siteplan/save_polygon'] = 'dashboard/ajax_save_polygon';
+$route['siteplan/delete_polygon'] = 'dashboard/ajax_delete_polygon';
+$route['siteplan/reset_all_polygon'] = 'dashboard/ajax_reset_all_polygon';
+$route['siteplan/auto_generate_polygons'] = 'dashboard/ajax_auto_generate_polygons';
+$route['siteplan/pdf'] = 'dashboard/siteplan_pdf';
 $route['login'] = 'auth/index';
 $route['logout'] = 'auth/logout';
 $route['doLogin'] = 'auth/doLogin';

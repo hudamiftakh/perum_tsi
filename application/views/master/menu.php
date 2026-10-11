@@ -12,6 +12,14 @@
                 <span class="hide-menu"> Dashboard</span>
             </a>
         </li>
+        <li class="sidebar-item">
+            <a class="sidebar-link <?php echo ($menu == 'siteplan') ? 'active' : ''; ?>" href="<?php echo base_url('siteplan') ?>" aria-expanded="false">
+                <span class="rounded-3">
+                    <i class="ti ti-map-2 text-primary"></i>
+                </span>
+                <span class="hide-menu"> Siteplan TSI (Peta IPL)</span>
+            </a>
+        </li>
         <?php
         $menu = $this->uri->segment(1);
         $submenu = $this->uri->segment(2);

@@ -50,7 +50,10 @@ class Dashboard extends CI_Controller
 	 */
 	private function _create_log_tables()
 	{
-		if (function_exists('ensure_log_tables_exist')) {
+		if (function_exists('ensure_database_schema_exist')) {
+			ensure_database_schema_exist();
+			return;
+		} elseif (function_exists('ensure_log_tables_exist')) {
 			ensure_log_tables_exist();
 			return;
 		}
@@ -4282,9 +4285,747 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 	}
 
+	/**
+	 * SITEPLAN TSI INTERAKTIF (Integrasi Peta & IPL)
+	 */
+	public function siteplan()
+	{
+		$this->checkSession();
+		$this->_create_log_tables();
+
+		$tahun_sekarang = (int)date('Y');
+		$bulan_sekarang = (int)date('m');
+
+		$tahun = (int)($this->input->get('tahun') ?: $tahun_sekarang);
+		$bulan = $this->input->get('bulan');
+		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : $bulan_sekarang;
+		$id_koor = $this->input->get('id_koordinator') ?: '';
+
+		$koordinators = $this->db->query("SELECT id, nama FROM master_koordinator_blok ORDER BY nama ASC")->result_array();
+
+		$siteplan_data = $this->_get_siteplan_data($tahun, $bulan, $id_koor);
+
+		$data['tahun'] = $tahun;
+		$data['bulan'] = $bulan;
+		$data['id_koordinator'] = $id_koor;
+		$data['koordinators'] = $koordinators;
+		$data['siteplan_data'] = $siteplan_data;
+		$data['userData'] = $this->session->userdata('username');
+		$data['halaman'] = 'dashboard/siteplan';
+
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * AJAX Endpoint untuk mengambil data siteplan saat filter diubah
+	 */
+	public function ajax_siteplan_data()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$tahun = (int)($this->input->post_get('tahun') ?: date('Y'));
+		$bulan = $this->input->post_get('bulan');
+		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : null;
+		$id_koor = $this->input->post_get('id_koordinator') ?: '';
+
+		$data = $this->_get_siteplan_data($tahun, $bulan, $id_koor);
+		echo json_encode($data);
+	}
+
+	/**
+	 * AJAX Endpoint untuk menyimpan koordinat poligon rumah
+	 */
+	public function ajax_save_polygon()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$id_rumah = (int)$this->input->post('id_rumah');
+		$polygon_coords = trim($this->input->post('polygon_coords'));
+
+		if (!$id_rumah || empty($polygon_coords)) {
+			echo json_encode(['status' => 'error', 'message' => 'Data ID Rumah atau koordinat tidak valid.']);
+			return;
+		}
+
+		// Validasi JSON format
+		$decoded = json_decode($polygon_coords, true);
+		if (!is_array($decoded) || count($decoded) < 3) {
+			echo json_encode(['status' => 'error', 'message' => 'Format poligon minimal harus memiliki 3 titik sudut koordinat.']);
+			return;
+		}
+
+		$update = $this->db->where('id', $id_rumah)->update('master_rumah', [
+			'polygon_coords' => json_encode($decoded)
+		]);
+
+		if ($update) {
+			if (function_exists('catat_log_aktivitas')) {
+				catat_log_aktivitas('Siteplan', 'Update Poligon', "Memperbarui koordinat poligon untuk rumah ID: $id_rumah");
+			}
+			echo json_encode(['status' => 'success', 'message' => 'Koordinat kotak rumah berhasil disimpan!']);
+		} else {
+			echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan ke database.']);
+		}
+	}
+
+	/**
+	 * AJAX Endpoint untuk menghapus/reset koordinat poligon rumah
+	 */
+	public function ajax_delete_polygon()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$id_rumah = (int)$this->input->post('id_rumah');
+		if (!$id_rumah) {
+			echo json_encode(['status' => 'error', 'message' => 'ID Rumah tidak valid.']);
+			return;
+		}
+
+		$this->db->where('id', $id_rumah)->update('master_rumah', [
+			'polygon_coords' => null
+		]);
+
+		if (function_exists('catat_log_aktivitas')) {
+			catat_log_aktivitas('Siteplan', 'Hapus Poligon', "Menghapus koordinat poligon rumah ID: $id_rumah");
+		}
+
+		echo json_encode(['status' => 'success', 'message' => 'Plotting poligon rumah berhasil direset.']);
+	}
+
+	/**
+	 * AJAX Endpoint untuk menghapus/reset SEMUA koordinat poligon sekaligus
+	 */
+	public function ajax_reset_all_polygon()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$this->db->update('master_rumah', ['polygon_coords' => null]);
+		$affected = $this->db->affected_rows();
+
+		if (function_exists('catat_log_aktivitas')) {
+			catat_log_aktivitas('Siteplan', 'Reset Semua Poligon', "Menghapus semua koordinat poligon ($affected rumah).");
+		}
+
+		echo json_encode([
+			'status'  => 'success',
+			'message' => "Semua koordinat kotak kavling berhasil direset ($affected rumah)."
+		]);
+	}
+
+	/**
+	 * AJAX Endpoint untuk Auto-Generate Poligon Rumah secara otomatis dan presisi
+	 */
+	public function ajax_auto_generate_polygons()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$res = $this->_generate_precise_polygons();
+		echo json_encode($res);
+	}
+
+	public function siteplan_pdf()
+	{
+		$this->checkSession();
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		$tahun = (int)($this->input->get('tahun') ?: date('Y'));
+		$bulan = $this->input->get('bulan');
+		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : null;
+		$id_koor = $this->input->get('id_koordinator') ?: '';
+
+		$data = $this->_get_siteplan_data($tahun, $bulan, $id_koor);
+		$map_image = $this->_create_siteplan_pdf_map_image($data['houses']);
+
+		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator('Perum TSI');
+		$pdf->SetAuthor('Paguyuban TSI');
+		$pdf->SetTitle('Siteplan IPL TSI - ' . $data['periode_label']);
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(true);
+		$pdf->setFooterFont(['dejavusans', 'I', 8]);
+		$pdf->SetMargins(10, 8, 10, true);
+		$pdf->SetAutoPageBreak(true, 10);
+		$pdf->AddPage();
+
+		$pdf->SetFont('dejavusans', 'B', 14);
+		$pdf->Cell(0, 7, 'Siteplan IPL Perumahan Taman Sukodono Indah', 0, 1, 'C');
+		$pdf->SetFont('dejavusans', '', 9);
+		$pdf->Cell(0, 5, 'Periode: ' . $data['periode_label'], 0, 1, 'C');
+
+		$koor_label = 'Semua Koordinator';
+		if (!empty($id_koor)) {
+			foreach ($data['houses'] as $h) {
+				if (!empty($h['koordinator'])) {
+					$koor_label = $h['koordinator'];
+					break;
+				}
+			}
+		}
+		$pdf->Cell(0, 5, 'Filter: ' . $koor_label, 0, 1, 'C');
+		$pdf->Ln(2);
+
+		if ($map_image && file_exists($map_image)) {
+			$pdf->Image($map_image, 10, 28, 130, 130, 'PNG');
+		}
+
+		$pdf->SetXY(148, 28);
+		$summary = '
+		<table border="1" cellpadding="5">
+			<tr style="background-color:#f1f5f9;font-weight:bold;">
+				<td>Total Rumah</td><td>Lunas</td><td>Menunggak</td><td>Kepatuhan</td>
+			</tr>
+			<tr>
+				<td>' . (int)$data['total_rumah'] . '</td>
+				<td style="color:#15803d;">' . (int)$data['total_lunas'] . '</td>
+				<td style="color:#b91c1c;">' . (int)$data['total_menunggak'] . '</td>
+				<td>' . htmlspecialchars($data['persen_lunas']) . '%</td>
+			</tr>
+		</table>';
+		$pdf->writeHTML($summary, true, false, true, false, '');
+		$pdf->Ln(2);
+
+		$pdf->SetX(148);
+		$html = '<table border="1" cellpadding="3">
+			<tr style="background-color:#e2e8f0;font-weight:bold;">
+				<td width="10">No</td>
+				<td width="38">Alamat</td>
+				<td width="42">Nama</td>
+				<td width="25">Status</td>
+				<td width="35">Tunggakan</td>
+			</tr>';
+		$no = 1;
+		foreach ($data['houses'] as $h) {
+			$status = ($h['status_ipl'] === 'lunas') ? 'Lunas' : 'Menunggak';
+			$status_color = ($h['status_ipl'] === 'lunas') ? '#15803d' : '#b91c1c';
+			$html .= '<tr>
+				<td width="10">' . $no++ . '</td>
+				<td width="38">' . htmlspecialchars($h['alamat']) . '</td>
+				<td width="42">' . htmlspecialchars($h['nama']) . '</td>
+				<td width="25" style="color:' . $status_color . ';">' . $status . '</td>
+				<td width="35">' . htmlspecialchars($h['bulan_tunggak_list'] ?: '-') . '</td>
+			</tr>';
+		}
+		$html .= '</table>';
+		$pdf->writeHTML($html, true, false, true, false, '');
+
+		if ($map_image && file_exists($map_image)) {
+			@unlink($map_image);
+		}
+
+		$filename = 'siteplan_ipl_' . $tahun . '_' . ($bulan ? str_pad($bulan, 2, '0', STR_PAD_LEFT) : 'semua') . '_' . date('Ymd_His') . '.pdf';
+		$pdf->Output($filename, 'I');
+	}
+
+	private function _create_siteplan_pdf_map_image($houses)
+	{
+		if (!extension_loaded('gd')) {
+			return null;
+		}
+
+		$tile_root = FCPATH . 'assets/siteplan/tsi/tiles/2/';
+		if (!is_dir($tile_root)) {
+			return null;
+		}
+
+		$canvas = imagecreatetruecolor(768, 768);
+		$white = imagecolorallocate($canvas, 255, 255, 255);
+		imagefill($canvas, 0, 0, $white);
+		imagealphablending($canvas, true);
+		imagesavealpha($canvas, true);
+
+		for ($x = 0; $x <= 2; $x++) {
+			for ($y = 0; $y <= 2; $y++) {
+				$tile = $tile_root . $x . '/' . $y . '.png';
+				if (!file_exists($tile)) continue;
+				$img = imagecreatefrompng($tile);
+				imagecopy($canvas, $img, $x * 256, $y * 256, 0, 0, 256, 256);
+				imagedestroy($img);
+			}
+		}
+
+		$red_fill = imagecolorallocatealpha($canvas, 239, 68, 68, 58);
+		$red_line = imagecolorallocatealpha($canvas, 185, 28, 28, 10);
+		$green_fill = imagecolorallocatealpha($canvas, 34, 197, 94, 68);
+		$green_line = imagecolorallocatealpha($canvas, 21, 128, 61, 10);
+		$yellow_line = imagecolorallocatealpha($canvas, 245, 158, 11, 0);
+
+		foreach ($houses as $h) {
+			if (empty($h['polygon_coords']) || !is_array($h['polygon_coords'])) continue;
+
+			$points = [];
+			foreach ($h['polygon_coords'] as $pt) {
+				if (!is_array($pt) || count($pt) < 2) continue;
+				$px = $this->_siteplan_latlng_to_px((float)$pt[0], (float)$pt[1], 2);
+				$points[] = (int)round($px[0]);
+				$points[] = (int)round($px[1]);
+			}
+			if (count($points) < 6) continue;
+
+			$is_lunas = ($h['status_ipl'] === 'lunas');
+			$point_count = (int)(count($points) / 2);
+			if (PHP_VERSION_ID >= 80100) {
+				imagefilledpolygon($canvas, $points, $is_lunas ? $green_fill : $red_fill);
+			} else {
+				imagefilledpolygon($canvas, $points, $point_count, $is_lunas ? $green_fill : $red_fill);
+			}
+			imagesetthickness($canvas, 2);
+			if (PHP_VERSION_ID >= 80100) {
+				imagepolygon($canvas, $points, $is_lunas ? $green_line : $red_line);
+			} else {
+				imagepolygon($canvas, $points, $point_count, $is_lunas ? $green_line : $red_line);
+			}
+			if (!empty($h['id_koordinator'])) {
+				imagesetthickness($canvas, 1);
+				if (PHP_VERSION_ID >= 80100) {
+					imagepolygon($canvas, $points, $yellow_line);
+				} else {
+					imagepolygon($canvas, $points, $point_count, $yellow_line);
+				}
+			}
+		}
+
+		$temp_dir = FCPATH . 'assets/temp_pdf/';
+		if (!is_dir($temp_dir)) {
+			@mkdir($temp_dir, 0777, true);
+		}
+		$out = $temp_dir . 'siteplan_map_' . date('YmdHis') . '_' . mt_rand(1000, 9999) . '.png';
+		imagepng($canvas, $out);
+		imagedestroy($canvas);
+
+		return $out;
+	}
+
+	private function _siteplan_latlng_to_px($lat, $lng, $zoom = 2)
+	{
+		$scale = 256 * pow(2, $zoom);
+		$x = (($lng / 360.0) + 0.5) * $scale;
+		$sin_lat = sin($lat * M_PI / 180.0);
+		$y = (0.5 - log((1 + $sin_lat) / (1 - $sin_lat)) / (4 * M_PI)) * $scale;
+		return [$x, $y];
+	}
+
+	/**
+	 * Helper untuk menghitung dan menyimpan poligon kavling presisi sesuai denah
+	 */
+	private function _generate_precise_polygons()
+	{
+		$pxToLatLng = function($px, $py, $zoom = 2) {
+			$scale = 256 * pow(2, $zoom); // 1024
+			$normX = ($px / $scale) - 0.5;
+			$normY = 0.5 - ($py / $scale);
+			$lng = $normX * 360.0;
+			$lat = (2.0 * atan(exp($normY * 2.0 * M_PI)) - M_PI / 2.0) * (180.0 / M_PI);
+			return [round($lat, 6), round($lng, 6)];
+		};
+
+		$makeQuad = function($tl, $tr, $br, $bl) use ($pxToLatLng) {
+			return [
+				$pxToLatLng($tl[0], $tl[1]),
+				$pxToLatLng($tr[0], $tr[1]),
+				$pxToLatLng($br[0], $br[1]),
+				$pxToLatLng($bl[0], $bl[1])
+			];
+		};
+
+		$lerpPoint = function($a, $b, $t) {
+			return [
+				$a[0] + (($b[0] - $a[0]) * $t),
+				$a[1] + (($b[1] - $a[1]) * $t)
+			];
+		};
+
+		$pointInQuad = function($tl, $tr, $br, $bl, $x, $y) use ($lerpPoint) {
+			$left = $lerpPoint($tl, $bl, $y);
+			$right = $lerpPoint($tr, $br, $y);
+			return $lerpPoint($left, $right, $x);
+		};
+
+		$makeCell = function($tl, $tr, $br, $bl, $x1, $y1, $x2, $y2) use ($makeQuad, $pointInQuad) {
+			return $makeQuad(
+				$pointInQuad($tl, $tr, $br, $bl, $x1, $y1),
+				$pointInQuad($tl, $tr, $br, $bl, $x2, $y1),
+				$pointInQuad($tl, $tr, $br, $bl, $x2, $y2),
+				$pointInQuad($tl, $tr, $br, $bl, $x1, $y2)
+			);
+		};
+
+		$houses = $this->db->select('id, alamat')->order_by('id', 'ASC')->get('master_rumah')->result_array();
+		if (empty($houses)) {
+			return ['status' => 'error', 'message' => 'Data master rumah tidak ditemukan.'];
+		}
+
+		$all_houses = [];
+		foreach ($houses as $h) {
+			$all_houses[$h['id']] = $h['alamat'];
+		}
+
+		$updates = [];
+
+		$plotBlockRows = function($house_ids, $tl, $tr, $br, $bl, $top_y1 = 0.08, $top_y2 = 0.44, $bot_y1 = 0.56, $bot_y2 = 0.92, $x_fill = 0.82) use (&$updates, $makeCell) {
+			$count = count($house_ids);
+			if ($count == 0) return;
+			$half = (int)ceil($count / 2);
+			for ($i = 0; $i < $half; $i++) {
+				$x1 = $i / max(1, $half);
+				$x2 = ($i + $x_fill) / max(1, $half);
+				$updates[$house_ids[$i]] = $makeCell($tl, $tr, $br, $bl, $x1, $top_y1, $x2, $top_y2);
+			}
+			$bot_count = $count - $half;
+			if ($bot_count > 0) {
+				for ($i = 0; $i < $bot_count; $i++) {
+					$x1 = $i / max(1, $bot_count);
+					$x2 = ($i + $x_fill) / max(1, $bot_count);
+					$updates[$house_ids[$half + $i]] = $makeCell($tl, $tr, $br, $bl, $x1, $bot_y1, $x2, $bot_y2);
+				}
+			}
+		};
+
+		// Kelompokkan rumah berdasarkan alamat
+		$ruha = []; $raya = []; $b1_2 = []; $b3 = []; $b4 = []; $b5 = [];
+		$b6 = []; $b7 = []; $b8 = []; $b9 = []; $b10 = []; $b11 = [];
+
+		foreach ($all_houses as $id => $alm) {
+			if (stripos($alm, 'Ruha') !== false) $ruha[] = $id;
+			elseif (stripos($alm, 'Raya') !== false) $raya[] = $id;
+			elseif (stripos($alm, 'Blok I-') !== false || stripos($alm, 'Blok I‐') !== false) $b1_2[] = $id;
+			elseif (stripos($alm, 'Blok II-') !== false || stripos($alm, 'Blok II‐') !== false) {
+				if (stripos($alm, 'Blok IIIB') === false && stripos($alm, 'Blok III') === false) $b1_2[] = $id;
+				else $b3[] = $id;
+			}
+			elseif (stripos($alm, 'Blok III') !== false) $b3[] = $id;
+			elseif (stripos($alm, 'Blok IV') !== false) $b4[] = $id;
+			elseif (stripos($alm, 'Blok VIII') !== false) $b8[] = $id;
+			elseif (stripos($alm, 'Blok VII') !== false) $b7[] = $id;
+			elseif (stripos($alm, 'Blok VI') !== false) $b6[] = $id;
+			elseif (stripos($alm, 'Blok V-') !== false || stripos($alm, 'Blok V‐') !== false) $b5[] = $id;
+			elseif (stripos($alm, 'Blok XI') !== false) $b11[] = $id;
+			elseif (stripos($alm, 'Blok IX') !== false) $b9[] = $id;
+			elseif (stripos($alm, 'Blok X-') !== false || stripos($alm, 'Blok X‐') !== false) $b10[] = $id;
+		}
+
+		// 1. RUHA (5 rumah)
+		$n_ruha = count($ruha);
+		for ($i = 0; $i < $n_ruha; $i++) {
+			$x1 = $i / max(1, $n_ruha);
+			$x2 = ($i + 0.82) / max(1, $n_ruha);
+			$updates[$ruha[$i]] = $makeCell([355, 38], [423, 43], [420, 58], [352, 53], $x1, 0.08, $x2, 0.92);
+		}
+
+		// 2. TSI RAYA (54 rumah)
+		$raya_sorted = $raya;
+		usort($raya_sorted, function($a, $b) use ($all_houses) {
+			preg_match('/Raya\s*([0-9]+[A-Za-z]?)/i', $all_houses[$a], $ma);
+			preg_match('/Raya\s*([0-9]+[A-Za-z]?)/i', $all_houses[$b], $mb);
+			return strnatcasecmp($ma[1] ?? '', $mb[1] ?? '');
+		});
+		$n_raya = count($raya_sorted);
+		$raya_tl = [318, 55]; $raya_tr = [345, 58];
+		$raya_br = [285, 518]; $raya_bl = [258, 515];
+		for ($i = 0; $i < $n_raya; $i++) {
+			$y1 = $i / max(1, $n_raya);
+			$y2 = ($i + 0.78) / max(1, $n_raya);
+			$updates[$raya_sorted[$i]] = $makeCell($raya_tl, $raya_tr, $raya_br, $raya_bl, 0.08, $y1, 0.92, $y2);
+		}
+
+		// 3. BLOK I & II (17 rumah)
+		$plotBlockRows($b1_2, [345, 116], [431, 123], [425, 169], [339, 162]);
+
+		// 4. BLOK III & IIIB (17 rumah)
+		$plotBlockRows($b3, [337, 180], [420, 186], [415, 226], [332, 221]);
+
+		// 5. BLOK IV (9 rumah)
+		$plotBlockRows($b4, [380, 180], [425, 186], [420, 226], [375, 221]);
+
+		// 6. BLOK V (16 rumah)
+		$plotBlockRows($b5, [334, 236], [419, 244], [413, 285], [328, 277]);
+
+		// 7. BLOK VI (17 rumah: 7 top, 10 bottom di samping masjid)
+		$b6_by_no = [];
+		foreach ($b6 as $hid) {
+			if (preg_match('/VI[^0-9]*([0-9]+[A-Za-z]?)/i', $all_houses[$hid], $m)) $b6_by_no[strtoupper($m[1])] = $hid;
+		}
+		$b6_top_ids = [];
+		foreach (['2', '6', '8', '10', '12', '12A', '16'] as $no) if (isset($b6_by_no[$no])) $b6_top_ids[] = $b6_by_no[$no];
+		$b6_bot_ids = [];
+		foreach (['1', '3', '3A', '3B', '5', '7', '9', '11', '11A', '15'] as $no) if (isset($b6_by_no[$no])) $b6_bot_ids[] = $b6_by_no[$no];
+
+		$b6_tl = [350, 288]; $b6_tr = [417, 294]; $b6_br = [411, 340]; $b6_bl = [344, 334];
+		foreach ($b6_top_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b6_top_ids));
+			$x2 = ($i + 0.82) / max(1, count($b6_top_ids));
+			$updates[$hid] = $makeCell($b6_tl, $b6_tr, $b6_br, $b6_bl, $x1, 0.08, $x2, 0.44);
+		}
+		foreach ($b6_bot_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b6_bot_ids));
+			$x2 = ($i + 0.82) / max(1, count($b6_bot_ids));
+			$updates[$hid] = $makeCell($b6_tl, $b6_tr, $b6_br, $b6_bl, $x1, 0.56, $x2, 0.92);
+		}
+
+		// 8. BLOK VII (20 rumah: 10 top, 10 bottom di bawah masjid)
+		$b7_by_no = [];
+		foreach ($b7 as $hid) {
+			if (preg_match('/VII[^0-9]*([0-9]+[A-Za-z]?)/i', $all_houses[$hid], $m)) $b7_by_no[strtoupper($m[1])] = $hid;
+		}
+		$b7_top_ids = [];
+		foreach (['2', '3A', '6', '8', '10', '12', '12A', '16', '18', '20'] as $no) if (isset($b7_by_no[$no])) $b7_top_ids[] = $b7_by_no[$no];
+		$b7_bot_ids = [];
+		foreach (['1', '3', '5', '7', '9', '11', '11A', '15', '17', '19'] as $no) if (isset($b7_by_no[$no])) $b7_bot_ids[] = $b7_by_no[$no];
+
+		$b7_tl = [324, 342]; $b7_tr = [408, 350]; $b7_br = [402, 397]; $b7_bl = [318, 389];
+		foreach ($b7_top_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b7_top_ids));
+			$x2 = ($i + 0.82) / max(1, count($b7_top_ids));
+			$updates[$hid] = $makeCell($b7_tl, $b7_tr, $b7_br, $b7_bl, $x1, 0.08, $x2, 0.44);
+		}
+		foreach ($b7_bot_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b7_bot_ids));
+			$x2 = ($i + 0.82) / max(1, count($b7_bot_ids));
+			$updates[$hid] = $makeCell($b7_tl, $b7_tr, $b7_br, $b7_bl, $x1, 0.56, $x2, 0.92);
+		}
+
+		// 9. BLOK VIII (20 rumah: 10 top, 10 bottom)
+		$b8_by_no = [];
+		foreach ($b8 as $hid) {
+			if (preg_match('/VIII[^0-9]*([0-9]+A?)/i', $all_houses[$hid], $m)) $b8_by_no[strtoupper($m[1])] = $hid;
+		}
+		$b8_top_ids = [];
+		foreach (['2', '3A', '6', '8', '10', '12', '12A', '16', '18', '20'] as $no) if (isset($b8_by_no[$no])) $b8_top_ids[] = $b8_by_no[$no];
+		$b8_bot_ids = [];
+		foreach (['1', '3', '5', '7', '9', '11', '11A', '15', '17', '19'] as $no) if (isset($b8_by_no[$no])) $b8_bot_ids[] = $b8_by_no[$no];
+
+		$b8_tl = [317, 402]; $b8_tr = [402, 409]; $b8_br = [396, 456]; $b8_bl = [311, 449];
+		foreach ($b8_top_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b8_top_ids));
+			$x2 = ($i + 0.82) / max(1, count($b8_top_ids));
+			$updates[$hid] = $makeCell($b8_tl, $b8_tr, $b8_br, $b8_bl, $x1, 0.08, $x2, 0.44);
+		}
+		foreach ($b8_bot_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b8_bot_ids));
+			$x2 = ($i + 0.82) / count($b8_bot_ids);
+			$updates[$hid] = makeCell($b8_tl, $b8_tr, $b8_br, $b8_bl, $x1, 0.56, $x2, 0.92);
+		}
+
+		// 10. BLOK IX (10 rumah: 4 top, 6 bottom)
+		$b9_by_no = [];
+		foreach ($b9 as $hid) {
+			if (preg_match('/IX[^0-9]*([0-9]+[A-Za-z]?)/i', $all_houses[$hid], $m)) $b9_by_no[strtoupper($m[1])] = $hid;
+		}
+		$b9_top_ids = [];
+		foreach (['2', '6', '8', '10'] as $no) if (isset($b9_by_no[$no])) $b9_top_ids[] = $b9_by_no[$no];
+		$b9_bot_ids = [];
+		foreach (['1', '3', '3A', '5', '7', '9'] as $no) if (isset($b9_by_no[$no])) $b9_bot_ids[] = $b9_by_no[$no];
+
+		$b9_tl = [305, 498]; $b9_tr = [364, 503]; $b9_br = [361, 528]; $b9_bl = [302, 523];
+		foreach ($b9_top_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b9_top_ids));
+			$x2 = ($i + 0.82) / max(1, count($b9_top_ids));
+			$updates[$hid] = makeCell($b9_tl, $b9_tr, $b9_br, $b9_bl, $x1, 0.08, $x2, 0.44);
+		}
+		foreach ($b9_bot_ids as $i => $hid) {
+			$x1 = $i / max(1, count($b9_bot_ids));
+			$x2 = ($i + 0.82) / count($b9_bot_ids);
+			$updates[$hid] = makeCell($b9_tl, $b9_tr, $b9_br, $b9_bl, $x1, 0.56, $x2, 0.92);
+		}
+
+		// 11. BLOK X (7 rumah) & BLOK XI (6 rumah)
+		$b10_tl = [376, 504]; $b10_tr = [434, 509]; $b10_br = [430, 520]; $b10_bl = [372, 515];
+		foreach ($b10 as $i => $hid) {
+			$x1 = $i / max(1, count($b10));
+			$x2 = ($i + 0.82) / max(1, count($b10));
+			$updates[$hid] = makeCell($b10_tl, $b10_tr, $b10_br, $b10_bl, $x1, 0.08, $x2, 0.92);
+		}
+		$b11_tl = [372, 517]; $b11_tr = [430, 522]; $b11_br = [427, 534]; $b11_bl = [369, 529];
+		foreach ($b11 as $i => $hid) {
+			$x1 = $i / max(1, count($b11));
+			$x2 = ($i + 0.82) / max(1, count($b11));
+			$updates[$hid] = makeCell($b11_tl, $b11_tr, $b11_br, $b11_bl, $x1, 0.08, $x2, 0.92);
+		}
+
+		// Bersihkan koordinat lama
+		$this->db->update('master_rumah', ['polygon_coords' => null]);
+
+		// Simpan koordinat ke database
+		$saved = 0;
+		foreach ($updates as $hid => $poly) {
+			$json = json_encode($poly);
+			$this->db->where('id', $hid)->update('master_rumah', ['polygon_coords' => $json]);
+			$saved++;
+		}
+
+		if (function_exists('catat_log_aktivitas')) {
+			catat_log_aktivitas('Siteplan', 'Auto-Generate Poligon', "Berhasil men-generate $saved poligon rumah otomatis.");
+		}
+
+		return [
+			'status' => 'success',
+			'saved'  => $saved,
+			'message' => "Berhasil men-generate $saved poligon kavling rumah secara otomatis dan presisi!"
+		];
+	}
+
+	/**
+	 * Private helper untuk menghitung status pembayaran IPL per unit rumah
+	 */
+	private function _get_siteplan_data($tahun, $bulan_filter = null, $id_koor = '')
+	{
+		$bulan_indo = [
+			1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+			5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+			9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+		];
+		$bulan_singkat = [
+			1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+			5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
+			9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
+		];
+
+		$tahun_sekarang = (int)date('Y');
+		$bulan_sekarang = (int)date('m');
+
+		$bulan_mulai_ipl = ($tahun == 2025) ? 6 : 1;
+		$bulan_akhir_ipl = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == $tahun_sekarang) ? $bulan_sekarang : 12);
+		$total_bulan_wajib = max(1, $bulan_akhir_ipl - $bulan_mulai_ipl + 1);
+
+		$where_koor = '';
+		if (!empty($id_koor)) {
+			$id_koor_int = (int)$id_koor;
+			$where_koor = " AND r.id_koordinator = $id_koor_int ";
+		}
+
+		// Ambil seluruh master rumah
+		$all_rumah = $this->db->query("
+			SELECT r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator,
+			       MAX(k.nama) as koordinator, MAX(kl.no_hp) as no_hp
+			FROM master_rumah r
+			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			WHERE r.id IS NOT NULL $where_koor
+			GROUP BY r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator
+			ORDER BY r.alamat ASC
+		")->result_array();
+
+		// Ambil data pembayaran
+		$pembayaran_raw = $this->db->query("
+			SELECT p.id, u.id_rumah, p.untuk_bulan, p.bulan_rapel, DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym, p.status, p.jumlah_bayar, p.tanggal_bayar
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			LEFT JOIN master_rumah r ON u.id_rumah = r.id
+			WHERE p.status IN ('verified','pending')
+			AND (YEAR(p.untuk_bulan) = $tahun OR YEAR(p.bulan_mulai) = $tahun OR p.bulan_rapel LIKE '%$tahun%')
+			$where_koor
+		")->result_array();
+
+		$lunas_map = [];
+		foreach ($pembayaran_raw as $p) {
+			$idr = $p['id_rumah'];
+			if (!$idr) continue;
+			if (!isset($lunas_map[$idr])) $lunas_map[$idr] = [];
+			if (!empty($p['untuk_bulan']) && $p['untuk_bulan'] != '0000-00-00' && $p['untuk_bulan'] != '') {
+				$lunas_map[$idr][date('Y-m', strtotime($p['untuk_bulan']))] = true;
+			}
+			if (!empty($p['bulan_rapel'])) {
+				foreach (explode(',', $p['bulan_rapel']) as $br) {
+					if (trim($br)) $lunas_map[$idr][trim($br)] = true;
+				}
+			}
+			if ((empty($p['untuk_bulan']) || $p['untuk_bulan'] == '0000-00-00' || $p['untuk_bulan'] == '') && empty($p['bulan_rapel']) && !empty($p['bulan_mulai_ym'])) {
+				$lunas_map[$idr][$p['bulan_mulai_ym']] = true;
+			}
+		}
+
+		$houses_list = [];
+		$total_rumah = count($all_rumah);
+		$total_lunas = 0;
+		$total_menunggak = 0;
+		$total_terplot = 0;
+
+		$is_single_month = !empty($bulan_filter);
+		$single_month_key = $is_single_month ? ($tahun . '-' . str_pad($bulan_filter, 2, '0', STR_PAD_LEFT)) : '';
+
+		foreach ($all_rumah as $r) {
+			$idr = $r['id'];
+			$tunggak_names = [];
+			$tunggak_short = [];
+			$jumlah_bayar = 0;
+
+			if ($is_single_month) {
+				if (isset($lunas_map[$idr][$single_month_key])) {
+					$jumlah_bayar = 1;
+				} else {
+					$tunggak_names[] = $bulan_indo[$bulan_filter];
+					$tunggak_short[] = $bulan_singkat[$bulan_filter];
+				}
+			} else {
+				for ($m = $bulan_mulai_ipl; $m <= $bulan_akhir_ipl; $m++) {
+					$key = $tahun . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+					if (isset($lunas_map[$idr][$key])) {
+						$jumlah_bayar++;
+					} else {
+						$tunggak_names[] = $bulan_indo[$m];
+						$tunggak_short[] = $bulan_singkat[$m];
+					}
+				}
+			}
+
+			$tunggakan = count($tunggak_names);
+			$status_ipl = ($tunggakan === 0) ? 'lunas' : 'menunggak';
+
+			if ($status_ipl === 'lunas') {
+				$total_lunas++;
+			} else {
+				$total_menunggak++;
+			}
+
+			$has_coords = !empty($r['polygon_coords']) && $r['polygon_coords'] !== 'null' && $r['polygon_coords'] !== '[]';
+			if ($has_coords) {
+				$total_terplot++;
+			}
+
+			$parsed_coords = null;
+			if ($has_coords) {
+				$parsed_coords = json_decode($r['polygon_coords'], true);
+			}
+
+			$houses_list[] = [
+				'id'                 => (int)$r['id'],
+				'alamat'             => $r['alamat'] ?: 'Unit ' . $r['id'],
+				'nama'               => $r['nama'] ?: 'Belum Ada Nama',
+				'no_hp'              => $r['no_hp'] ?: '',
+				'koordinator'        => $r['koordinator'] ?: 'Tanpa Koordinator',
+				'id_koordinator'     => (int)$r['id_koordinator'],
+				'status_ipl'         => $status_ipl,
+				'tunggakan'          => $tunggakan,
+				'jumlah_bulan_bayar' => $jumlah_bayar,
+				'bulan_tunggak_list' => implode(', ', $tunggak_names),
+				'polygon_coords'     => $parsed_coords,
+				'has_coords'         => $has_coords
+			];
+		}
+
+		$persen_lunas = ($total_rumah > 0) ? round(($total_lunas / $total_rumah) * 100, 1) : 0;
+
+		return [
+			'tahun'           => $tahun,
+			'bulan_filter'    => $bulan_filter,
+			'periode_label'   => $is_single_month ? ($bulan_indo[$bulan_filter] . ' ' . $tahun) : ($bulan_indo[$bulan_mulai_ipl] . ' s/d ' . $bulan_indo[$bulan_akhir_ipl] . ' ' . $tahun),
+			'total_rumah'     => $total_rumah,
+			'total_lunas'     => $total_lunas,
+			'total_menunggak' => $total_menunggak,
+			'total_terplot'   => $total_terplot,
+			'persen_lunas'    => $persen_lunas,
+			'houses'          => $houses_list
+		];
+	}
+
 	public function checkSession()
 	{
-		if (empty($this->session->userdata['username'])) {
+		$sess = $this->session->userdata('username');
+		if (empty($sess) && empty($this->session->userdata['username'])) {
 			redirect('./');
 		}
 	}
