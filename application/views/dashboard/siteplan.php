@@ -392,12 +392,12 @@ $koorId = $isKoor ? $userData['id'] : '';
             </div>
             <div class="alert alert-warning py-2 px-2 fs-2 mb-2">
                 <strong>Cara pakai:</strong><br>
-                1. <strong>Klik-tahan</strong> kotak rumah → <strong>geser</strong> mouse untuk MEMINDAH kotak<br>
-                2. <strong>Klik-tahan titik biru</strong> di sudut kotak → geser untuk <strong>RESIZE</strong> (ubah ukuran)<br>
-                3. Klik <strong>Simpan</strong> untuk menyimpan ke database<br>
+                1. <strong>Klik-tahan</strong> kotak rumah &rarr; <strong>geser</strong> untuk MEMINDAH kotak<br>
+                2. <strong>Klik-tahan titik sudut</strong> &rarr; geser untuk <strong>RESIZE</strong> ukuran kotak<br>
+                3. <strong>Geser area kosong peta / scroll mouse</strong> untuk navigasi &amp; zoom peta bebas<br>
+                4. Klik <strong>Simpan</strong> untuk menyimpan ke database<br>
                 <hr class="my-1">
-                <strong>Tips:</strong> Tahan <kbd class="px-1 bg-light border">Space</kbd> untuk menggeser peta sementara<br>
-                Klik area kosong untuk menghapus titik resize
+                Klik area kosong untuk membatalkan seleksi titik sudut
             </div>
             <button type="button" class="btn btn-success btn-sm w-100" onclick="saveAllDraggedPolygons()">
                 <i class="ti ti-device-floppy"></i> Simpan Posisi (<span id="drag-count">0</span>)
@@ -504,12 +504,11 @@ $koorId = $isKoor ? $userData['id'] : '';
         justDraggedTimer = setTimeout(() => { justDragged = false; }, 250);
     }
 
-    // Listener tombol Space untuk panning peta saat Mode Geser aktif
+    // Listener tombol Space (opsional, map dragging sudah aktif pada area kosong)
     document.addEventListener('keydown', function(e) {
         if (!isDragMode) return;
         if (e.code === 'Space' && !isSpacePressed && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
             isSpacePressed = true;
-            map.dragging.enable();
             map.getContainer().style.cursor = 'grab';
         }
     });
@@ -517,8 +516,7 @@ $koorId = $isKoor ? $userData['id'] : '';
         if (!isDragMode) return;
         if (e.code === 'Space') {
             isSpacePressed = false;
-            map.dragging.disable();
-            map.getContainer().style.cursor = 'move';
+            map.getContainer().style.cursor = 'grab';
         }
     });
 
@@ -1075,16 +1073,17 @@ $koorId = $isKoor ? $userData['id'] : '';
             text.textContent = 'Keluar Mode Geser';
             document.getElementById('btn-save-drag').style.display = 'inline-flex';
             document.getElementById('drag-toolbar').style.display = 'block';
-            // DISABLE map dragging untuk seluruh mode geser — agar klik pada polygon
-            // tidak memicu panning map. User bisa zoom dengan scroll wheel.
-            // Untuk panning: tahan tombol Space, atau keluar mode geser.
-            map.dragging.disable();
+
+            // Map dragging & scroll wheel zoom SELALU AKTIF untuk navigasi & scroll bebas
+            map.dragging.enable();
+            map.scrollWheelZoom.enable();
+
             // Ubah style semua polygon: border tebal + dash untuk indicate draggable
             Object.values(activePolygons).forEach(poly => {
                 poly.setStyle({ weight: 3, dashArray: '5, 3' });
             });
             forceCanvasRedraw();
-            map.getContainer().style.cursor = 'move';
+            map.getContainer().style.cursor = 'grab';
         } else {
             btn.className = 'btn btn-outline-primary btn-sm d-flex align-items-center gap-1';
             icon.className = 'ti ti-hand-move';
@@ -1095,6 +1094,7 @@ $koorId = $isKoor ? $userData['id'] : '';
             deselectPolygon();
             // RE-ENABLE map dragging
             map.dragging.enable();
+            map.scrollWheelZoom.enable();
             map.getContainer().style.cursor = '';
             // Auto-save jika ada kotak yang sudah digeser
             if (Object.keys(movedPolygons).length > 0) {
@@ -1112,6 +1112,9 @@ $koorId = $isKoor ? $userData['id'] : '';
             L.DomEvent.stopPropagation(e.originalEvent);
             L.DomEvent.preventDefault(e.originalEvent);
         }
+
+        // Matikan map dragging selama menggeser kotak rumah
+        map.dragging.disable();
 
         draggingPolygon = e.target;
         isDraggingBox = false;
@@ -1155,6 +1158,9 @@ $koorId = $isKoor ? $userData['id'] : '';
 
     // Selesai drag: mouseup pada map
     function handleDragEnd(e) {
+        // Re-enable map dragging
+        if (map) map.dragging.enable();
+
         if (!draggingPolygon) return;
         if (isDraggingBox) {
             const houseData = draggingPolygon.options.houseData;
@@ -1306,6 +1312,7 @@ $koorId = $isKoor ? $userData['id'] : '';
             marker.on('dragstart', function(e) {
                 if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
                 isResizing = true;
+                if (map) map.dragging.disable();
 
                 // Simpan koordinat layer point awal
                 let coords = selectedPolygon.getLatLngs();
@@ -1343,6 +1350,7 @@ $koorId = $isKoor ? $userData['id'] : '';
             marker.on('dragend', function(e) {
                 if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
                 isResizing = false;
+                if (map) map.dragging.enable();
                 setJustDragged();
 
                 if (selectedPolygon) {
@@ -1467,22 +1475,15 @@ $koorId = $isKoor ? $userData['id'] : '';
         }
     }
 
-    // Keyboard handler: tahan Space untuk panning sementara di mode geser
-    let spaceHeld = false;
-    document.addEventListener('keydown', function(e) {
-        if (e.code === 'Space' && isDragMode && !spaceHeld && !draggingPolygon) {
-            spaceHeld = true;
-            map.dragging.enable();
-            map.getContainer().style.cursor = 'grab';
-            e.preventDefault();
-        }
-    });
-    document.addEventListener('keyup', function(e) {
-        if (e.code === 'Space' && isDragMode && spaceHeld) {
-            spaceHeld = false;
-            map.dragging.disable();
-            map.getContainer().style.cursor = 'move';
-            e.preventDefault();
+    // Safety window listener: jika mouseup terjadi di luar elemen, pastikan map dragging selalu dipulihkan
+    window.addEventListener('mouseup', function(e) {
+        if (isDragMode) {
+            if (draggingPolygon) {
+                handleDragEnd(e);
+            }
+            if (map && !map.dragging.enabled()) {
+                map.dragging.enable();
+            }
         }
     });
 
