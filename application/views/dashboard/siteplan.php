@@ -467,7 +467,12 @@ $koorId = $isKoor ? $userData['id'] : '';
     let polygonLayerGroup = null;
     let activePolygons = {}; // Map id_rumah -> L.Polygon
     let showRedBoxes = true;
-    let currentFilterKoor = "<?= htmlspecialchars((string)$id_koordinator, ENT_QUOTES, 'UTF-8') ?>";
+    let currentFilterKoor = "<?= htmlspecialchars((string)($id_koordinator ?: $koorId), ENT_QUOTES, 'UTF-8') ?>";
+    const isKoorUser = <?= $isKoor ? 'true' : 'false' ?>;
+    const koorUserId = "<?= $koorId ?>";
+    if (isKoorUser && !currentFilterKoor && koorUserId) {
+        currentFilterKoor = koorUserId;
+    }
 
     // Mode Plotting State
     let isEditMode = false;
@@ -652,21 +657,43 @@ $koorId = $isKoor ? $userData['id'] : '';
     }
 
     function focusFilteredPolygons() {
-        if (!map || !currentFilterKoor) return;
+        if (!map) return;
 
-        const selectedPolys = Object.values(activePolygons).filter(poly => {
-            const h = poly.options.houseData;
-            return h && parseInt(h.id_koordinator) === parseInt(currentFilterKoor);
+        let targetKoor = currentFilterKoor;
+        if (!targetKoor && typeof koorUserId !== 'undefined' && koorUserId) {
+            targetKoor = koorUserId;
+        }
+        if (!targetKoor) return;
+
+        try {
+            map.invalidateSize();
+        } catch (e) {}
+
+        const allPolys = Object.values(activePolygons);
+        if (allPolys.length === 0) return;
+
+        const selectedPolys = allPolys.filter(poly => {
+            const h = poly.options && poly.options.houseData;
+            return h && parseInt(h.id_koordinator) === parseInt(targetKoor);
         });
 
-        if (selectedPolys.length === 0) return;
+        const polysToFit = (selectedPolys.length > 0) ? selectedPolys : allPolys;
+        if (polysToFit.length === 0) return;
 
-        let bounds = selectedPolys[0].getBounds();
-        selectedPolys.slice(1).forEach(poly => bounds.extend(poly.getBounds()));
-        map.fitBounds(bounds, {
-            padding: [35, 35],
-            maxZoom: 4
+        let bounds = polysToFit[0].getBounds();
+        polysToFit.slice(1).forEach(poly => {
+            if (poly.getBounds) {
+                bounds.extend(poly.getBounds());
+            }
         });
+
+        if (bounds && bounds.isValid && bounds.isValid()) {
+            map.fitBounds(bounds, {
+                padding: [45, 45],
+                maxZoom: 4,
+                animate: true
+            });
+        }
     }
 
     function downloadSiteplanPdf() {
@@ -740,7 +767,11 @@ $koorId = $isKoor ? $userData['id'] : '';
     // Reset Map View
     function resetMapView() {
         if (map) {
-            map.setView([60, -40], 2);
+            if (currentFilterKoor) {
+                focusFilteredPolygons();
+            } else {
+                map.setView([60, -40], 2);
+            }
         }
     }
 
@@ -1458,6 +1489,9 @@ $koorId = $isKoor ? $userData['id'] : '';
     // Jalankan inisialisasi saat DOM siap
     document.addEventListener('DOMContentLoaded', function() {
         initMap();
-        focusFilteredPolygons();
+        if (currentFilterKoor) {
+            setTimeout(focusFilteredPolygons, 150);
+            setTimeout(focusFilteredPolygons, 400);
+        }
     });
 </script>

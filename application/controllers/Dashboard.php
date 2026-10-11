@@ -4299,7 +4299,13 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$tahun = (int)($this->input->get('tahun') ?: $tahun_sekarang);
 		$bulan = $this->input->get('bulan');
 		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : $bulan_sekarang;
-		$id_koor = $this->input->get('id_koordinator') ?: '';
+		$userData = $this->session->userdata('username');
+		$is_koordinator = (isset($userData['role']) && $userData['role'] === 'koordinator');
+		if ($is_koordinator) {
+			$id_koor = $userData['id'];
+		} else {
+			$id_koor = $this->input->get('id_koordinator') ?: '';
+		}
 
 		$koordinators = $this->db->query("SELECT id, nama FROM master_koordinator_blok ORDER BY nama ASC")->result_array();
 
@@ -4310,7 +4316,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$data['id_koordinator'] = $id_koor;
 		$data['koordinators'] = $koordinators;
 		$data['siteplan_data'] = $siteplan_data;
-		$data['userData'] = $this->session->userdata('username');
+		$data['userData'] = $userData;
 		$data['halaman'] = 'dashboard/siteplan';
 
 		$this->load->view('modul', $data);
@@ -4327,7 +4333,14 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$tahun = (int)($this->input->post_get('tahun') ?: date('Y'));
 		$bulan = $this->input->post_get('bulan');
 		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : null;
-		$id_koor = $this->input->post_get('id_koordinator') ?: '';
+
+		$userData = $this->session->userdata('username');
+		$is_koordinator = (isset($userData['role']) && $userData['role'] === 'koordinator');
+		if ($is_koordinator) {
+			$id_koor = $userData['id'];
+		} else {
+			$id_koor = $this->input->post_get('id_koordinator') ?: '';
+		}
 
 		$data = $this->_get_siteplan_data($tahun, $bulan, $id_koor);
 		echo json_encode($data);
@@ -4436,7 +4449,13 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$tahun = (int)($this->input->get('tahun') ?: date('Y'));
 		$bulan = $this->input->get('bulan');
 		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : null;
-		$id_koor = $this->input->get('id_koordinator') ?: '';
+		$userData = $this->session->userdata('username');
+		$is_koordinator = (isset($userData['role']) && $userData['role'] === 'koordinator');
+		if ($is_koordinator) {
+			$id_koor = $userData['id'];
+		} else {
+			$id_koor = $this->input->get('id_koordinator') ?: '';
+		}
 
 		$data = $this->_get_siteplan_data($tahun, $bulan, $id_koor);
 		$map_image = $this->_create_siteplan_pdf_map_image($data['houses']);
@@ -4891,20 +4910,16 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$bulan_akhir_ipl = !empty($bulan_filter) ? (int)$bulan_filter : (($tahun == $tahun_sekarang) ? $bulan_sekarang : 12);
 		$total_bulan_wajib = max(1, $bulan_akhir_ipl - $bulan_mulai_ipl + 1);
 
-		$where_koor = '';
-		if (!empty($id_koor)) {
-			$id_koor_int = (int)$id_koor;
-			$where_koor = " AND r.id_koordinator = $id_koor_int ";
-		}
+		$id_koor_int = !empty($id_koor) ? (int)$id_koor : 0;
 
-		// Ambil seluruh master rumah
+		// Ambil seluruh master rumah (selalu load seluruh kavling agar tampilan peta utuh)
 		$all_rumah = $this->db->query("
 			SELECT r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator,
 			       MAX(k.nama) as koordinator, MAX(kl.no_hp) as no_hp
 			FROM master_rumah r
 			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
 			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
-			WHERE r.id IS NOT NULL $where_koor
+			WHERE r.id IS NOT NULL
 			GROUP BY r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator
 			ORDER BY r.alamat ASC
 		")->result_array();
@@ -4917,7 +4932,6 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			LEFT JOIN master_rumah r ON u.id_rumah = r.id
 			WHERE p.status IN ('verified','pending')
 			AND (YEAR(p.untuk_bulan) = $tahun OR YEAR(p.bulan_mulai) = $tahun OR p.bulan_rapel LIKE '%$tahun%')
-			$where_koor
 		")->result_array();
 
 		$lunas_map = [];
@@ -4939,7 +4953,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 
 		$houses_list = [];
-		$total_rumah = count($all_rumah);
+		$total_rumah = 0;
 		$total_lunas = 0;
 		$total_menunggak = 0;
 		$total_terplot = 0;
@@ -4975,20 +4989,24 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$tunggakan = count($tunggak_names);
 			$status_ipl = ($tunggakan === 0) ? 'lunas' : 'menunggak';
 
-			if ($status_ipl === 'lunas') {
-				$total_lunas++;
-			} else {
-				$total_menunggak++;
-			}
-
 			$has_coords = !empty($r['polygon_coords']) && $r['polygon_coords'] !== 'null' && $r['polygon_coords'] !== '[]';
-			if ($has_coords) {
-				$total_terplot++;
-			}
-
 			$parsed_coords = null;
 			if ($has_coords) {
 				$parsed_coords = json_decode($r['polygon_coords'], true);
+			}
+
+			// Hitung metrik ringkasan (jika koordinator difilter, hitung spesifik binaan koordinator tersebut)
+			$is_matched_koor = empty($id_koor_int) || ((int)$r['id_koordinator'] === $id_koor_int);
+			if ($is_matched_koor) {
+				$total_rumah++;
+				if ($status_ipl === 'lunas') {
+					$total_lunas++;
+				} else {
+					$total_menunggak++;
+				}
+				if ($has_coords) {
+					$total_terplot++;
+				}
 			}
 
 			$houses_list[] = [
