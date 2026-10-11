@@ -433,6 +433,11 @@ $raw_verified_list = $this->db->query("
 
             <!-- Quick Action Toolbar -->
             <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top border-white border-opacity-10">
+                <a href="<?= base_url('siteplan'); ?>" class="btn-quick-action" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(254, 202, 202, 0.6); color: #fff;">
+                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                    <span class="fw-bold">Peta Siteplan IPL</span>
+                    <span class="badge bg-danger rounded-pill px-2 py-0" style="font-size:0.65rem;">BARU</span>
+                </a>
                 <a href="<?= base_url('pembayaran/verifikasi-pembayaran'); ?>" class="btn-quick-action position-relative">
                     <i class="bi bi-patch-check-fill text-success"></i>
                     <span>Verifikasi Pembayaran</span>
@@ -659,6 +664,58 @@ $raw_verified_list = $this->db->query("
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ==========================================
+         FITUR BARU: WIDGET INFORMASI SITEPLAN TSI
+    ========================================== -->
+    <div class="card border-0 mb-4 position-relative overflow-hidden shadow-sm"
+         style="background: linear-gradient(135deg, #ffffff 0%, #fff7ed 60%, #ffedd5 100%); border: 1.5px solid #fed7aa !important; border-radius: 18px;">
+        <div class="card-body p-4 position-relative" style="z-index: 2;">
+            <div class="row align-items-center g-3">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-danger rounded-pill px-3 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size:0.75rem; letter-spacing:0.3px;">
+                            <i class="bi bi-sparkles"></i> FITUR BARU PAGUYUBAN
+                        </span>
+                        <span class="badge bg-white text-danger border border-danger-subtle rounded-pill px-2 py-1 small fw-semibold">
+                            Interactive Map &bull; Leaflet SVG
+                        </span>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2" style="letter-spacing: -0.3px;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Peta Siteplan Interaktif &amp; Monitoring Kepatuhan IPL
+                    </h4>
+                    <p class="text-muted mb-3" style="font-size: 0.92rem; max-width: 680px;">
+                        Visualisasi spasial posisi <strong>198 kavling rumah</strong> (Blok I s/d XI, TSI Raya 1-61, &amp; Ruha). Pantau status pembayaran IPL warga (Hijau = Lunas, Merah = Menunggak, Kuning = Pending) langsung di atas denah peta kawasan perumahan.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-xs">
+                            <i class="bi bi-houses-fill text-primary me-1"></i> Total: <strong>198 Kavling</strong>
+                        </span>
+                        <span class="badge bg-white text-success border border-success-subtle px-3 py-2 rounded-pill shadow-xs">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i> Lunas <?= $nama_bulan_ini ?>: <strong><?= $rumah_bayar_bln ?> Unit</strong> (<?= $persen_kepatuhan ?>%)
+                        </span>
+                        <span class="badge bg-white text-danger border border-danger-subtle px-3 py-2 rounded-pill shadow-xs">
+                            <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Menunggak: <strong><?= $rumah_nunggak_bln ?> Unit</strong>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="d-inline-flex flex-column gap-2 w-100 w-lg-auto">
+                        <a href="<?= base_url('siteplan') ?>" class="btn btn-danger px-4 py-2 rounded-pill shadow-sm fw-bold d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-map-fill"></i>
+                            <span>Buka Siteplan Interaktif</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a href="<?= base_url('siteplan/pdf') ?>" target="_blank" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center gap-2 bg-white">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                            <span>Cetak PDF Peta &amp; Legenda</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <i class="bi bi-map position-absolute" style="right: -25px; bottom: -35px; font-size: 11rem; opacity: 0.05; color: #ea580c; pointer-events: none;"></i>
     </div>
 
     <!-- ==========================================

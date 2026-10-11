@@ -211,6 +211,56 @@
             </div>
         </div>
 
+        <!-- Fitur Baru: Peta Siteplan TSI untuk Koordinator -->
+        <div class="card border-0 mb-4 shadow-sm position-relative overflow-hidden" 
+             style="background: linear-gradient(135deg, #ffffff 0%, #fff7ed 60%, #ffedd5 100%); border: 1.5px solid #fed7aa !important; border-radius: 20px;">
+            <div class="card-body p-4 position-relative" style="z-index: 2;">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-8">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-danger rounded-pill px-3 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size:0.75rem;">
+                                <i class="ti ti-sparkles"></i> FITUR BARU KOORDINATOR
+                            </span>
+                            <span class="badge bg-white text-danger border border-danger-subtle rounded-pill px-2 py-1 small fw-semibold">
+                                Peta Wilayah Blok Interaktif
+                            </span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">
+                            <i class="ti ti-map-pin text-danger me-1"></i> Siteplan TSI: Pantau Wilayah Blok Anda di Peta
+                        </h4>
+                        <p class="text-muted mb-3 small" style="max-width: 650px;">
+                            Sekarang Koordinator Blok dapat melihat posisi seluruh rumah binaan secara visual di denah peta kawasan perumahan. Pantau letak rumah warga yang sudah lunas (hijau) atau masih nunggak (merah) secara interaktif.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-xs">
+                                <i class="ti ti-home text-primary me-1"></i> Binaan Anda: <strong><?= $total_binaan ?> Rumah</strong>
+                            </span>
+                            <span class="badge bg-white text-success border border-success-subtle px-3 py-2 rounded-pill shadow-xs">
+                                <i class="ti ti-circle-check text-success me-1"></i> Lunas: <strong><?= $total_lunas ?> Rumah</strong> (<?= $persen_capaian ?>%)
+                            </span>
+                            <span class="badge bg-white text-danger border border-danger-subtle px-3 py-2 rounded-pill shadow-xs">
+                                <i class="ti ti-alert-triangle text-danger me-1"></i> Belum Lunas: <strong><?= $total_nunggak ?> Rumah</strong>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <div class="d-inline-flex flex-column gap-2 w-100 w-lg-auto">
+                            <a href="<?= base_url('siteplan?id_koordinator=' . $id_koor) ?>" class="btn btn-danger px-4 py-2 rounded-pill shadow-sm fw-bold d-inline-flex align-items-center justify-content-center gap-2">
+                                <i class="ti ti-map-2"></i>
+                                <span>Buka Siteplan Blok Saya</span>
+                                <i class="ti ti-arrow-right"></i>
+                            </a>
+                            <a href="<?= base_url('siteplan/pdf?id_koordinator=' . $id_koor) ?>" target="_blank" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center gap-2 bg-white">
+                                <i class="ti ti-printer"></i>
+                                <span>Cetak Denah Blok (PDF)</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <i class="ti ti-map position-absolute" style="right: -25px; bottom: -35px; font-size: 11rem; opacity: 0.05; color: #ea580c; pointer-events: none;"></i>
+        </div>
+
         <div class="row mb-4">
             <!-- Kolom Kiri: Warga yang Belum Bayar Bulan Ini -->
             <div class="col-lg-7 mb-3">

@@ -1,3 +1,46 @@
+<?php
+$menu = $this->uri->segment(1);
+$submenu = $this->uri->segment(2);
+$role_user = $_SESSION['username']['role'] ?? '';
+?>
+<style>
+@keyframes siteplanPulseRed {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    50% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+@keyframes badgeBlinkRed {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.88; }
+}
+.siteplan-icon-wrapper {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff !important;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    animation: siteplanPulseRed 2s infinite ease-in-out;
+    flex-shrink: 0;
+}
+.badge-siteplan-baru {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    color: #ffffff !important;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 3px 7px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+    animation: badgeBlinkRed 1.8s infinite ease-in-out;
+    display: inline-flex;
+    align-items: center;
+}
+</style>
 <nav class="sidebar-nav scroll-sidebar" data-simplebar>
     <ul id="sidebarnav">
         <li class="nav-small-cap">
@@ -5,7 +48,7 @@
             <span class="hide-menu">Menu Aplikasi</span>
         </li>
         <li class="sidebar-item">
-            <a class="sidebar-link sidebar-link" href="<?php echo base_url('dashboard') ?>" aria-expanded="false">
+            <a class="sidebar-link sidebar-link <?php echo ($menu == 'dashboard' || empty($menu)) ? 'active' : ''; ?>" href="<?php echo base_url('dashboard') ?>" aria-expanded="false">
                 <span class="rounded-3">
                     <i class="ti ti-layout-grid"></i>
                 </span>
@@ -14,16 +57,17 @@
         </li>
         <li class="sidebar-item">
             <a class="sidebar-link <?php echo ($menu == 'siteplan') ? 'active' : ''; ?>" href="<?php echo base_url('siteplan') ?>" aria-expanded="false">
-                <span class="rounded-3">
-                    <i class="ti ti-map-2 text-primary"></i>
+                <span class="siteplan-icon-wrapper me-2">
+                    <i class="ti ti-map-pin"></i>
                 </span>
-                <span class="hide-menu"> Siteplan TSI (Peta IPL)</span>
+                <span class="hide-menu d-flex align-items-center justify-content-between flex-grow-1">
+                    <span class="fw-semibold">Siteplan (Peta IPL)</span>
+                    <span class="badge-siteplan-baru ms-auto">
+                        <i class="ti ti-sparkles me-1"></i>BARU
+                    </span>
+                </span>
             </a>
         </li>
-        <?php
-        $menu = $this->uri->segment(1);
-        $submenu = $this->uri->segment(2);
-        ?>
         <?php if ($_SESSION['username']['role'] == 'admin') : ?>
             <li class="sidebar-item">
                 <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('agenda'))) ? 'active' : ''; ?>"
