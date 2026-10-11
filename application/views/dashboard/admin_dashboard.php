@@ -436,7 +436,7 @@ $raw_verified_list = $this->db->query("
                 <a href="<?= base_url('siteplan'); ?>" class="btn-quick-action" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(254, 202, 202, 0.6); color: #fff;">
                     <i class="bi bi-geo-alt-fill text-danger"></i>
                     <span class="fw-bold">Peta Siteplan IPL</span>
-                    <span class="badge bg-danger rounded-pill px-2 py-0" style="font-size:0.65rem;">BARU</span>
+                    <span class="badge bg-danger rounded-pill px-2 py-0" style="font-size:0.65rem;">NEW</span>
                 </a>
                 <a href="<?= base_url('pembayaran/verifikasi-pembayaran'); ?>" class="btn-quick-action position-relative">
                     <i class="bi bi-patch-check-fill text-success"></i>

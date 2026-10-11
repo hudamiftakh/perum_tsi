@@ -6,39 +6,39 @@ $role_user = $_SESSION['username']['role'] ?? '';
 <style>
 @keyframes siteplanPulseRed {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    50% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+    50% { transform: scale(1.08); box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 @keyframes badgeBlinkRed {
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.06); opacity: 0.88; }
+    50% { transform: scale(1.05); opacity: 0.85; }
 }
 .siteplan-icon-wrapper {
-    width: 28px;
-    height: 28px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    width: 24px;
+    height: 24px;
+    background: #ef4444;
     color: #ffffff !important;
-    border-radius: 8px;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
     animation: siteplanPulseRed 2s infinite ease-in-out;
     flex-shrink: 0;
 }
-.badge-siteplan-baru {
-    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+.badge-siteplan-new {
+    background: #ef4444;
     color: #ffffff !important;
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.5px;
-    padding: 3px 7px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
-    animation: badgeBlinkRed 1.8s infinite ease-in-out;
-    display: inline-flex;
-    align-items: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1.2;
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.3);
+    animation: badgeBlinkRed 2s infinite ease-in-out;
+    display: inline-block;
 }
 </style>
 <nav class="sidebar-nav scroll-sidebar" data-simplebar>
@@ -61,10 +61,8 @@ $role_user = $_SESSION['username']['role'] ?? '';
                     <i class="ti ti-map-pin"></i>
                 </span>
                 <span class="hide-menu d-flex align-items-center justify-content-between flex-grow-1">
-                    <span class="fw-semibold">Siteplan (Peta IPL)</span>
-                    <span class="badge-siteplan-baru ms-auto">
-                        <i class="ti ti-sparkles me-1"></i>BARU
-                    </span>
+                    <span>Siteplan</span>
+                    <span class="badge-siteplan-new ms-auto">NEW</span>
                 </span>
             </a>
         </li>
