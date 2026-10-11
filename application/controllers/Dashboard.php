@@ -4806,8 +4806,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		}
 		foreach ($b8_bot_ids as $i => $hid) {
 			$x1 = $i / max(1, count($b8_bot_ids));
-			$x2 = ($i + 0.82) / count($b8_bot_ids);
-			$updates[$hid] = makeCell($b8_tl, $b8_tr, $b8_br, $b8_bl, $x1, 0.56, $x2, 0.92);
+			$x2 = ($i + 0.82) / max(1, count($b8_bot_ids));
+			$updates[$hid] = $makeCell($b8_tl, $b8_tr, $b8_br, $b8_bl, $x1, 0.56, $x2, 0.92);
 		}
 
 		// 10. BLOK IX (10 rumah: 4 top, 6 bottom)
@@ -4824,12 +4824,12 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		foreach ($b9_top_ids as $i => $hid) {
 			$x1 = $i / max(1, count($b9_top_ids));
 			$x2 = ($i + 0.82) / max(1, count($b9_top_ids));
-			$updates[$hid] = makeCell($b9_tl, $b9_tr, $b9_br, $b9_bl, $x1, 0.08, $x2, 0.44);
+			$updates[$hid] = $makeCell($b9_tl, $b9_tr, $b9_br, $b9_bl, $x1, 0.08, $x2, 0.44);
 		}
 		foreach ($b9_bot_ids as $i => $hid) {
 			$x1 = $i / max(1, count($b9_bot_ids));
-			$x2 = ($i + 0.82) / count($b9_bot_ids);
-			$updates[$hid] = makeCell($b9_tl, $b9_tr, $b9_br, $b9_bl, $x1, 0.56, $x2, 0.92);
+			$x2 = ($i + 0.82) / max(1, count($b9_bot_ids));
+			$updates[$hid] = $makeCell($b9_tl, $b9_tr, $b9_br, $b9_bl, $x1, 0.56, $x2, 0.92);
 		}
 
 		// 11. BLOK X (7 rumah) & BLOK XI (6 rumah)
@@ -4837,13 +4837,13 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		foreach ($b10 as $i => $hid) {
 			$x1 = $i / max(1, count($b10));
 			$x2 = ($i + 0.82) / max(1, count($b10));
-			$updates[$hid] = makeCell($b10_tl, $b10_tr, $b10_br, $b10_bl, $x1, 0.08, $x2, 0.92);
+			$updates[$hid] = $makeCell($b10_tl, $b10_tr, $b10_br, $b10_bl, $x1, 0.08, $x2, 0.92);
 		}
 		$b11_tl = [372, 517]; $b11_tr = [430, 522]; $b11_br = [427, 534]; $b11_bl = [369, 529];
 		foreach ($b11 as $i => $hid) {
 			$x1 = $i / max(1, count($b11));
 			$x2 = ($i + 0.82) / max(1, count($b11));
-			$updates[$hid] = makeCell($b11_tl, $b11_tr, $b11_br, $b11_bl, $x1, 0.08, $x2, 0.92);
+			$updates[$hid] = $makeCell($b11_tl, $b11_tr, $b11_br, $b11_bl, $x1, 0.08, $x2, 0.92);
 		}
 
 		// Bersihkan koordinat lama
