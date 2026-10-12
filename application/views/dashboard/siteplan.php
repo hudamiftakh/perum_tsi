@@ -324,11 +324,13 @@ $koorId = $isKoor ? $userData['id'] : '';
     }
 
     /* =========================================
-       LABEL NAMA KAVLING SAAT ZOOM (WRAPPING & TIDAK TEMBUS KOTAK)
+       TEXT NAMA KAVLING LANGSUNG DI DALAM KOTAK (MURNI TEKS, TANPA KOTAK BARU)
        ========================================= */
+    .house-map-label-wrapper.leaflet-div-icon,
     .house-map-label-wrapper {
         background: transparent !important;
         border: none !important;
+        box-shadow: none !important;
         pointer-events: none !important;
     }
     .house-map-label {
@@ -339,29 +341,24 @@ $koorId = $isKoor ? $userData['id'] : '';
         line-height: 1.15 !important;
         font-weight: 700 !important;
         color: #ffffff !important;
-        border-radius: 4px !important;
-        padding: 2px 3px !important;
+        background: transparent !important; /* Tidak membuat kotak lagi */
+        border: none !important;            /* Hapus border kotak */
+        box-shadow: none !important;        /* Hapus shadow kotak */
+        border-radius: 0 !important;
+        padding: 0 !important;
         box-sizing: border-box !important;
         pointer-events: none !important;
         user-select: none !important;
         
-        /* Auto Wrapping agar tidak tembus kotak */
+        /* Auto Wrapping agar pas di dalam kotak kavling */
         word-wrap: break-word !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
         overflow: hidden !important;
         
-        box-shadow: 0 1px 4px rgba(0,0,0,0.45) !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.85) !important;
-    }
-    .house-map-label.label-lunas {
-        background: rgba(21, 128, 61, 0.84) !important; /* Hijau lunas */
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
-    }
-    .house-map-label.label-menunggak {
-        background: rgba(185, 28, 28, 0.88) !important; /* Merah nunggak */
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        /* Outline teks pekat agar sangat kontras dan jelas terbaca di atas kotak kavling */
+        text-shadow: 1px 1px 2px #000, -1px -1px 2px #000, 1px -1px 2px #000, -1px 1px 2px #000, 0 0 3px #000 !important;
     }
 </style>
 
@@ -1147,7 +1144,7 @@ $koorId = $isKoor ? $userData['id'] : '';
             .replace(/'/g, '&#39;');
     }
 
-    // Tampilkan Nama Warga di Dalam Kotak Kavling Saat Di-zoom (Wrapping & Tidak Tembus Kotak)
+    // Tampilkan Nama Warga di Dalam Kotak Kavling Saat Di-zoom (Teks Murni, Wrapping & Pas di Kotak)
     function updateHouseLabels() {
         if (!map || !labelLayerGroup) return;
         labelLayerGroup.clearLayers();
@@ -1156,7 +1153,7 @@ $koorId = $isKoor ? $userData['id'] : '';
         // Hanya muncul saat di-zoom agar tidak padat/menumpuk di overview peta
         if (currentZoom < 3) return;
 
-        let fontSize = (currentZoom >= 5) ? '12px' : (currentZoom >= 4 ? '10px' : '8px');
+        let fontSize = (currentZoom >= 5) ? '11px' : (currentZoom >= 4 ? '9px' : '7.5px');
 
         siteplanData.houses.forEach(house => {
             if (!house.has_coords || !house.polygon_coords || house.polygon_coords.length < 3) return;
@@ -1173,11 +1170,11 @@ $koorId = $isKoor ? $userData['id'] : '';
             const boxH = Math.abs(se.y - nw.y);
 
             // Jika kotak terlalu kecil pada zoom saat ini, jangan render teks
-            if (boxW < 24 || boxH < 16) return;
+            if (boxW < 20 || boxH < 14) return;
 
-            // Alokasikan 88-90% area kotak agar teks aman di dalam & tidak tembus garis batas
-            const labelW = Math.max(20, Math.floor(boxW * 0.90));
-            const labelH = Math.max(14, Math.floor(boxH * 0.88));
+            // Batasi ukuran teks agar strictly berada di dalam kotak poligon (tidak tembus kotak)
+            const labelW = Math.max(16, Math.floor(boxW * 0.92));
+            const labelH = Math.max(14, Math.floor(boxH * 0.90));
 
             // Ambil nama warga (jika kosong atau belum berpenghuni, gunakan alamat/nomor rumah)
             let rawName = (house.nama && house.nama.trim() !== '' && !house.nama.toLowerCase().includes('belum')) 
@@ -1185,15 +1182,14 @@ $koorId = $isKoor ? $userData['id'] : '';
                 : house.alamat;
 
             const safeName = escapeHtml(rawName);
-            const isLunas = (house.status_ipl === 'lunas');
             const center = bounds.getCenter();
 
             const labelIcon = L.divIcon({
                 className: 'house-map-label-wrapper',
-                html: `<div class="house-map-label ${isLunas ? 'label-lunas' : 'label-menunggak'}" 
+                html: `<div class="house-map-label" 
                             style="width: ${labelW}px; max-width: ${labelW}px; max-height: ${labelH}px; font-size: ${fontSize};"
                             title="${escapeHtml(house.alamat + ' - ' + (house.nama || ''))}">
-                            <span>${safeName}</span>
+                            <span style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; line-height: 1.1;">${safeName}</span>
                        </div>`,
                 iconSize: [labelW, labelH],
                 iconAnchor: [labelW / 2, labelH / 2]
