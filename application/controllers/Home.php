@@ -31,6 +31,12 @@ class Home extends CI_Controller
      */
     public function migrate()
     {
+        $userData = $this->session->userdata('username');
+        if (empty($userData) || (isset($userData['role']) && $userData['role'] !== 'admin')) {
+            show_error('Akses ditolak. Fitur ini hanya untuk Administrator.', 403);
+            return;
+        }
+
         if (function_exists('ensure_database_schema_exist')) {
             ensure_database_schema_exist(true);
         }
@@ -46,6 +52,12 @@ class Home extends CI_Controller
      */
     public function reset_siteplan_coords()
     {
+        $userData = $this->session->userdata('username');
+        if (empty($userData) || (isset($userData['role']) && $userData['role'] !== 'admin')) {
+            show_error('Akses ditolak. Fitur ini hanya untuk Administrator.', 403);
+            return;
+        }
+
         $this->db->update('master_rumah', ['polygon_coords' => null]);
         $affected = $this->db->affected_rows();
         echo json_encode([

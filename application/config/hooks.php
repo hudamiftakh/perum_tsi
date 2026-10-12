@@ -11,3 +11,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |	https://codeigniter.com/userguide3/general/hooks.html
 |
 */
+
+// Hook Autentikasi Global & Redirect Halaman Terakhir
+$hook['post_controller_constructor'][] = array(
+    'class'    => 'Auth_hook',
+    'function' => 'check_auth',
+    'filename' => 'Auth_hook.php',
+    'filepath' => 'hooks',
+    'params'   => array()
+);

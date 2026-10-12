@@ -34,8 +34,12 @@ class auth extends CI_Controller
         if (function_exists('catat_log_aktivitas')) {
             catat_log_aktivitas('Auth', 'Logout', 'User logout dari sistem');
         }
-        session_destroy();
-        redirect('./login');
+        $this->session->unset_userdata('redirect_url');
+        $this->session->unset_userdata('username');
+        if (function_exists('session_destroy')) {
+            @session_destroy();
+        }
+        redirect('login');
     }
 
     public function doLogin()
@@ -103,7 +107,7 @@ class auth extends CI_Controller
                 'login_at' => date('Y-m-d H:i:s'),
             ]);
 
-            redirect('./dashboard');
+            $this->_safe_redirect_after_login();
             return;
         }
 
@@ -132,7 +136,7 @@ class auth extends CI_Controller
                 'login_at' => date('Y-m-d H:i:s'),
             ]);
 
-            redirect('./dashboard');
+            $this->_safe_redirect_after_login();
             return;
         }
 
@@ -169,6 +173,38 @@ class auth extends CI_Controller
         if (empty($this->session->userdata['username'])) {
             redirect('./');
         }
+    }
+
+    /**
+     * Redirect aman setelah login (Mencegah Open Redirect & Mengembalikan ke Halaman Terakhir)
+     */
+    private function _safe_redirect_after_login()
+    {
+        // Regenerasi session ID untuk mencegah session fixation attack
+        $this->session->sess_regenerate(TRUE);
+
+        $redirect_url = $this->session->userdata('redirect_url');
+        $this->session->unset_userdata('redirect_url');
+
+        if (!empty($redirect_url)) {
+            $base_host = parse_url(base_url(), PHP_URL_HOST);
+            $target_host = parse_url($redirect_url, PHP_URL_HOST);
+
+            // Validasi: Host harus internal dan bukan route login/logout
+            $is_same_host = empty($target_host) || strtolower($target_host) === strtolower($base_host);
+            $is_not_auth = (
+                stripos($redirect_url, 'login') === false &&
+                stripos($redirect_url, 'logout') === false &&
+                stripos($redirect_url, 'dologin') === false
+            );
+
+            if ($is_same_host && $is_not_auth) {
+                redirect($redirect_url);
+                return;
+            }
+        }
+
+        redirect('dashboard');
     }
 }
 ?>
