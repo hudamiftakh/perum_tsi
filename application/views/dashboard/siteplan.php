@@ -374,6 +374,13 @@ $koorId = $isKoor ? $userData['id'] : '';
                         <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" onclick="resetSemuaPolygon()" title="Hapus semua koordinat polygon dan mulai plotting ulang">
                             <i class="ti ti-trash"></i> Reset Semua Kotak
                         </button>
+                        <?php if (!empty($log_siteplan)): ?>
+                        <button type="button" class="btn btn-info btn-sm d-flex align-items-center gap-1 text-white" data-bs-toggle="modal" data-bs-target="#modalLogAksesSiteplan" title="Lihat koordinator yang sudah membuka peta siteplan">
+                            <i class="ti ti-activity"></i>
+                            <span>Log Akses Koordinator</span>
+                            <span class="badge bg-white text-info ms-1"><?= $log_siteplan['sudah_akses'] ?>/<?= $log_siteplan['total_koor'] ?></span>
+                        </button>
+                        <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -381,6 +388,31 @@ $koorId = $isKoor ? $userData['id'] : '';
         </div>
     </div>
 </div>
+
+<?php if ($isAdmin && !empty($log_siteplan)): ?>
+<!-- Alert Monitoring Akses Koordinator (Hanya Muncul di Admin) -->
+<div class="alert alert-info border-info d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3 rounded-3 mb-3 shadow-sm">
+    <div class="d-flex align-items-center gap-2">
+        <div class="p-2 bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="ti ti-user-check fs-4"></i>
+        </div>
+        <div>
+            <span class="fw-bold text-dark">Monitoring Akses Koordinator:</span>
+            <span class="text-dark ms-1">
+                <strong><?= $log_siteplan['sudah_akses'] ?></strong> dari <strong><?= $log_siteplan['total_koor'] ?></strong> Koordinator Blok sudah membuka siteplan (<?= $log_siteplan['persen_akses'] ?>%).
+                <?php if ($log_siteplan['belum_akses'] > 0): ?>
+                    <span class="text-danger fw-semibold ms-1">(<?= $log_siteplan['belum_akses'] ?> belum membuka)</span>
+                <?php else: ?>
+                    <span class="text-success fw-semibold ms-1">(Semua sudah membuka ✓)</span>
+                <?php endif; ?>
+            </span>
+        </div>
+    </div>
+    <button type="button" class="btn btn-info btn-sm text-white px-3 rounded-pill fw-semibold shadow-xs" data-bs-toggle="modal" data-bs-target="#modalLogAksesSiteplan">
+        <i class="ti ti-list-details me-1"></i> Rincian Jam &amp; Device Akses
+    </button>
+</div>
+<?php endif; ?>
 
 <!-- KPI Ringkasan Status IPL -->
 <div class="row mb-3 g-2">
@@ -676,6 +708,198 @@ $koorId = $isKoor ? $userData['id'] : '';
         </div>
     </div>
 </div>
+
+<?php if ($isAdmin && !empty($log_siteplan)): ?>
+<!-- Modal Log Akses Siteplan (Khusus Admin) -->
+<div class="modal fade" id="modalLogAksesSiteplan" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-primary text-white">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="ti ti-history fs-5"></i>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0">Log Akses Siteplan Koordinator</h5>
+                        <p class="text-white-50 mb-0 small">Monitoring aktivitas koordinator membuka denah peta wilayah</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 p-md-4">
+                <!-- Ringkasan KPI Akses -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-light-primary border border-primary-subtle rounded-3 h-100">
+                            <span class="text-muted fs-2 text-uppercase fw-semibold">Total Koordinator</span>
+                            <h3 class="fw-bold mb-0 text-primary"><?= $log_siteplan['total_koor'] ?> <small class="fs-3 text-muted">Orang</small></h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-light-success border border-success-subtle rounded-3 h-100">
+                            <span class="text-success fs-2 text-uppercase fw-semibold">Sudah Mengakses</span>
+                            <h3 class="fw-bold mb-0 text-success"><?= $log_siteplan['sudah_akses'] ?> <small class="fs-3">(<?= $log_siteplan['persen_akses'] ?>%)</small></h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-light-danger border border-danger-subtle rounded-3 h-100">
+                            <span class="text-danger fs-2 text-uppercase fw-semibold">Belum Pernah Akses</span>
+                            <h3 class="fw-bold mb-0 text-danger"><?= $log_siteplan['belum_akses'] ?> <small class="fs-3 text-muted">Orang</small></h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-light border rounded-3 h-100">
+                            <span class="text-muted fs-2 text-uppercase fw-semibold">Riwayat Kunjungan</span>
+                            <h3 class="fw-bold mb-0 text-dark"><?= count($log_siteplan['riwayat_terbaru']) ?>+ <small class="fs-3 text-muted">Hits</small></h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nav Tabs -->
+                <ul class="nav nav-pills nav-fill mb-3 p-1 bg-light rounded-3" id="logTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-semibold py-2" id="tab-status-koor" data-bs-toggle="tab" data-bs-target="#content-status-koor" type="button" role="tab">
+                            <i class="ti ti-users me-1"></i> Status Keaktifan Koordinator
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold py-2" id="tab-riwayat-akses" data-bs-toggle="tab" data-bs-target="#content-riwayat-akses" type="button" role="tab">
+                            <i class="ti ti-clock-history me-1"></i> Riwayat Akses Real-Time
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Contents -->
+                <div class="tab-content" id="logTabsContent">
+                    <!-- Tab 1: Status Per Koordinator -->
+                    <div class="tab-pane fade show active" id="content-status-koor" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px;">No</th>
+                                        <th>Nama Koordinator Blok</th>
+                                        <th class="text-center" style="width: 140px;">Status</th>
+                                        <th>Kunjungan Terakhir (WIB)</th>
+                                        <th>Perangkat / Device</th>
+                                        <th class="text-center" style="width: 90px;">Total Buka</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    $noKoor = 1;
+                                    foreach ($log_siteplan['daftar_koor'] as $dk): 
+                                        $sudahBuka = !empty($dk['terakhir_akses']);
+                                    ?>
+                                    <tr>
+                                        <td><?= $noKoor++ ?></td>
+                                        <td>
+                                            <div class="fw-bold text-dark"><?= htmlspecialchars($dk['nama_koordinator']) ?></div>
+                                            <small class="text-muted">ID: #<?= $dk['id_koordinator'] ?></small>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if ($sudahBuka): ?>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill">
+                                                    <i class="ti ti-check me-1"></i> Sudah Akses
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill">
+                                                    <i class="ti ti-x me-1"></i> Belum Buka
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($sudahBuka): ?>
+                                                <div class="fw-semibold text-dark">
+                                                    <i class="ti ti-calendar-time text-primary me-1"></i>
+                                                    <?= date('d M Y, H:i', strtotime($dk['terakhir_akses'])) ?> WIB
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-muted fst-italic">- Belum pernah membuka -</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if (!empty($dk['last_device'])): ?>
+                                                <span class="badge bg-light text-dark border">
+                                                    <?= htmlspecialchars($dk['last_device']) ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $dk['total_akses'] > 0 ? 'bg-primary' : 'bg-secondary' ?> rounded-pill px-2">
+                                                <?= (int)$dk['total_akses'] ?>x
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Riwayat Real-Time -->
+                    <div class="tab-pane fade" id="content-riwayat-akses" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px;">No</th>
+                                        <th>Pengguna / Koordinator</th>
+                                        <th>Role</th>
+                                        <th>Waktu Akses (WIB)</th>
+                                        <th>Perangkat</th>
+                                        <th>IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    $noRiw = 1;
+                                    foreach ($log_siteplan['riwayat_terbaru'] as $rw): 
+                                    ?>
+                                    <tr>
+                                        <td><?= $noRiw++ ?></td>
+                                        <td>
+                                            <div class="fw-bold text-dark"><?= htmlspecialchars($rw['nama']) ?></div>
+                                            <?php if (!empty($rw['blok'])): ?>
+                                                <small class="text-primary"><i class="ti ti-map-pin me-1"></i><?= htmlspecialchars($rw['blok']) ?></small>
+                                            <?php else: ?>
+                                                <small class="text-muted"><?= htmlspecialchars($rw['username'] ?? '-') ?></small>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span class="badge <?= $rw['role'] == 'koordinator' ? 'bg-success' : 'bg-primary' ?> text-uppercase" style="font-size:0.7rem;">
+                                                <?= htmlspecialchars($rw['role']) ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold text-dark">
+                                                <i class="ti ti-clock text-info me-1"></i>
+                                                <?= date('d M Y, H:i:s', strtotime($rw['accessed_at'])) ?> WIB
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                <?= htmlspecialchars($rw['device'] ?: 'Browser') ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <code class="small text-muted"><?= htmlspecialchars($rw['ip_address'] ?: '-') ?></code>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Leaflet JS Local -->
 <script src="<?= base_url('assets/siteplan/leaflet/leaflet.js') ?>"></script>

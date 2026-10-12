@@ -152,7 +152,92 @@ if (!function_exists('ensure_log_tables_exist')) {
             ");
         }
 
+        // 7. Log Akses Siteplan (Pemantauan Kunjungan Koordinator)
+        if (!$CI->db->table_exists('log_akses_siteplan')) {
+            $CI->db->query("
+                CREATE TABLE IF NOT EXISTS `log_akses_siteplan` (
+                    `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    `user_id` INT(11) DEFAULT NULL,
+                    `username` VARCHAR(100) DEFAULT NULL,
+                    `nama` VARCHAR(255) DEFAULT NULL,
+                    `role` VARCHAR(50) DEFAULT NULL,
+                    `id_koordinator` INT(11) DEFAULT NULL,
+                    `blok` VARCHAR(150) DEFAULT NULL,
+                    `ip_address` VARCHAR(45) DEFAULT NULL,
+                    `user_agent` TEXT DEFAULT NULL,
+                    `device` VARCHAR(100) DEFAULT NULL,
+                    `filter_tahun` INT(4) DEFAULT NULL,
+                    `filter_bulan` INT(2) DEFAULT NULL,
+                    `accessed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`id`),
+                    KEY `idx_accessed_at` (`accessed_at`),
+                    KEY `idx_user_id` (`user_id`),
+                    KEY `idx_role` (`role`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Log akses halaman siteplan';
+            ");
+        }
+
         $checked = true;
+    }
+}
+
+/**
+ * Catat log akses halaman siteplan
+ */
+if (!function_exists('catat_log_akses_siteplan')) {
+    function catat_log_akses_siteplan($filter_tahun = null, $filter_bulan = null)
+    {
+        ensure_log_tables_exist();
+        $CI =& get_instance();
+        $sess = $CI->session->userdata('username');
+        if (!$sess || !is_array($sess)) return;
+
+        $userId = $sess['id'] ?? null;
+        $role = $sess['role'] ?? 'guest';
+        $nama = $sess['nama'] ?? ($sess['username'] ?? 'User');
+        $username = $sess['username'] ?? '';
+
+        // Ambil info blok jika role adalah koordinator
+        $id_koor = ($role === 'koordinator') ? $userId : null;
+        $blok = null;
+        if ($id_koor) {
+            $koor = $CI->db->select('nama')->where('id', $id_koor)->get('master_koordinator_blok')->row_array();
+            $blok = $koor['nama'] ?? ('Koordinator ID ' . $id_koor);
+        }
+
+        // Deteksi jenis perangkat pengguna
+        $ua = $CI->input->user_agent();
+        $device = 'Laptop / PC';
+        if (preg_match('/iPhone/i', $ua)) {
+            $device = 'iPhone';
+        } elseif (preg_match('/iPad/i', $ua)) {
+            $device = 'iPad';
+        } elseif (preg_match('/Android/i', $ua)) {
+            $device = 'HP Android';
+        } elseif (preg_match('/Mobile/i', $ua)) {
+            $device = 'Smartphone';
+        } elseif (preg_match('/Macintosh|Mac OS/i', $ua)) {
+            $device = 'Mac Desktop';
+        } elseif (preg_match('/Windows/i', $ua)) {
+            $device = 'Windows PC';
+        } elseif (preg_match('/Linux/i', $ua)) {
+            $device = 'Linux PC';
+        }
+
+        $CI->db->insert('log_akses_siteplan', [
+            'user_id'        => $userId,
+            'username'       => $username,
+            'nama'           => $nama,
+            'role'           => $role,
+            'id_koordinator' => $id_koor,
+            'blok'           => $blok,
+            'ip_address'     => $CI->input->ip_address(),
+            'user_agent'     => $ua,
+            'device'         => $device,
+            'filter_tahun'   => $filter_tahun,
+            'filter_bulan'   => $filter_bulan,
+            'accessed_at'    => date('Y-m-d H:i:s')
+        ]);
     }
 }
 

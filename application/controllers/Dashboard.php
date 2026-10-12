@@ -4292,6 +4292,9 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	{
 		$this->checkSession();
 		$this->_create_log_tables();
+		if (function_exists('catat_log_akses_siteplan')) {
+			catat_log_akses_siteplan($tahun, $bulan);
+		}
 
 		$tahun_sekarang = (int)date('Y');
 		$bulan_sekarang = (int)date('m');
@@ -4301,6 +4304,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$bulan = ($bulan !== null && $bulan !== '') ? (int)$bulan : $bulan_sekarang;
 		$userData = $this->session->userdata('username');
 		$is_koordinator = (isset($userData['role']) && $userData['role'] === 'koordinator');
+		$isAdmin = (isset($userData['role']) && $userData['role'] === 'admin');
+
 		if ($is_koordinator) {
 			$id_koor = $userData['id'];
 		} else {
@@ -4317,6 +4322,49 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$data['koordinators'] = $koordinators;
 		$data['siteplan_data'] = $siteplan_data;
 		$data['userData'] = $userData;
+
+		// Khusus Admin: Ambil data log akses siteplan koordinator
+		if ($isAdmin) {
+			$total_semua_koor = $this->db->query("SELECT COUNT(*) as total FROM master_koordinator_blok")->row_array()['total'] ?? 0;
+
+			$koor_sudah_akses = $this->db->query("
+				SELECT COUNT(DISTINCT user_id) as total
+				FROM log_akses_siteplan
+				WHERE role = 'koordinator'
+			")->row_array()['total'] ?? 0;
+
+			$status_koordinator = $this->db->query("
+				SELECT k.id as id_koordinator, k.nama as nama_koordinator,
+				       MAX(l.accessed_at) as terakhir_akses,
+				       COUNT(l.id) as total_akses,
+				       (SELECT l2.device FROM log_akses_siteplan l2 WHERE l2.user_id = k.id AND l2.role = 'koordinator' ORDER BY l2.id DESC LIMIT 1) as last_device,
+				       (SELECT l3.ip_address FROM log_akses_siteplan l3 WHERE l3.user_id = k.id AND l3.role = 'koordinator' ORDER BY l3.id DESC LIMIT 1) as last_ip
+				FROM master_koordinator_blok k
+				LEFT JOIN log_akses_siteplan l ON l.user_id = k.id AND l.role = 'koordinator'
+				GROUP BY k.id, k.nama
+				ORDER BY (MAX(l.accessed_at) IS NOT NULL) DESC, MAX(l.accessed_at) DESC, k.nama ASC
+			")->result_array();
+
+			$riwayat_akses_terbaru = $this->db->query("
+				SELECT l.*, k.nama as nama_blok
+				FROM log_akses_siteplan l
+				LEFT JOIN master_koordinator_blok k ON l.id_koordinator = k.id
+				ORDER BY l.id DESC
+				LIMIT 30
+			")->result_array();
+
+			$data['log_siteplan'] = [
+				'total_koor'      => (int)$total_semua_koor,
+				'sudah_akses'     => (int)$koor_sudah_akses,
+				'belum_akses'     => max(0, (int)$total_semua_koor - (int)$koor_sudah_akses),
+				'persen_akses'    => ($total_semua_koor > 0) ? round(($koor_sudah_akses / $total_semua_koor) * 100) : 0,
+				'daftar_koor'     => $status_koordinator,
+				'riwayat_terbaru' => $riwayat_akses_terbaru
+			];
+		} else {
+			$data['log_siteplan'] = null;
+		}
+
 		$data['halaman'] = 'dashboard/siteplan';
 
 		$this->load->view('modul', $data);

@@ -174,37 +174,115 @@
             </div>
         </div>
 
-        <!-- Tombol Aksi Cepat (Quick Actions) -->
+        <!-- Tombol Aksi Cepat (Quick Actions dengan Karikatur 3D Berwarna) -->
+        <style>
+            .quick-action-card {
+                border-radius: 18px;
+                border: 1.5px solid #e2e8f0;
+                background: #ffffff;
+                padding: 16px 14px;
+                text-decoration: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 10px;
+                transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+                position: relative;
+                overflow: hidden;
+                height: 100%;
+            }
+            .quick-action-card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+            }
+            .quick-action-card.card-bayar { background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); }
+            .quick-action-card.card-bayar:hover { border-color: #10b981; }
+
+            .quick-action-card.card-rekap { background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); }
+            .quick-action-card.card-rekap:hover { border-color: #3b82f6; }
+
+            .quick-action-card.card-kinerja { background: linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%); }
+            .quick-action-card.card-kinerja:hover { border-color: #8b5cf6; }
+
+            .quick-action-card.card-warga { background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); }
+            .quick-action-card.card-warga:hover { border-color: #f59e0b; }
+
+            .karikatur-icon-img {
+                width: 72px;
+                height: 72px;
+                object-fit: cover;
+                border-radius: 16px;
+                box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+                transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                border: 2px solid #ffffff;
+            }
+            .quick-action-card:hover .karikatur-icon-img {
+                transform: scale(1.12) rotate(-4deg);
+            }
+            .quick-action-title {
+                font-weight: 700;
+                font-size: 0.95rem;
+                color: #1e293b;
+                line-height: 1.25;
+            }
+            .quick-action-desc {
+                font-size: 0.74rem;
+                color: #64748b;
+                line-height: 1.2;
+                margin-top: 2px;
+            }
+        </style>
+
         <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-3">
-                <h6 class="fw-bold text-dark mb-3"><i class="ti ti-bolt text-warning me-1"></i> Aksi Cepat Koordinator</h6>
-                <div class="row g-2">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <span class="p-1 rounded-circle bg-warning-subtle text-warning d-inline-flex"><i class="ti ti-bolt fs-5"></i></span>
+                        Aksi Cepat Koordinator
+                    </h6>
+                    <span class="badge bg-light text-muted small fw-normal">Pintas Akses Lapangan</span>
+                </div>
+                <div class="row g-2 g-md-3">
+                    <!-- 1. Input Pembayaran -->
                     <div class="col-6 col-md-3">
-                        <a href="<?= base_url('pembayaran'); ?>" class="btn btn-success w-100 py-3 rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center gap-1">
-                            <i class="bi bi-cash-coin fs-4"></i>
-                            <span class="fw-bold small">Input Pembayaran</span>
-                            <small class="text-white-50" style="font-size:0.72rem">Catat iuran warga</small>
+                        <a href="<?= base_url('pembayaran'); ?>" class="quick-action-card card-bayar">
+                            <img src="<?= base_url('assets/images/karikatur/bayar.jpg') ?>" alt="Input Pembayaran" class="karikatur-icon-img">
+                            <div>
+                                <div class="quick-action-title text-success">Input Pembayaran</div>
+                                <div class="quick-action-desc">Catat iuran warga</div>
+                            </div>
                         </a>
                     </div>
+                    <!-- 2. Rekap Rapel Blok -->
                     <div class="col-6 col-md-3">
-                        <a href="<?= base_url('laporan-rekap-rapel'); ?>" class="btn btn-primary w-100 py-3 rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center gap-1">
-                            <i class="bi bi-table fs-4"></i>
-                            <span class="fw-bold small">Rekap Rapel Blok</span>
-                            <small class="text-white-50" style="font-size:0.72rem">Tabel setoran tahunan</small>
+                        <a href="<?= base_url('laporan-rekap-rapel'); ?>" class="quick-action-card card-rekap">
+                            <img src="<?= base_url('assets/images/karikatur/rekap.jpg') ?>" alt="Rekap Rapel Blok" class="karikatur-icon-img">
+                            <div>
+                                <div class="quick-action-title text-primary">Rekap Rapel Blok</div>
+                                <div class="quick-action-desc">Tabel setoran tahunan</div>
+                            </div>
                         </a>
                     </div>
+                    <!-- 3. Log Kinerja Entri -->
                     <div class="col-6 col-md-3">
-                        <a href="<?= base_url('log-koordinator'); ?>" class="btn btn-info text-white w-100 py-3 rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center gap-1">
-                            <i class="bi bi-graph-up fs-4"></i>
-                            <span class="fw-bold small">Log Kinerja Entri</span>
-                            <small class="text-white-50" style="font-size:0.72rem">Cek rekap nunggak</small>
+                        <a href="<?= base_url('log-koordinator'); ?>" class="quick-action-card card-kinerja">
+                            <img src="<?= base_url('assets/images/karikatur/kinerja.jpg') ?>" alt="Log Kinerja Entri" class="karikatur-icon-img">
+                            <div>
+                                <div class="quick-action-title" style="color: #7c3aed;">Log Kinerja Entri</div>
+                                <div class="quick-action-desc">Cek rekap nunggak</div>
+                            </div>
                         </a>
                     </div>
+                    <!-- 4. Pendataan Warga -->
                     <div class="col-6 col-md-3">
-                        <a href="<?= base_url('pendataan-keluarga'); ?>" class="btn btn-warning text-dark w-100 py-3 rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center gap-1">
-                            <i class="bi bi-people fs-4"></i>
-                            <span class="fw-bold small">Pendataan Warga</span>
-                            <small class="text-dark-50" style="font-size:0.72rem">Kelola kontak & keluarga</small>
+                        <a href="<?= base_url('pendataan-keluarga'); ?>" class="quick-action-card card-warga">
+                            <img src="<?= base_url('assets/images/karikatur/warga.jpg') ?>" alt="Pendataan Warga" class="karikatur-icon-img">
+                            <div>
+                                <div class="quick-action-title" style="color: #d97706 !important;">Pendataan Warga</div>
+                                <div class="quick-action-desc">Kelola kontak &amp; keluarga</div>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -216,7 +294,7 @@
              style="background: linear-gradient(135deg, #ffffff 0%, #fff7ed 60%, #ffedd5 100%); border: 1.5px solid #fed7aa !important; border-radius: 20px;">
             <div class="card-body p-4 position-relative" style="z-index: 2;">
                 <div class="row align-items-center g-3">
-                    <div class="col-lg-8">
+                    <div class="col-lg-7">
                         <div class="d-flex align-items-center gap-2 mb-2">
                             <span class="badge bg-danger rounded-pill px-3 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="font-size:0.75rem;">
                                 <i class="ti ti-sparkles"></i> FITUR BARU KOORDINATOR
@@ -243,17 +321,20 @@
                             </span>
                         </div>
                     </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <div class="d-inline-flex flex-column gap-2 w-100 w-lg-auto">
-                            <a href="<?= base_url('siteplan?id_koordinator=' . $id_koor) ?>" class="btn btn-danger px-4 py-2 rounded-pill shadow-sm fw-bold d-inline-flex align-items-center justify-content-center gap-2">
-                                <i class="ti ti-map-2"></i>
-                                <span>Buka Siteplan Blok Saya</span>
-                                <i class="ti ti-arrow-right"></i>
-                            </a>
-                            <a href="<?= base_url('siteplan/pdf?id_koordinator=' . $id_koor) ?>" target="_blank" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center gap-2 bg-white">
-                                <i class="ti ti-printer"></i>
-                                <span>Cetak Denah Blok (PDF)</span>
-                            </a>
+                    <div class="col-lg-5 text-lg-end">
+                        <div class="d-flex align-items-center justify-content-lg-end gap-3 flex-wrap">
+                            <img src="<?= base_url('assets/images/karikatur/siteplan.jpg') ?>" alt="Siteplan 3D" style="width: 82px; height: 82px; object-fit: cover; border-radius: 18px; box-shadow: 0 6px 18px rgba(234, 88, 12, 0.25); border: 2px solid #ffffff;">
+                            <div class="d-inline-flex flex-column gap-2 flex-grow-1 flex-lg-grow-0">
+                                <a href="<?= base_url('siteplan?id_koordinator=' . $id_koor) ?>" class="btn btn-danger px-4 py-2 rounded-pill shadow-sm fw-bold d-inline-flex align-items-center justify-content-center gap-2">
+                                    <i class="ti ti-map-2"></i>
+                                    <span>Buka Siteplan Blok Saya</span>
+                                    <i class="ti ti-arrow-right"></i>
+                                </a>
+                                <a href="<?= base_url('siteplan/pdf?id_koordinator=' . $id_koor) ?>" target="_blank" class="btn btn-outline-danger px-3 py-2 rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center gap-2 bg-white">
+                                    <i class="ti ti-printer"></i>
+                                    <span>Cetak Denah Blok (PDF)</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
