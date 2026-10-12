@@ -1,203 +1,198 @@
--- ===================================================================
--- SCRIPT SYNC KOORDINAT SITEPLAN MASTER_RUMAH (TOTAL: 198 UNIT)
--- Jalankan di database online (via MySQL CLI / SSH / phpMyAdmin)
--- ===================================================================
-
-UPDATE `master_rumah` SET `polygon_coords` = '[[83.707843,-55.279688],[83.676169,-51.359063],[83.169019,-52.245],[83.203222,-56.165625]]' WHERE `id` = 1; -- Ruha 1 (Hikmah Store)
-UPDATE `master_rumah` SET `polygon_coords` = '[[83.669195,-50.498438],[83.637326,-46.577813],[83.127076,-47.46375],[83.161488,-51.384375]]' WHERE `id` = 2; -- Ruha 3a ()
-UPDATE `master_rumah` SET `polygon_coords` = '[[83.63031,-45.717188],[83.598247,-41.796563],[83.084877,-42.6825],[83.119499,-46.603125]]' WHERE `id` = 3; -- Ruha 5 (Alfa madura)
-UPDATE `master_rumah` SET `polygon_coords` = '[[83.591187,-40.935938],[83.558928,-37.015313],[83.04242,-37.90125],[83.077254,-41.821875]]' WHERE `id` = 4; -- Ruha 6 (Dee shop)
-UPDATE `master_rumah` SET `polygon_coords` = '[[83.551825,-36.154688],[83.519369,-32.234063],[82.999704,-33.12],[83.034751,-37.040625]]' WHERE `id` = 5; -- Ruha 7 (Dee shop)
-UPDATE `master_rumah` SET `polygon_coords` = '[[83.058584,-67.44375],[82.950689,-59.470313],[82.658137,-59.775],[82.770487,-67.748438]]' WHERE `id` = 6; -- TSI Raya 1 (Hilmi Hanif)
-UPDATE `master_rumah` SET `polygon_coords` = '[[82.687099,-67.834375],[82.573461,-59.860938],[82.265345,-60.165625],[82.38367,-68.139063]]' WHERE `id` = 7; -- TSI Raya 2 (Ratih Rahmasari)
-UPDATE `master_rumah` SET `polygon_coords` = '[[82.295847,-68.225],[82.176165,-60.251563],[81.851672,-60.55625],[81.976285,-68.529688]]' WHERE `id` = 8; -- TSI Raya 3 (Warno)
-UPDATE `master_rumah` SET `polygon_coords` = '[[81.883795,-68.615625],[81.757755,-60.642188],[81.416032,-60.946875],[81.54726,-68.920313]]' WHERE `id` = 9; -- TSI Raya 3a (Wahi rical/Jantje Wairisal)
-UPDATE `master_rumah` SET `polygon_coords` = '[[81.44986,-69.00625],[81.317132,-61.032813],[80.957286,-61.3375],[81.095471,-69.310938]]' WHERE `id` = 10; -- TSI Raya 5 (Rachel Lusiana)
-UPDATE `master_rumah` SET `polygon_coords` = '[[80.992907,-69.396875],[80.853143,-61.423438],[80.474238,-61.728125],[80.61974,-69.701563]]' WHERE `id` = 11; -- TSI Raya 6 (Melinda Losita)
-UPDATE `master_rumah` SET `polygon_coords` = '[[80.511745,-69.7875],[80.364583,-61.814063],[79.965637,-62.11875],[80.118832,-70.092188]]' WHERE `id` = 12; -- TSI Raya 7 (Ari Kurniawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[80.005126,-70.178125],[79.850186,-62.204688],[79.430174,-62.509375],[79.591455,-70.482813]]' WHERE `id` = 13; -- TSI Raya 8 (Afdolu Nasikin)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.707305,-58.879688],[79.667165,-56.125],[78.569007,-56.884375],[78.61336,-59.639063]]' WHERE `id` = 14; -- TSI Blok I‐1 (Anang Abramzah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.658333,-55.520313],[79.618004,-52.765625],[78.514688,-53.525],[78.559249,-56.279688]]' WHERE `id` = 15; -- TSI Blok II‐1 (Rio Yudhoprawiro)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.609131,-52.160938],[79.568612,-49.40625],[78.460115,-50.165625],[78.504884,-52.920313]]' WHERE `id` = 16; -- TSI Blok II‐2 (Syaifudin Dzulkifli)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.559697,-48.801563],[79.518988,-46.046875],[78.405286,-46.80625],[78.450265,-49.560938]]' WHERE `id` = 17; -- TSI Blok II‐3 (Nur Qumaidah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.510031,-45.442188],[79.46913,-42.6875],[78.3502,-43.446875],[78.395389,-46.201563]]' WHERE `id` = 18; -- TSI Blok II‐3A (Wiko Ferdiansyah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.460131,-42.082813],[79.419038,-39.328125],[78.294855,-40.0875],[78.340257,-42.842188]]' WHERE `id` = 19; -- TSI Blok II‐5 (Alfonsus De Deo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.409996,-38.723438],[79.36871,-35.96875],[78.239252,-36.728125],[78.284866,-39.482813]]' WHERE `id` = 20; -- TSI Blok II‐6 (Henry Faisal)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.359626,-35.364063],[79.318145,-32.609375],[78.183388,-33.36875],[78.229215,-36.123438]]' WHERE `id` = 21; -- TSI Blok II‐7 (Edy Susanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.309018,-32.004688],[79.267343,-29.25],[78.127262,-30.009375],[78.173305,-32.764063]]' WHERE `id` = 22; -- TSI Blok II‐8 (Anang Abramzah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[78.223796,-59.892188],[78.172204,-56.793164],[76.91763,-57.552539],[76.974604,-60.651563]]' WHERE `id` = 23; -- TSI Blok II‐9 (Denny Aditya P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[78.160849,-56.112891],[78.108985,-53.013867],[76.847818,-53.773242],[76.90509,-56.872266]]' WHERE `id` = 24; -- TSI Blok II‐10 (Koko Anantyo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[78.097571,-52.333594],[78.045434,-49.23457],[76.77764,-49.993945],[76.835213,-53.092969]]' WHERE `id` = 25; -- TSI Blok II‐11 (Andri Susanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[78.033959,-48.554297],[77.981547,-45.455273],[76.707094,-46.214648],[76.764969,-49.313672]]' WHERE `id` = 26; -- TSI Blok II‐11A (M Masrufun)
-UPDATE `master_rumah` SET `polygon_coords` = '[[77.970012,-44.775],[77.917325,-41.675977],[76.636179,-42.435352],[76.694357,-45.534375]]' WHERE `id` = 27; -- TSI Blok II‐12 (Eko Bagus P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[77.905729,-40.995703],[77.852764,-37.89668],[76.564892,-38.656055],[76.623375,-41.755078]]' WHERE `id` = 28; -- TSI Blok II‐12A (Oki Prayogo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[77.841107,-37.216406],[77.787864,-34.117383],[76.493232,-34.876758],[76.552021,-37.975781]]' WHERE `id` = 29; -- TSI Blok II‐15 (Rizky Dwi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[77.776146,-33.437109],[77.722622,-30.338086],[76.421197,-31.097461],[76.480294,-34.196484]]' WHERE `id` = 30; -- TSI Blok II‐16 (Wiwik Indahyani)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.842171,-61.664063],[74.792509,-59.005469],[73.37353,-59.638281],[73.424412,-62.296875]]' WHERE `id` = 31; -- TSI Blok III‐1 (Sukma)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.781586,-58.421875],[74.73173,-55.763281],[73.311273,-56.396094],[73.36234,-59.054688]]' WHERE `id` = 32; -- TSI Blok III‐2 (Septian Ardiansyah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.720765,-55.179688],[74.670714,-52.521094],[73.248789,-53.153906],[73.300043,-55.8125]]' WHERE `id` = 33; -- TSI Blok III‐3 (Galuh Fandy A)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.659706,-51.9375],[74.609461,-49.278906],[73.186079,-49.911719],[73.237518,-52.570313]]' WHERE `id` = 34; -- TSI Blok III‐3A (Aji Irawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.59841,-48.695313],[74.547968,-46.036719],[73.12314,-46.669531],[73.174767,-49.328125]]' WHERE `id` = 35; -- TSI Blok III‐5 (Dena)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.536874,-45.453125],[74.486236,-42.794531],[73.059973,-43.427344],[73.111787,-46.085938]]' WHERE `id` = 36; -- TSI Blok III‐6 (Galuh Putra Bagus)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.475098,-42.210938],[74.424263,-39.552344],[72.996576,-40.185156],[73.048578,-42.84375]]' WHERE `id` = 37; -- TSI Blok III‐7 (Nur Nindyatama)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.413082,-38.96875],[74.362049,-36.310156],[72.932948,-36.942969],[72.98514,-39.601563]]' WHERE `id` = 38; -- TSI Blok III‐8 (Adnan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.350824,-35.726563],[74.299592,-33.067969],[72.86909,-33.700781],[72.921471,-36.359375]]' WHERE `id` = 39; -- TSI Blok III‐9 (Adieb)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.923765,-62.507813],[72.866108,-59.516895],[71.273644,-60.149707],[71.332326,-63.140625]]' WHERE `id` = 40; -- TSI Blok IIIB‐1 (Indra Irawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.853426,-58.860352],[72.795538,-55.869434],[71.20184,-56.502246],[71.260739,-59.493164]]' WHERE `id` = 41; -- TSI Blok IIIB‐2 (Rama Prakoso)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.782806,-55.212891],[72.724686,-52.221973],[71.129771,-52.854785],[71.188888,-55.845703]]' WHERE `id` = 42; -- TSI Blok IIIB‐3 (Raditya Erlangga)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.711903,-51.56543],[72.653552,-48.574512],[71.057436,-49.207324],[71.11677,-52.198242]]' WHERE `id` = 43; -- TSI Blok IIIB‐3A (Gunawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.640718,-47.917969],[72.582134,-44.927051],[70.984833,-45.559863],[71.044387,-48.550781]]' WHERE `id` = 44; -- TSI Blok IIIB‐5 (Oky)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.569248,-44.270508],[72.51043,-41.27959],[70.911962,-41.912402],[70.971736,-44.90332]]' WHERE `id` = 45; -- TSI Blok IIIB‐6 (Andi Tri Haryanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.497494,-40.623047],[72.438441,-37.632129],[70.838823,-38.264941],[70.898817,-41.255859]]' WHERE `id` = 46; -- TSI Blok IIIB‐7 (Arif Rachmansyah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.425453,-36.975586],[72.366165,-33.984668],[70.765414,-34.61748],[70.825629,-37.608398]]' WHERE `id` = 47; -- TSI Blok IIIB‐8 (Christian Agave)
-UPDATE `master_rumah` SET `polygon_coords` = '[[79.471747,-70.56875],[79.308632,-62.595313],[78.866479,-62.9],[79.036258,-70.873438]]' WHERE `id` = 48; -- TSI Raya 9 (Junior Sunyafian)
-UPDATE `master_rumah` SET `polygon_coords` = '[[78.910243,-70.959375],[78.738536,-62.985938],[78.273121,-63.290625],[78.451829,-71.264063]]' WHERE `id` = 49; -- TSI Raya 10 (Aris Choirul)
-UPDATE `master_rumah` SET `polygon_coords` = '[[78.319186,-71.35],[78.138455,-63.376563],[77.648608,-63.68125],[77.836691,-71.654688]]' WHERE `id` = 50; -- TSI Raya 11 (Reza Permana)
-UPDATE `master_rumah` SET `polygon_coords` = '[[77.697088,-71.740625],[77.50688,-63.767188],[76.991379,-64.071875],[77.189307,-72.045313]]' WHERE `id` = 51; -- TSI Raya 11A (Yopi Ramdhani)
-UPDATE `master_rumah` SET `polygon_coords` = '[[77.042397,-72.13125],[76.842239,-64.157813],[76.299815,-64.4625],[76.508073,-72.435938]]' WHERE `id` = 52; -- TSI Raya 11B (Prihatmoro)
-UPDATE `master_rumah` SET `polygon_coords` = '[[76.353494,-72.521875],[76.142896,-64.548438],[75.572225,-64.853125],[75.79132,-72.826563]]' WHERE `id` = 53; -- TSI Raya 12 (Defit Sugianto/vivi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[75.628697,-72.9125],[75.407148,-64.939063],[74.806859,-65.24375],[75.037315,-73.217188]]' WHERE `id` = 54; -- TSI Raya 12A (Giovanni Anggasta)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.866258,-73.303125],[74.633229,-65.329688],[74.001897,-65.634375],[74.24426,-73.607813]]' WHERE `id` = 55; -- TSI Raya 12B (Firman Pambudi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.064363,-73.69375],[73.819306,-65.720313],[73.155459,-66.025],[73.410291,-73.998438]]' WHERE `id` = 56; -- TSI Raya 15 (Solikin)
-UPDATE `master_rumah` SET `polygon_coords` = '[[73.221138,-74.084375],[72.963485,-66.110938],[72.265602,-66.415625],[72.533485,-74.389063]]' WHERE `id` = 57; -- TSI Raya 15B (Achmad Choirul A)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.334643,-74.475],[72.063809,-66.501563],[71.330326,-66.80625],[71.611856,-74.779688]]' WHERE `id` = 58; -- TSI Raya 16 (M Nugrah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[71.402881,-74.865625],[71.118266,-66.892188],[70.347573,-67.196875],[70.643366,-75.170313]]' WHERE `id` = 59; -- TSI Raya 16B (Miftahul Faridi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[70.423802,-75.25625],[70.124788,-67.282813],[69.315239,-67.5875],[69.625921,-75.560938]]' WHERE `id` = 60; -- TSI Raya 17 (Satriya)
-UPDATE `master_rumah` SET `polygon_coords` = '[[69.395302,-75.646875],[69.081259,-67.673438],[68.231174,-67.978125],[68.557385,-75.951563]]' WHERE `id` = 61; -- TSI Raya 18 (Arif)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.315235,-76.0375],[67.985521,-68.064063],[67.093193,-68.36875],[67.435583,-76.342188]]' WHERE `id` = 62; -- TSI Raya 19 (Erwin Cristiono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[67.18142,-76.428125],[66.835383,-68.454688],[65.899088,-68.759375],[66.258313,-76.732813]]' WHERE `id` = 63; -- TSI Raya 20 (Hendi Sandi Putra)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.842171,-46.546875],[74.752665,-43.952344],[73.332715,-44.585156],[73.424412,-47.179688]]' WHERE `id` = 64; -- TSI Blok IV‐1 (Alex Suhariyanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.732948,-43.382813],[74.642812,-40.788281],[73.220222,-41.421094],[73.31252,-44.015625]]' WHERE `id` = 65; -- TSI Blok IV‐2 (R Hanindyo Sasongko)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.622957,-40.21875],[74.532187,-37.624219],[73.106991,-38.257031],[73.199895,-40.851563]]' WHERE `id` = 66; -- TSI Blok IV‐3 (Aris Nashari)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.512193,-37.054688],[74.420785,-34.460156],[72.993019,-35.092969],[73.086531,-37.6875]]' WHERE `id` = 67; -- TSI Blok IV‐3A (Adnyana Satrio)
-UPDATE `master_rumah` SET `polygon_coords` = '[[74.40065,-33.890625],[74.308601,-31.296094],[72.8783,-31.928906],[72.972424,-34.523438]]' WHERE `id` = 68; -- TSI Blok IV‐5 (Argi Yudha P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.923765,-47.390625],[72.808261,-44.147461],[71.214785,-44.780273],[71.332326,-48.023438]]' WHERE `id` = 69; -- TSI Blok IV‐6 (Cahya Eka P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.782806,-43.435547],[72.666377,-40.192383],[71.070476,-40.825195],[71.188888,-44.068359]]' WHERE `id` = 70; -- TSI Blok IV‐7 (Arif Syaifudin)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.640718,-39.480469],[72.523358,-36.237305],[70.925099,-36.870117],[71.044387,-40.113281]]' WHERE `id` = 71; -- TSI Blok IV‐8 (Rafles E Alexander)
-UPDATE `master_rumah` SET `polygon_coords` = '[[72.497494,-35.525391],[72.379196,-32.282227],[70.778648,-32.915039],[70.898817,-36.158203]]' WHERE `id` = 72; -- TSI Blok IV‐9 (Arizky Syahputra)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.991649,-76.81875],[65.628632,-68.845313],[64.646635,-69.15],[65.023352,-77.123438]]' WHERE `id` = 73; -- TSI Raya 21 (Eko Marsudi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[64.743698,-77.209375],[64.363044,-69.235938],[63.333611,-69.540625],[63.728477,-77.514063]]' WHERE `id` = 74; -- TSI Raya 22 (Dwi Yulianto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[63.435344,-77.6],[63.036397,-69.626563],[61.95781,-69.93125],[62.371476,-77.904688]]' WHERE `id` = 75; -- TSI Raya 23 (Wahyu Agung Prasetyo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.748492,-62.746875],[68.643756,-59.683887],[66.672475,-60.443262],[66.786367,-63.50625]]' WHERE `id` = 76; -- TSI Blok V‐1 (Firdha)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.620699,-59.011523],[68.515363,-55.948535],[66.532868,-56.70791],[66.647404,-59.770898]]' WHERE `id` = 77; -- TSI Blok V‐2 (Dimas Maulana)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.492174,-55.276172],[68.386234,-52.213184],[66.392473,-52.972559],[66.507655,-56.035547]]' WHERE `id` = 78; -- TSI Blok V‐3 (Fuad Hidayatullah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.362913,-51.54082],[68.256367,-48.477832],[66.251287,-49.237207],[66.367118,-52.300195]]' WHERE `id` = 79; -- TSI Blok V‐3A (Aditya Panji)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.232912,-47.805469],[68.125757,-44.74248],[66.109305,-45.501855],[66.225789,-48.564844]]' WHERE `id` = 80; -- TSI Blok V‐3B (Fahrudin Wahabi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[68.102168,-44.070117],[67.994402,-41.007129],[65.966525,-41.766504],[66.083664,-44.829492]]' WHERE `id` = 81; -- TSI Blok V‐5 (Erlina Wijayanti)
-UPDATE `master_rumah` SET `polygon_coords` = '[[67.970678,-40.334766],[67.862297,-37.271777],[65.822942,-38.031152],[65.940739,-41.094141]]' WHERE `id` = 82; -- TSI Blok V‐6 (M. Fikrie Ramadhan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[67.838438,-36.599414],[67.729439,-33.536426],[65.678553,-34.295801],[65.797012,-37.358789]]' WHERE `id` = 83; -- TSI Blok V‐7 (Rudi Kodriansyah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[66.095063,-63.759375],[65.977977,-60.696387],[63.776273,-61.455762],[63.903371,-64.51875]]' WHERE `id` = 84; -- TSI Blok V‐8 (Sugeng Maulana)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.952203,-60.024023],[65.834458,-56.961035],[63.620497,-57.72041],[63.748296,-60.783398]]' WHERE `id` = 85; -- TSI Blok V‐9 (Pang Erga Panghary)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.80854,-56.288672],[65.690134,-53.225684],[63.463863,-53.985059],[63.592366,-57.048047]]' WHERE `id` = 86; -- TSI Blok V‐10 (Dimas W)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.66407,-52.55332],[65.545001,-49.490332],[63.306366,-50.249707],[63.435577,-53.312695]]' WHERE `id` = 87; -- TSI Blok V‐11 (Erwin Eko)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.518791,-48.817969],[65.399055,-45.75498],[63.148004,-46.514355],[63.277925,-49.577344]]' WHERE `id` = 88; -- TSI Blok V‐11A (M. Aris Tri Yunianto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.372698,-45.082617],[65.252292,-42.019629],[62.988772,-42.779004],[63.119407,-45.841992]]' WHERE `id` = 89; -- TSI Blok V‐12 (Endro)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.225787,-41.347266],[65.104709,-38.284277],[62.828668,-39.043652],[62.960018,-42.106641]]' WHERE `id` = 90; -- TSI Blok V‐12a (Yoppi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[65.078056,-37.611914],[64.956302,-34.548926],[62.667687,-35.308301],[62.799756,-38.371289]]' WHERE `id` = 91; -- TSI Blok V‐15 (Agus Priyono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[62.06438,-77.990625],[61.646493,-70.017188],[60.517063,-70.321875],[60.950165,-78.295313]]' WHERE `id` = 92; -- TSI Raya 23A (Yoyok Bagus P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.628633,-78.38125],[60.191172,-70.407813],[59.009259,-70.7125],[59.462413,-78.685938]]' WHERE `id` = 93; -- TSI Raya 25 (M Arief Noor Putra)
-UPDATE `master_rumah` SET `polygon_coords` = '[[59.125986,-78.771875],[58.66834,-70.798438],[57.43237,-71.103125],[57.906167,-79.076563]]' WHERE `id` = 94; -- TSI Raya 26 (Alpan Irpandi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[57.554404,-79.1625],[57.075991,-71.189063],[55.784481,-71.49375],[56.279473,-79.467188]]' WHERE `id` = 95; -- TSI Raya 27 (Ellen Pratiwi / Vio)
-UPDATE `master_rumah` SET `polygon_coords` = '[[55.911963,-79.553125],[55.412238,-71.579688],[54.06382,-71.884375],[54.580514,-79.857813]]' WHERE `id` = 96; -- TSI Raya 28 (Akhmad Syakhibul F Azhar)
-UPDATE `master_rumah` SET `polygon_coords` = '[[54.196878,-79.94375],[53.675347,-71.970313],[52.268795,-72.275],[52.807642,-80.248438]]' WHERE `id` = 97; -- TSI Raya 29 (Rony Deky Arfianto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[52.407543,-80.334375],[51.863768,-72.360938],[50.398029,-72.665625],[50.959411,-80.639063]]' WHERE `id` = 98; -- TSI Raya 30 (Agung Wahyu)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.990968,-58.134375],[56.89662,-56.202891],[53.579566,-56.962266],[53.682134,-58.89375]]' WHERE `id` = 99; -- TSI Blok VI‐1 (Firmansyah Hadi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.985046,-57.121875],[60.864968,-54.362612],[57.902174,-55.121987],[58.033234,-57.88125]]' WHERE `id` = 100; -- TSI Blok VI‐2 (Sulistiawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.875877,-55.778906],[56.781238,-53.847422],[53.454145,-54.606797],[53.557018,-56.538281]]' WHERE `id` = 101; -- TSI Blok VI‐3 (Sugiono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.760432,-53.423438],[56.665501,-51.491953],[53.328354,-52.251328],[53.43153,-54.182813]]' WHERE `id` = 102; -- TSI Blok VI‐3A (Angger)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.64463,-51.067969],[56.549407,-49.136484],[53.20219,-49.895859],[53.305671,-51.827344]]' WHERE `id` = 103; -- TSI Blok VI‐3B (Riza Armansyah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.528472,-48.7125],[56.432956,-46.781016],[53.075653,-47.540391],[53.179441,-49.471875]]' WHERE `id` = 104; -- TSI Blok VI‐5 (Gatot)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.838548,-53.75692],[60.717917,-50.997656],[57.741695,-51.757031],[57.87334,-54.516295]]' WHERE `id` = 105; -- TSI Blok VI‐6 (Yogi Andi Nata)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.411957,-46.357031],[56.316147,-44.425547],[52.948744,-45.184922],[53.052837,-47.116406]]' WHERE `id` = 106; -- TSI Blok VI‐7 (Niko Permana Kusuma)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.691377,-50.391964],[60.570191,-47.632701],[57.580501,-48.392076],[57.712733,-51.151339]]' WHERE `id` = 107; -- TSI Blok VI‐8 (M. Saefulloh R)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.295083,-44.001563],[56.198979,-42.070078],[52.821461,-42.829453],[52.92586,-44.760938]]' WHERE `id` = 108; -- TSI Blok VI‐9 (Rizal R)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.543528,-47.027009],[60.421786,-44.267746],[57.41859,-45.027121],[57.55141,-47.786384]]' WHERE `id` = 109; -- TSI Blok VI‐10 (David Lukito Dedi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.177851,-41.646094],[56.081453,-39.714609],[52.693804,-40.473984],[52.79851,-42.405469]]' WHERE `id` = 110; -- TSI Blok VI‐11 (Singgih Satriyo W)
-UPDATE `master_rumah` SET `polygon_coords` = '[[56.06026,-39.290625],[55.963567,-37.359141],[52.565773,-38.118516],[52.670786,-40.05]]' WHERE `id` = 111; -- TSI Blok VI‐11a (Rizky Redi Andika)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.395001,-43.662054],[60.272701,-40.90279],[57.25596,-41.662165],[57.38937,-44.421429]]' WHERE `id` = 112; -- TSI Blok VI‐12 (Alifian Akbar)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.245794,-40.297098],[60.122934,-37.537835],[57.092608,-38.29721],[57.22661,-41.056473]]' WHERE `id` = 113; -- TSI Blok VI‐12A (Rian Cahya)
-UPDATE `master_rumah` SET `polygon_coords` = '[[55.942309,-36.935156],[55.845321,-35.003672],[52.437367,-35.763047],[52.542688,-37.694531]]' WHERE `id` = 114; -- TSI Blok VI‐15 (M. Ridfan Alief)
-UPDATE `master_rumah` SET `polygon_coords` = '[[60.095903,-36.932143],[59.972482,-34.172879],[56.928534,-34.932254],[57.063128,-37.691518]]' WHERE `id` = 115; -- TSI Blok VI‐16 (Rangga Hendradita)
-UPDATE `master_rumah` SET `polygon_coords` = '[[50.542563,-80.725],[49.97618,-72.751563],[48.450407,-73.05625],[49.034624,-81.029688]]' WHERE `id` = 116; -- TSI Raya 31 (Aris Wijanarko / wahyu)
-UPDATE `master_rumah` SET `polygon_coords` = '[[48.600801,-81.115625],[48.011529,-73.142188],[46.425113,-73.446875],[47.032373,-81.420313]]' WHERE `id` = 117; -- TSI Raya 32 (Hendra Keswanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[46.581418,-81.50625],[45.969072,-73.532813],[44.321682,-73.8375],[44.952083,-81.810938]]' WHERE `id` = 118; -- TSI Raya 33 (Suluh Salahudin Azmi / H. Hendra Fuaddy)
-UPDATE `master_rumah` SET `polygon_coords` = '[[44.483919,-81.896875],[43.848426,-73.923438],[42.140043,-74.228125],[42.793561,-82.201563]]' WHERE `id` = 119; -- TSI Raya 33A (Abdul Latif)
-UPDATE `master_rumah` SET `polygon_coords` = '[[42.308203,-82.2875],[41.649614,-74.314063],[39.880566,-74.61875],[40.557044,-82.592188]]' WHERE `id` = 120; -- TSI Raya 35 (Dedik Setiawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[40.054604,-82.678125],[39.373111,-74.704688],[37.544113,-75.009375],[38.243242,-82.982813]]' WHERE `id` = 121; -- TSI Raya 36 (Gabriel Meze Bela)
-UPDATE `master_rumah` SET `polygon_coords` = '[[45.009555,-67.275],[44.846273,-64.853438],[40.474766,-65.612813],[40.649971,-68.034375]]' WHERE `id` = 122; -- TSI Blok VII‐1 (Eko Jalu Pramono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[50.343217,-66.2625],[50.195807,-63.840938],[46.234938,-64.600313],[46.39423,-67.021875]]' WHERE `id` = 123; -- TSI Blok VII‐2 (Setyo Adi Swasono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[44.810369,-64.321875],[44.646521,-61.900313],[40.26048,-62.659688],[40.436245,-65.08125]]' WHERE `id` = 124; -- TSI Blok VII‐3 (Riski Marta)
-UPDATE `master_rumah` SET `polygon_coords` = '[[50.163387,-63.309375],[50.01542,-60.887813],[46.040051,-61.647188],[46.199909,-64.06875]]' WHERE `id` = 125; -- TSI Blok VII‐3A (Moch Ridwan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[44.610493,-61.36875],[44.446079,-58.947188],[40.045514,-59.706563],[40.221837,-62.128125]]' WHERE `id` = 126; -- TSI Blok VII‐5 (Eko Galih Prasetyo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[49.982879,-60.35625],[49.834354,-57.934688],[45.844475,-58.694063],[46.004898,-61.115625]]' WHERE `id` = 127; -- TSI Blok VII‐6 (Dedy Triwibowo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[44.409926,-58.415625],[44.244947,-55.994063],[39.829868,-56.753438],[40.006748,-59.175]]' WHERE `id` = 128; -- TSI Blok VII‐7 (Rizky Briantasyahdita P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[49.80169,-57.403125],[49.652608,-54.981563],[45.648209,-55.740938],[45.809198,-58.1625]]' WHERE `id` = 129; -- TSI Blok VII‐8 (Arsad Yanuar Haryanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[44.20867,-55.4625],[44.043125,-53.040938],[39.613543,-53.800313],[39.79098,-56.221875]]' WHERE `id` = 130; -- TSI Blok VII‐9 (Mars Anggi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[49.619821,-54.45],[49.47018,-52.028438],[45.451253,-52.787813],[45.612808,-55.209375]]' WHERE `id` = 131; -- TSI Blok VII‐10 (Zainal Arifin / Tri Adi Setiawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[44.006724,-52.509375],[43.840613,-50.087813],[39.396539,-50.847188],[39.574532,-53.26875]]' WHERE `id` = 132; -- TSI Blok VII‐11 (Anas Hidayat)
-UPDATE `master_rumah` SET `polygon_coords` = '[[43.804087,-49.55625],[43.637411,-47.134688],[39.178859,-47.894063],[39.357407,-50.315625]]' WHERE `id` = 133; -- TSI Blok VII‐11A (Dedhy Wahyu Aryadi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[49.437271,-51.496875],[49.287071,-49.075313],[45.253606,-49.834688],[45.415727,-52.25625]]' WHERE `id` = 134; -- TSI Blok VII‐12 (Mochamad syaiful fath / Mochamad Harits)
-UPDATE `master_rumah` SET `polygon_coords` = '[[49.254038,-48.54375],[49.103278,-46.122188],[45.05527,-46.881563],[45.217957,-49.303125]]' WHERE `id` = 135; -- TSI Blok VII‐12A (Panca Yully Ahmadi)
-UPDATE `master_rumah` SET `polygon_coords` = '[[43.600761,-46.603125],[43.43352,-44.181563],[38.960502,-44.940938],[39.139605,-47.3625]]' WHERE `id` = 136; -- TSI Blok VII‐15 (Arief Rahman)
-UPDATE `master_rumah` SET `polygon_coords` = '[[49.070123,-45.590625],[48.918803,-43.169063],[44.856243,-43.928438],[45.019496,-46.35]]' WHERE `id` = 137; -- TSI Blok VII‐16 (Dimas saputra alam)
-UPDATE `master_rumah` SET `polygon_coords` = '[[43.396746,-43.65],[43.228939,-41.228438],[38.741471,-41.987813],[38.921126,-44.409375]]' WHERE `id` = 138; -- TSI Blok VII‐17 (David Anggara)
-UPDATE `master_rumah` SET `polygon_coords` = '[[48.885525,-42.6375],[48.733644,-40.215938],[44.656525,-40.975313],[44.820344,-43.396875]]' WHERE `id` = 139; -- TSI Blok VII‐18 (Ragita Jati Purbokusumo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[43.192041,-40.696875],[43.023669,-38.275313],[38.521765,-39.034688],[38.701973,-41.45625]]' WHERE `id` = 140; -- TSI Blok VII‐19 (Zainal Septiadi Baktiana)
-UPDATE `master_rumah` SET `polygon_coords` = '[[48.700242,-39.684375],[48.5478,-37.262813],[44.456118,-38.022188],[44.620503,-40.44375]]' WHERE `id` = 141; -- TSI Blok VII‐20 (Suhartono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[37.723946,-83.06875],[37.01989,-75.095313],[35.132076,-75.4],[35.853387,-83.373438]]' WHERE `id` = 142; -- TSI Raya 37 (Bayu Angga)
-UPDATE `master_rumah` SET `polygon_coords` = '[[35.317579,-83.459375],[34.591468,-75.485938],[32.646419,-75.790625],[33.389269,-83.764063]]' WHERE `id` = 143; -- TSI Raya 38 (Arta Dian)
-UPDATE `master_rumah` SET `polygon_coords` = '[[32.837422,-83.85],[32.089938,-75.876563],[30.089713,-76.18125],[30.853277,-84.154688]]' WHERE `id` = 144; -- TSI Raya 39 (Miftahul Huda)
-UPDATE `master_rumah` SET `polygon_coords` = '[[30.286,-84.240625],[29.518008,-76.267188],[27.465157,-76.571875],[28.248421,-84.545313]]' WHERE `id` = 145; -- TSI Raya 50 (M. Sholeh)
-UPDATE `master_rumah` SET `polygon_coords` = '[[28.205285,-69.735938],[28.027302,-67.285547],[22.654085,-68.044922],[22.840186,-70.495313]]' WHERE `id` = 146; -- TSI Blok VIII‐1 (Budiyana)
-UPDATE `master_rumah` SET `polygon_coords` = '[[34.955114,-68.723438],[34.789554,-66.273047],[29.763157,-67.032422],[29.93818,-69.482813]]' WHERE `id` = 147; -- TSI Blok VIII‐2 (Fernando Sufriadi Sitohang)
-UPDATE `master_rumah` SET `polygon_coords` = '[[27.988193,-66.747656],[27.80985,-64.297266],[22.426791,-65.056641],[22.6132,-67.507031]]' WHERE `id` = 148; -- TSI Blok VIII‐3 (Rukimah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[34.753167,-65.735156],[34.587202,-63.284766],[29.549299,-64.044141],[29.724696,-66.494531]]' WHERE `id` = 149; -- TSI Blok VIII‐3A (Hendrik Elvian Gayuh P)
-UPDATE `master_rumah` SET `polygon_coords` = '[[27.770662,-63.759375],[27.591962,-61.308984],[22.199124,-62.068359],[22.385838,-64.51875]]' WHERE `id` = 150; -- TSI Blok VIII‐5 (Mulyono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[34.550726,-62.746875],[34.384355,-60.296484],[29.334988,-61.055859],[29.510756,-63.50625]]' WHERE `id` = 151; -- TSI Blok VIII‐6 (M Julaikan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[27.552696,-60.771094],[27.37364,-58.320703],[21.971087,-59.080078],[22.158104,-61.530469]]' WHERE `id` = 152; -- TSI Blok VIII‐7 (Aris Jefrianto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[34.34779,-59.758594],[34.181016,-57.308203],[29.120225,-58.067578],[29.296364,-60.517969]]' WHERE `id` = 153; -- TSI Blok VIII‐8 (Dhani Kispananto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[27.334297,-57.782813],[27.154887,-55.332422],[21.742683,-56.091797],[21.930001,-58.542188]]' WHERE `id` = 154; -- TSI Blok VIII‐9 (Cahyo Nugroho)
-UPDATE `master_rumah` SET `polygon_coords` = '[[34.144362,-56.770313],[33.977185,-54.319922],[28.905013,-55.079297],[29.08152,-57.529688]]' WHERE `id` = 155; -- TSI Blok VIII‐10 (Rizal Priambodo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[27.115466,-54.794531],[26.935705,-52.344141],[21.513916,-53.103516],[21.701532,-55.553906]]' WHERE `id` = 156; -- TSI Blok VIII‐11 (Sonny Tjandrawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[26.896206,-51.80625],[26.716095,-49.355859],[21.284788,-50.115234],[21.4727,-52.565625]]' WHERE `id` = 157; -- TSI Blok VIII‐11A (Ismail Dwi Prakosa)
-UPDATE `master_rumah` SET `polygon_coords` = '[[33.940443,-53.782031],[33.772864,-51.331641],[28.689354,-52.091016],[28.866228,-54.541406]]' WHERE `id` = 158; -- TSI Blok VIII‐12 (Alfandi Choirul Anwar)
-UPDATE `master_rumah` SET `polygon_coords` = '[[33.736035,-50.79375],[33.568056,-48.343359],[28.47325,-49.102734],[28.650488,-51.553125]]' WHERE `id` = 159; -- TSI Blok VIII‐12A (Kingkin Angga Firmana S)
-UPDATE `master_rumah` SET `polygon_coords` = '[[26.67652,-48.817969],[26.496061,-46.367578],[21.055303,-47.126953],[21.243507,-49.577344]]' WHERE `id` = 160; -- TSI Blok VIII‐15 (Rahardhimas Rakhmatulloh S)
-UPDATE `master_rumah` SET `polygon_coords` = '[[33.531138,-47.805469],[33.36276,-45.355078],[28.256702,-46.114453],[28.434304,-48.564844]]' WHERE `id` = 161; -- TSI Blok VIII‐16 (Ferdy Putra)
-UPDATE `master_rumah` SET `polygon_coords` = '[[26.45641,-45.829688],[26.275605,-43.379297],[20.825463,-44.138672],[21.013958,-46.589063]]' WHERE `id` = 162; -- TSI Blok VIII‐17 (Eko Budi Cahyanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[33.325755,-44.817188],[33.156978,-42.366797],[28.039714,-43.126172],[28.217677,-45.576563]]' WHERE `id` = 163; -- TSI Blok VIII‐18 (Whisnu KN)
-UPDATE `master_rumah` SET `polygon_coords` = '[[26.235879,-42.841406],[26.05473,-40.391016],[20.595272,-41.150391],[20.784055,-43.600781]]' WHERE `id` = 164; -- TSI Blok VIII‐19 (Alex Suhariyanto)
-UPDATE `master_rumah` SET `polygon_coords` = '[[33.119886,-41.828906],[32.950713,-39.378516],[27.822288,-40.137891],[28.00061,-42.588281]]' WHERE `id` = 165; -- TSI Blok VIII‐20 (Muh Saiful Ramadhan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[27.666462,-84.63125],[26.879019,-76.657813],[24.776597,-76.9625],[25.578356,-84.935938]]' WHERE `id` = 166; -- TSI Raya 51 (Endah)
-UPDATE `master_rumah` SET `polygon_coords` = '[[24.982606,-85.021875],[24.176959,-77.048438],[22.028529,-77.353125],[22.847386,-85.326563]]' WHERE `id` = 167; -- TSI Raya 52 (Rahayu)
-UPDATE `master_rumah` SET `polygon_coords` = '[[22.238878,-85.4125],[21.416466,-77.439063],[19.226087,-77.74375],[20.060457,-85.717188]]' WHERE `id` = 168; -- TSI Raya 53 (Tri Habsari)
-UPDATE `master_rumah` SET `polygon_coords` = '[[19.440364,-85.803125],[18.602812,-77.829688],[16.375021,-78.134375],[17.223141,-86.107813]]' WHERE `id` = 169; -- TSI Raya 53A (Eko Prasetya / Aditama)
-UPDATE `master_rumah` SET `polygon_coords` = '[[16.592771,-86.19375],[15.741879,-78.220313],[13.481659,-78.525],[14.3416,-86.498438]]' WHERE `id` = 170; -- TSI Raya 55 (Febrian Tyahastu)
-UPDATE `master_rumah` SET `polygon_coords` = '[[13.702382,-86.584375],[12.840113,-78.610938],[10.552846,-78.915625],[11.422533,-86.889063]]' WHERE `id` = 171; -- TSI Raya 56 (Muhammad Saifudin Zuhri)
-UPDATE `master_rumah` SET `polygon_coords` = '[[10.776007,-86.975],[9.904467,-79.001563],[7.59588,-79.30625],[8.473113,-87.279688]]' WHERE `id` = 172; -- TSI Raya 57 (Kiky Dody Prasetiono)
-UPDATE `master_rumah` SET `polygon_coords` = '[[7.820912,-87.365625],[6.942325,-79.392188],[4.618428,-79.696875],[5.500905,-87.670313]]' WHERE `id` = 173; -- TSI Raya 58 (Moh Irvan Fanani)
-UPDATE `master_rumah` SET `polygon_coords` = '[[4.844737,-87.75625],[3.961423,-79.782813],[1.628427,-80.0875],[2.513776,-88.060938]]' WHERE `id` = 174; -- TSI Raya 59 (Handoyo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[1.855405,-88.146875],[0.969745,-80.173438],[-1.366016,-80.478125],[-0.480203,-88.451563]]' WHERE `id` = 175; -- TSI Raya 61 (Andi Budi Setiawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[0,-73.364063],[-0.240234,-70.529297],[-3.402296,-70.908984],[-3.162456,-73.74375]]' WHERE `id` = 176; -- TSI Blok IX‐1 (Lussy Yuris Frasticha)
-UPDATE `master_rumah` SET `polygon_coords` = '[[4.214943,-72.857813],[3.855485,-68.605664],[0.694319,-68.985352],[1.054628,-73.2375]]' WHERE `id` = 177; -- TSI Blok IX‐2 (Samsul Huda AS)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-0.292967,-69.907031],[-0.533195,-67.072266],[-3.694702,-67.451953],[-3.454936,-70.286719]]' WHERE `id` = 178; -- TSI Blok IX‐3 (Adi Purnomo)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-0.585927,-66.45],[-0.826143,-63.615234],[-3.987013,-63.994922],[-3.747326,-66.829688]]' WHERE `id` = 179; -- TSI Blok IX‐3A (Dammara Perdana Oktobahari)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-0.878872,-62.992969],[-1.119069,-60.158203],[-4.279219,-60.537891],[-4.039618,-63.372656]]' WHERE `id` = 180; -- TSI Blok IX‐5 (Degita wahyuningtyas)
-UPDATE `master_rumah` SET `polygon_coords` = '[[3.776559,-67.672266],[3.416918,-63.420117],[0.254882,-63.799805],[0.615223,-68.051953]]' WHERE `id` = 181; -- TSI Blok IX‐6 (Agus Setiawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-1.171793,-59.535938],[-1.411966,-56.701172],[-4.571314,-57.080859],[-4.331805,-59.915625]]' WHERE `id` = 182; -- TSI Blok IX‐7 (Lina Indah Sari)
-UPDATE `master_rumah` SET `polygon_coords` = '[[3.337954,-62.486719],[2.97815,-58.23457],[-0.18457,-58.614258],[0.175781,-62.866406]]' WHERE `id` = 183; -- TSI Blok IX‐8 (Riky Mufti Ghozali)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-1.464684,-56.078906],[-1.704827,-53.244141],[-4.86329,-53.623828],[-4.623879,-56.458594]]' WHERE `id` = 184; -- TSI Blok IX‐9 (Lustiawan)
-UPDATE `master_rumah` SET `polygon_coords` = '[[2.899153,-57.301172],[2.539207,-53.049023],[-0.624011,-53.428711],[-0.263671,-57.680859]]' WHERE `id` = 185; -- TSI Blok IX‐10 (Aditya Wahyu Saputra)
-UPDATE `master_rumah` SET `polygon_coords` = '[[2.502329,-47.925],[2.296595,-45.536384],[-0.951184,-46.717634],[-0.745291,-49.10625]]' WHERE `id` = 186; -- TSI Blok X‐1 (Radyan Errytianta)
-UPDATE `master_rumah` SET `polygon_coords` = '[[2.251429,-45.012054],[2.045659,-42.623438],[-1.202256,-43.804688],[-0.996378,-46.193304]]' WHERE `id` = 187; -- TSI Blok X‐2 (Selvia Tiorma)
-UPDATE `master_rumah` SET `polygon_coords` = '[[2.000486,-42.099107],[1.794684,-39.710491],[-1.453304,-40.891741],[-1.247446,-43.280357]]' WHERE `id` = 188; -- TSI Blok X‐3A (Novandi Amiludin)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-2.094846,-49.303125],[-2.3349,-46.516406],[-5.869006,-47.402344],[-5.629981,-50.189063]]' WHERE `id` = 189; -- TSI Blok XI‐1 (Muhammad Rachmano)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-2.38759,-45.904688],[-2.627594,-43.117969],[-6.160362,-44.003906],[-5.921462,-46.790625]]' WHERE `id` = 190; -- TSI Blok XI‐2 (Aria Shalendra)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-2.680272,-42.50625],[-2.920219,-39.719531],[-6.451558,-40.605469],[-6.212789,-43.392188]]' WHERE `id` = 191; -- TSI Blok XI‐3 (Shella Oktavia Maulida)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-2.972884,-39.107813],[-3.212768,-36.321094],[-6.742586,-37.207031],[-6.503956,-39.99375]]' WHERE `id` = 192; -- TSI Blok XI‐3A (Randy)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-3.265418,-35.709375],[-3.505233,-32.922656],[-7.03344,-33.808594],[-6.794953,-36.595313]]' WHERE `id` = 193; -- TSI Blok XI‐7 (Maulana Aziz Prasetya)
-UPDATE `master_rumah` SET `polygon_coords` = '[[-3.557868,-32.310938],[-3.797607,-29.524219],[-7.324112,-30.410156],[-7.085775,-33.196875]]' WHERE `id` = 194; -- TSI Blok XI‐8 (Anastasia/Aditama)
-UPDATE `master_rumah` SET `polygon_coords` = '[[1.749505,-39.186161],[1.543675,-36.797545],[-1.704324,-37.978795],[-1.49849,-40.367411]]' WHERE `id` = 195; -- TSI Blok X‐1B (Anang Subiantoro)
-UPDATE `master_rumah` SET `polygon_coords` = '[[1.49849,-36.273214],[1.292636,-33.884598],[-1.955312,-35.065848],[-1.749505,-37.454464]]' WHERE `id` = 196; -- TSI Blok X‐2B (Aloysius Eric)
-UPDATE `master_rumah` SET `polygon_coords` = '[[1.247446,-33.360268],[1.041572,-30.971652],[-2.206263,-32.152902],[-2.000486,-34.541518]]' WHERE `id` = 197; -- TSI Blok X‐3B (Ramadhitya Hanning)
-UPDATE `master_rumah` SET `polygon_coords` = '[[0.996378,-30.447321],[0.790488,-28.058705],[-2.457171,-29.239955],[-2.251429,-31.628571]]' WHERE `id` = 198; -- TSI Blok X‐5B (Eko Singgih)
+UPDATE master_rumah SET polygon_coords = '[[83.642973,-67.675781],[83.608822,-64.951172],[83.042207,-65.566406],[83.068774,-68.466797]]' WHERE id = 1;
+UPDATE master_rumah SET polygon_coords = '[[83.440326,-51.723633],[83.420215,-48.999023],[82.84244,-49.526367],[82.869765,-52.294922]]' WHERE id = 2;
+UPDATE master_rumah SET polygon_coords = '[[83.420215,-48.911133],[83.384872,-46.230469],[82.804009,-46.713867],[82.84244,-49.394531]]' WHERE id = 3;
+UPDATE master_rumah SET polygon_coords = '[[83.374739,-46.098633],[83.34934,-43.286133],[82.759836,-43.857422],[82.804009,-46.757813]]' WHERE id = 4;
+UPDATE master_rumah SET polygon_coords = '[[83.34934,-43.330078],[83.308499,-40.605469],[82.737649,-41.132813],[82.748751,-43.857422]]' WHERE id = 5;
+UPDATE master_rumah SET polygon_coords = '[[75.331366,-55.011951],[75.230667,-48.076172],[74.31091,-48.433567],[74.417728,-55.369346]]' WHERE id = 40;
+UPDATE master_rumah SET polygon_coords = '[[75.024403,-43.715022],[74.867889,-36.914063],[73.881449,-37.280418],[74.047909,-44.081378]]' WHERE id = 41;
+UPDATE master_rumah SET polygon_coords = '[[74.425777,-55.283203],[74.271655,-48.47168],[73.353055,-48.779297],[73.602996,-55.59082]]' WHERE id = 42;
+UPDATE master_rumah SET polygon_coords = '[[74.018711,-44.054508],[73.897452,-37.209139],[72.997098,-37.539397],[73.124945,-44.384766]]' WHERE id = 43;
+UPDATE master_rumah SET polygon_coords = '[[73.590586,-55.766602],[73.365639,-48.735352],[72.38241,-49.086914],[72.620252,-56.030273]]' WHERE id = 44;
+UPDATE master_rumah SET polygon_coords = '[[73.12332,-44.367439],[72.997673,-37.467512],[72.019729,-37.792969],[72.152374,-44.692896]]' WHERE id = 45;
+UPDATE master_rumah SET polygon_coords = '[[72.633374,-55.986328],[72.408992,-49.042969],[71.413177,-49.482422],[71.608283,-56.381836]]' WHERE id = 46;
+UPDATE master_rumah SET polygon_coords = '[[72.167963,-44.57763],[72.044035,-37.855346],[71.01696,-38.232422],[71.147725,-44.954706]]' WHERE id = 47;
+UPDATE master_rumah SET polygon_coords = '[[78.680182,-58.965028],[78.630006,-56.074219],[76.92256,-56.786925],[76.980149,-59.677734]]' WHERE id = 31;
+UPDATE master_rumah SET polygon_coords = '[[78.621741,-56.145595],[78.554419,-52.743097],[76.823372,-53.462736],[76.900709,-56.865234]]' WHERE id = 32;
+UPDATE master_rumah SET polygon_coords = '[[78.518196,-52.800993],[78.450095,-49.389792],[76.722622,-50.11419],[76.800739,-53.525391]]' WHERE id = 33;
+UPDATE master_rumah SET polygon_coords = '[[78.455258,-49.526895],[78.387948,-46.005543],[76.602298,-46.839975],[76.679785,-50.361328]]' WHERE id = 34;
+UPDATE master_rumah SET polygon_coords = '[[78.384855,-45.966797],[78.320732,-42.790552],[76.571042,-43.533163],[76.644608,-46.709409]]' WHERE id = 35;
+UPDATE master_rumah SET polygon_coords = '[[78.296044,-42.451172],[78.231437,-39.274927],[76.468602,-40.017538],[76.542719,-43.193784]]' WHERE id = 36;
+UPDATE master_rumah SET polygon_coords = '[[78.234993,-39.026971],[78.170582,-35.771484],[76.385884,-36.49304],[76.459842,-39.748527]]' WHERE id = 37;
+UPDATE master_rumah SET polygon_coords = '[[78.134493,-35.771484],[78.092038,-32.679757],[76.314856,-33.439975],[76.363535,-36.531702]]' WHERE id = 38;
+UPDATE master_rumah SET polygon_coords = '[[78.116408,-32.431641],[78.052265,-29.325012],[76.220811,-30.094109],[76.294611,-33.200738]]' WHERE id = 39;
+UPDATE master_rumah SET polygon_coords = '[[80.159421,-58.168616],[80.117244,-55.131415],[78.616103,-56.113189],[78.664608,-59.150391]]' WHERE id = 15;
+UPDATE master_rumah SET polygon_coords = '[[79.864355,-41.455412],[79.799833,-38.165945],[78.203715,-39.161704],[78.278201,-42.451172]]' WHERE id = 24;
+UPDATE master_rumah SET polygon_coords = '[[81.773644,-37.705078],[81.704187,-34.277344],[80.46679,-35.024414],[80.553733,-38.540039]]' WHERE id = 25;
+UPDATE master_rumah SET polygon_coords = '[[81.704187,-34.277344],[81.659685,-30.805664],[80.408388,-31.68457],[80.4886,-34.980469]]' WHERE id = 26;
+UPDATE master_rumah SET polygon_coords = '[[79.755764,-38.373732],[79.690735,-35.002031],[78.185936,-35.915409],[78.260332,-39.287109]]' WHERE id = 27;
+UPDATE master_rumah SET polygon_coords = '[[79.73655,-34.765187],[79.67363,-31.508538],[78.116303,-32.426945],[78.188586,-35.683594]]' WHERE id = 28;
+UPDATE master_rumah SET polygon_coords = '[[81.64054,-30.805664],[81.589274,-27.773438],[80.342262,-28.608398],[80.401063,-31.59668]]' WHERE id = 29;
+UPDATE master_rumah SET polygon_coords = '[[79.560546,-31.201172],[79.517367,-28.426634],[78.030824,-29.320443],[78.080044,-32.09498]]' WHERE id = 30;
+UPDATE master_rumah SET polygon_coords = '[[82.896987,-54.404297],[82.853382,-51.196289],[81.761058,-52.075195],[81.805024,-55.50293]]' WHERE id = 16;
+UPDATE master_rumah SET polygon_coords = '[[80.108325,-54.686603],[80.06205,-51.282399],[78.542034,-52.318452],[78.595299,-55.722656]]' WHERE id = 17;
+UPDATE master_rumah SET polygon_coords = '[[82.853382,-51.108398],[82.81501,-47.900391],[81.729511,-48.55957],[81.767353,-51.943359]]' WHERE id = 18;
+UPDATE master_rumah SET polygon_coords = '[[79.993254,-51.290305],[79.94696,-48.189205],[78.454998,-49.105931],[78.508075,-52.207031]]' WHERE id = 19;
+UPDATE master_rumah SET polygon_coords = '[[82.809511,-47.900391],[82.765373,-44.516602],[81.672424,-45.219727],[81.716859,-48.55957]]' WHERE id = 20;
+UPDATE master_rumah SET polygon_coords = '[[79.944258,-47.701339],[79.912261,-44.773931],[78.383409,-45.851889],[78.420193,-48.779297]]' WHERE id = 21;
+UPDATE master_rumah SET polygon_coords = '[[82.77456,-44.488349],[82.7227,-41.119295],[81.587028,-41.894617],[81.646927,-45.263672]]' WHERE id = 22;
+UPDATE master_rumah SET polygon_coords = '[[79.874806,-45.049506],[79.82632,-41.655959],[78.293715,-42.573249],[78.349411,-45.966797]]' WHERE id = 23;
+UPDATE master_rumah SET polygon_coords = '[[70.424068,-62.39403],[70.298823,-58.750225],[67.933725,-59.857172],[68.073305,-63.500977]]' WHERE id = 64;
+UPDATE master_rumah SET polygon_coords = '[[70.236352,-58.56058],[70.126445,-55.44047],[67.802993,-56.557625],[67.92514,-59.677734]]' WHERE id = 65;
+UPDATE master_rumah SET polygon_coords = '[[70.146201,-55.267963],[70.033612,-52.127137],[67.650644,-53.24101],[67.776025,-56.381836]]' WHERE id = 66;
+UPDATE master_rumah SET polygon_coords = '[[69.93848,-51.987257],[69.826274,-48.771584],[67.542167,-49.833984],[67.666459,-53.049657]]' WHERE id = 67;
+UPDATE master_rumah SET polygon_coords = '[[69.845944,-48.601491],[69.728827,-45.405465],[67.458082,-46.494141],[67.587675,-49.690167]]' WHERE id = 68;
+UPDATE master_rumah SET polygon_coords = '[[69.806483,-45.457015],[69.693463,-41.958391],[67.272043,-42.978516],[67.397872,-46.47714]]' WHERE id = 69;
+UPDATE master_rumah SET polygon_coords = '[[69.619523,-42.120598],[69.507661,-38.733858],[67.062465,-39.767557],[67.187,-43.154297]]' WHERE id = 70;
+UPDATE master_rumah SET polygon_coords = '[[69.506496,-38.849638],[69.386169,-35.373374],[66.981666,-36.386719],[67.115314,-39.862983]]' WHERE id = 71;
+UPDATE master_rumah SET polygon_coords = '[[69.374389,-35.378615],[69.244235,-31.735817],[66.733262,-32.787866],[66.878345,-36.430664]]' WHERE id = 72;
+UPDATE master_rumah SET polygon_coords = '[[17.14079,-72.333984],[16.827834,-68.843544],[9.906794,-69.697774],[10.228983,-73.188215]]' WHERE id = 176;
+UPDATE master_rumah SET polygon_coords = '[[13.423716,-42.233187],[13.110823,-38.145881],[6.708254,-38.935547],[7.02742,-43.022852]]' WHERE id = 185;
+UPDATE master_rumah SET polygon_coords = '[[16.467695,-68.950195],[16.159995,-65.652508],[9.620325,-66.44744],[9.936275,-69.745128]]' WHERE id = 177;
+UPDATE master_rumah SET polygon_coords = '[[16.256867,-65.698242],[15.946822,-62.202264],[9.254311,-62.944099],[9.57267,-66.440077]]' WHERE id = 178;
+UPDATE master_rumah SET polygon_coords = '[[15.792254,-61.962891],[15.523374,-58.984309],[8.852224,-59.803813],[9.128035,-62.782394]]' WHERE id = 179;
+UPDATE master_rumah SET polygon_coords = '[[15.269102,-58.763873],[14.997258,-55.337613],[8.606736,-56.119638],[8.885072,-59.545898]]' WHERE id = 180;
+UPDATE master_rumah SET polygon_coords = '[[15.072124,-55.458984],[14.805439,-52.054817],[8.293011,-52.764245],[8.566043,-56.168413]]' WHERE id = 181;
+UPDATE master_rumah SET polygon_coords = '[[14.562318,-52.338867],[14.304214,-48.874167],[7.80197,-49.60063],[8.065934,-53.06533]]' WHERE id = 182;
+UPDATE master_rumah SET polygon_coords = '[[14.306969,-48.867188],[14.061236,-45.614439],[7.633937,-46.492819],[7.885077,-49.745567]]' WHERE id = 183;
+UPDATE master_rumah SET polygon_coords = '[[13.86371,-45.47537],[13.550482,-42.251263],[7.173423,-43.050307],[7.493196,-46.274414]]' WHERE id = 184;
+UPDATE master_rumah SET polygon_coords = '[[82.653843,-37.177734],[82.529185,-26.411133],[81.602119,-27.202148],[81.779929,-37.880859]]' WHERE id = 14;
+UPDATE master_rumah SET polygon_coords = '[[23.075807,-71.434034],[22.82939,-67.86597],[16.716618,-68.76592],[16.972741,-72.333984]]' WHERE id = 146;
+UPDATE master_rumah SET polygon_coords = '[[31.478148,-57.007617],[31.251536,-53.734425],[25.639974,-54.64673],[25.878994,-57.919922]]' WHERE id = 155;
+UPDATE master_rumah SET polygon_coords = '[[21.259669,-54.617921],[21.018201,-51.424965],[15.034306,-52.35392],[15.284185,-55.546875]]' WHERE id = 156;
+UPDATE master_rumah SET polygon_coords = '[[20.96954,-51.029448],[20.765685,-47.975137],[14.478746,-48.889049],[14.689881,-51.943359]]' WHERE id = 157;
+UPDATE master_rumah SET polygon_coords = '[[31.403635,-53.56423],[31.172259,-50.224961],[25.317767,-51.152918],[25.562265,-54.492188]]' WHERE id = 158;
+UPDATE master_rumah SET polygon_coords = '[[30.925065,-50.097241],[30.726393,-46.855549],[25.034788,-47.734812],[25.244267,-50.976503]]' WHERE id = 159;
+UPDATE master_rumah SET polygon_coords = '[[20.385825,-47.988281],[20.164248,-44.799398],[14.42753,-45.631747],[14.656176,-48.82063]]' WHERE id = 160;
+UPDATE master_rumah SET polygon_coords = '[[30.764053,-46.848953],[30.470264,-44.032556],[24.696203,-44.908212],[25.005973,-47.724609]]' WHERE id = 161;
+UPDATE master_rumah SET polygon_coords = '[[20.055931,-44.560547],[19.851706,-41.627422],[13.986761,-42.476671],[14.197491,-45.409796]]' WHERE id = 162;
+UPDATE master_rumah SET polygon_coords = '[[30.596957,-43.666345],[30.436519,-40.59347],[24.287027,-41.484375],[24.456666,-44.55725]]' WHERE id = 163;
+UPDATE master_rumah SET polygon_coords = '[[20.326973,-41.35468],[20.058421,-36.871822],[13.218074,-37.880423],[13.496473,-42.363281]]' WHERE id = 164;
+UPDATE master_rumah SET polygon_coords = '[[32.990236,-71.455078],[32.688986,-66.973215],[27.256203,-67.84212],[27.574483,-72.323983]]' WHERE id = 147;
+UPDATE master_rumah SET polygon_coords = '[[30.178722,-40.639135],[29.924667,-36.040807],[23.938907,-36.973937],[24.20689,-41.572266]]' WHERE id = 165;
+UPDATE master_rumah SET polygon_coords = '[[22.364215,-67.776429],[22.160661,-64.697134],[16.256653,-65.563283],[16.467695,-68.642578]]' WHERE id = 148;
+UPDATE master_rumah SET polygon_coords = '[[32.842674,-66.621094],[32.56049,-63.854567],[26.635915,-64.780563],[26.935269,-67.547089]]' WHERE id = 149;
+UPDATE master_rumah SET polygon_coords = '[[22.332125,-64.351607],[22.129351,-61.284804],[16.088685,-62.06015],[16.299051,-65.126953]]' WHERE id = 150;
+UPDATE master_rumah SET polygon_coords = '[[32.62087,-63.544922],[32.320018,-60.78127],[26.161961,-61.790254],[26.481587,-64.553906]]' WHERE id = 151;
+UPDATE master_rumah SET polygon_coords = '[[21.698265,-61.347656],[21.478622,-58.158773],[15.785149,-58.991122],[16.012326,-62.180005]]' WHERE id = 152;
+UPDATE master_rumah SET polygon_coords = '[[31.962602,-60.642773],[31.715034,-57.048634],[25.774909,-58.017188],[26.037042,-61.611328]]' WHERE id = 153;
+UPDATE master_rumah SET polygon_coords = '[[21.301129,-57.73064],[20.9854,-54.937865],[15.296768,-55.742382],[15.623037,-58.535156]]' WHERE id = 154;
+UPDATE master_rumah SET polygon_coords = '[[38.381369,-70.282032],[38.136915,-66.390531],[32.876477,-67.299906],[33.137551,-71.191406]]' WHERE id = 122;
+UPDATE master_rumah SET polygon_coords = '[[45.706179,-55.063477],[45.429299,-51.547852],[40.279526,-52.470703],[40.580585,-55.898438]]' WHERE id = 131;
+UPDATE master_rumah SET polygon_coords = '[[36.565776,-52.85096],[36.385913,-49.570313],[31.246114,-50.418298],[31.437155,-53.698945]]' WHERE id = 132;
+UPDATE master_rumah SET polygon_coords = '[[36.346628,-49.560862],[36.147231,-46.223056],[31.067006,-47.023523],[31.278551,-50.361328]]' WHERE id = 133;
+UPDATE master_rumah SET polygon_coords = '[[45.179835,-51.570278],[45.017647,-48.35357],[40.003098,-49.341886],[40.178873,-52.558594]]' WHERE id = 134;
+UPDATE master_rumah SET polygon_coords = '[[44.933696,-48.339844],[44.809122,-45.175781],[39.808536,-46.186523],[39.97712,-49.306641]]' WHERE id = 135;
+UPDATE master_rumah SET polygon_coords = '[[36.091412,-46.304512],[35.897213,-42.944146],[30.847084,-43.836899],[31.052934,-47.197266]]' WHERE id = 136;
+UPDATE master_rumah SET polygon_coords = '[[44.809122,-45.307617],[44.590467,-41.835938],[39.639538,-42.583008],[39.876019,-46.142578]]' WHERE id = 137;
+UPDATE master_rumah SET polygon_coords = '[[35.813972,-42.722669],[35.633886,-39.728033],[30.636107,-40.511223],[30.826781,-43.505859]]' WHERE id = 138;
+UPDATE master_rumah SET polygon_coords = '[[44.621754,-41.748047],[44.370987,-38.320313],[39.334297,-39.155273],[39.639538,-42.539063]]' WHERE id = 139;
+UPDATE master_rumah SET polygon_coords = '[[35.619844,-39.919589],[35.374666,-35.703516],[29.960539,-36.653067],[30.221102,-40.869141]]' WHERE id = 140;
+UPDATE master_rumah SET polygon_coords = '[[46.589069,-68.774414],[46.437857,-65.302734],[41.640078,-66.181641],[41.967659,-69.65332]]' WHERE id = 123;
+UPDATE master_rumah SET polygon_coords = '[[44.276671,-38.408203],[44.087585,-35.068359],[38.993572,-35.947266],[39.334297,-39.287109]]' WHERE id = 141;
+UPDATE master_rumah SET polygon_coords = '[[38.121685,-66.017016],[37.972498,-63.08065],[32.757312,-63.948399],[32.916485,-66.884766]]' WHERE id = 124;
+UPDATE master_rumah SET polygon_coords = '[[46.498392,-65.214844],[46.225453,-61.523438],[41.310824,-62.53418],[41.541478,-66.225586]]' WHERE id = 125;
+UPDATE master_rumah SET polygon_coords = '[[37.80475,-62.55],[37.65003,-59.420136],[32.45596,-60.327167],[32.62087,-63.457031]]' WHERE id = 126;
+UPDATE master_rumah SET polygon_coords = '[[46.195042,-61.655273],[45.95115,-58.447266],[40.84706,-59.326172],[41.112469,-62.490234]]' WHERE id = 127;
+UPDATE master_rumah SET polygon_coords = '[[37.310988,-59.648592],[37.170029,-56.372954],[32.025621,-57.193112],[32.175612,-60.46875]]' WHERE id = 128;
+UPDATE master_rumah SET polygon_coords = '[[45.828799,-58.31543],[45.58329,-55.195313],[40.713956,-55.898438],[40.880295,-59.194336]]' WHERE id = 129;
+UPDATE master_rumah SET polygon_coords = '[[36.89268,-56.198975],[36.661463,-52.83114],[31.706901,-53.761071],[31.952162,-57.128906]]' WHERE id = 130;
+UPDATE master_rumah SET polygon_coords = '[[51.835778,-67.587891],[51.75424,-64.248047],[46.498392,-65.478516],[46.769968,-68.730469]]' WHERE id = 99;
+UPDATE master_rumah SET polygon_coords = '[[50.513427,-47.636719],[50.261254,-44.296875],[44.871443,-45.219727],[45.02695,-48.691406]]' WHERE id = 109;
+UPDATE master_rumah SET polygon_coords = '[[57.610107,-43.637695],[57.515823,-40.385742],[52.722986,-41.308594],[52.935397,-44.516602]]' WHERE id = 110;
+UPDATE master_rumah SET polygon_coords = '[[57.492214,-40.341797],[57.326521,-37.045898],[52.536273,-38.188477],[52.696361,-41.220703]]' WHERE id = 111;
+UPDATE master_rumah SET polygon_coords = '[[50.289339,-44.165039],[50.064192,-41.044922],[44.715514,-41.879883],[44.871443,-45.219727]]' WHERE id = 112;
+UPDATE master_rumah SET polygon_coords = '[[49.95122,-41.088867],[49.781264,-37.792969],[44.370987,-38.803711],[44.684277,-41.748047]]' WHERE id = 113;
+UPDATE master_rumah SET polygon_coords = '[[57.326521,-37.177734],[57.088515,-33.662109],[52.429222,-34.760742],[52.66972,-38.144531]]' WHERE id = 114;
+UPDATE master_rumah SET polygon_coords = '[[49.75288,-37.705078],[49.61071,-34.453125],[44.087585,-35.244141],[44.402392,-38.71582]]' WHERE id = 115;
+UPDATE master_rumah SET polygon_coords = '[[51.481383,-60.952148],[51.206883,-57.348633],[45.95115,-58.666992],[46.164614,-61.831055]]' WHERE id = 100;
+UPDATE master_rumah SET polygon_coords = '[[51.618017,-64.423828],[51.508742,-60.996094],[46.255847,-61.962891],[46.498392,-65.566406]]' WHERE id = 101;
+UPDATE master_rumah SET polygon_coords = '[[51.261915,-57.568359],[51.069017,-54.228516],[45.675482,-55.283203],[45.859412,-58.666992]]' WHERE id = 102;
+UPDATE master_rumah SET polygon_coords = '[[58.325554,-57.541237],[58.146174,-53.598245],[53.729112,-54.63611],[53.93022,-58.579102]]' WHERE id = 103;
+UPDATE master_rumah SET polygon_coords = '[[58.240164,-53.657227],[58.077876,-50.273438],[53.592505,-51.328125],[53.748711,-54.755859]]' WHERE id = 104;
+UPDATE master_rumah SET polygon_coords = '[[50.958427,-54.18457],[50.736455,-50.888672],[45.490946,-52.075195],[45.644768,-55.151367]]' WHERE id = 105;
+UPDATE master_rumah SET polygon_coords = '[[58.002989,-50.249935],[57.829976,-46.713428],[53.320054,-47.791617],[53.514185,-51.328125]]' WHERE id = 106;
+UPDATE master_rumah SET polygon_coords = '[[50.680797,-51.020508],[50.513427,-47.680664],[45.089036,-48.603516],[45.367584,-52.075195]]' WHERE id = 107;
+UPDATE master_rumah SET polygon_coords = '[[57.797944,-46.933594],[57.657158,-43.681641],[53.041213,-44.604492],[53.330873,-47.768555]]' WHERE id = 108;
+UPDATE master_rumah SET polygon_coords = '[[68.001161,-63.055138],[67.890523,-59.617504],[64.680318,-60.864258],[64.80604,-64.301892]]' WHERE id = 76;
+UPDATE master_rumah SET polygon_coords = '[[67.169955,-42.802734],[67.063817,-39.709286],[63.77138,-40.859836],[63.891755,-43.953284]]' WHERE id = 86;
+UPDATE master_rumah SET polygon_coords = '[[61.773123,-42.758789],[61.585492,-39.506836],[57.539417,-40.473633],[57.657158,-43.681641]]' WHERE id = 87;
+UPDATE master_rumah SET polygon_coords = '[[61.669024,-39.462891],[61.501734,-36.166992],[57.397624,-37.133789],[57.562995,-40.517578]]' WHERE id = 88;
+UPDATE master_rumah SET polygon_coords = '[[67.050304,-39.462891],[66.954952,-36.493465],[63.575744,-37.630216],[63.684148,-40.599641]]' WHERE id = 89;
+UPDATE master_rumah SET polygon_coords = '[[66.878345,-36.342773],[66.755018,-33.210038],[63.439901,-34.287126],[63.579635,-37.419861]]' WHERE id = 90;
+UPDATE master_rumah SET polygon_coords = '[[61.41775,-36.166992],[61.270233,-32.915039],[57.136239,-33.662109],[57.373938,-37.089844]]' WHERE id = 91;
+UPDATE master_rumah SET polygon_coords = '[[67.875862,-59.559985],[67.76568,-56.203487],[64.54844,-57.436523],[64.673582,-60.793022]]' WHERE id = 77;
+UPDATE master_rumah SET polygon_coords = '[[67.730949,-56.143184],[67.627034,-52.951095],[64.373644,-54.200489],[64.491725,-57.392578]]' WHERE id = 78;
+UPDATE master_rumah SET polygon_coords = '[[67.539554,-52.86984],[67.414072,-49.313264],[64.216811,-50.540104],[64.358931,-54.09668]]' WHERE id = 79;
+UPDATE master_rumah SET polygon_coords = '[[62.471724,-56.074219],[62.329208,-52.77832],[58.263287,-53.876953],[58.35563,-57.172852]]' WHERE id = 80;
+UPDATE master_rumah SET polygon_coords = '[[62.329208,-52.646484],[62.103883,-49.438477],[58.077876,-50.317383],[58.286395,-53.701172]]' WHERE id = 81;
+UPDATE master_rumah SET polygon_coords = '[[67.424364,-49.482422],[67.314232,-46.143255],[64.058636,-47.313834],[64.18356,-50.653002]]' WHERE id = 82;
+UPDATE master_rumah SET polygon_coords = '[[62.103883,-49.350586],[61.856149,-45.65918],[57.891497,-47.021484],[58.054632,-50.405273]]' WHERE id = 83;
+UPDATE master_rumah SET polygon_coords = '[[67.371764,-46.096805],[67.250029,-42.895774],[63.875878,-43.996234],[64.014496,-47.197266]]' WHERE id = 84;
+UPDATE master_rumah SET polygon_coords = '[[61.835413,-45.791016],[61.814664,-42.890625],[57.657158,-43.725586],[57.821355,-46.933594]]' WHERE id = 85;
+UPDATE master_rumah SET polygon_coords = '[[3.951941,-45.131836],[3.441946,-38.590265],[-0.278407,-39.520872],[0.232651,-46.062443]]' WHERE id = 189;
+UPDATE master_rumah SET polygon_coords = '[[0.615223,-45.615234],[-0.015485,-38.88756],[-3.60387,-39.774168],[-2.974192,-46.501843]]' WHERE id = 190;
+UPDATE master_rumah SET polygon_coords = '[[2.288162,-64.118352],[1.862401,-57.216483],[-1.392701,-58.049302],[-0.966751,-64.951172]]' WHERE id = 191;
+UPDATE master_rumah SET polygon_coords = '[[-3.074695,-46.010742],[-3.625551,-39.138312],[-6.946021,-39.960671],[-6.397959,-46.833102]]' WHERE id = 192;
+UPDATE master_rumah SET polygon_coords = '[[-0.954166,-64.367451],[-1.489575,-57.717917],[-5.011552,-58.609255],[-4.477856,-65.258789]]' WHERE id = 193;
+UPDATE master_rumah SET polygon_coords = '[[-2.372274,-53.042032],[-2.989419,-46.555111],[-6.240776,-47.400861],[-5.626239,-53.887781]]' WHERE id = 194;
+UPDATE master_rumah SET polygon_coords = '[[5.585293,-62.956067],[5.044099,-56.642723],[1.521718,-57.890688],[2.064982,-64.204032]]' WHERE id = 186;
+UPDATE master_rumah SET polygon_coords = '[[74.810424,-36.826172],[74.555037,-29.794922],[73.689611,-30.146484],[73.934634,-37.001953]]' WHERE id = 195;
+UPDATE master_rumah SET polygon_coords = '[[4.50771,-51.68941],[4.039618,-44.648438],[-0.119914,-46.234298],[0.349482,-53.27527]]' WHERE id = 187;
+UPDATE master_rumah SET polygon_coords = '[[73.983207,-37.177734],[73.689611,-30.27832],[72.764065,-30.498047],[72.996909,-37.397461]]' WHERE id = 196;
+UPDATE master_rumah SET polygon_coords = '[[0.703022,-52.526907],[0.063512,-45.811866],[-2.899153,-46.889648],[-2.260276,-53.60469]]' WHERE id = 188;
+UPDATE master_rumah SET polygon_coords = '[[72.996909,-37.485352],[72.738003,-30.585938],[71.760191,-30.9375],[72.033289,-37.749023]]' WHERE id = 197;
+UPDATE master_rumah SET polygon_coords = '[[72.006158,-37.880859],[71.773941,-30.893555],[70.772443,-31.245117],[71.00266,-38.188477]]' WHERE id = 198;
+UPDATE master_rumah SET polygon_coords = '[[83.068774,-68.422852],[82.973184,-61.263641],[82.545086,-61.712366],[82.646469,-68.871577]]' WHERE id = 6;
+UPDATE master_rumah SET polygon_coords = '[[78.034688,-71.894531],[77.88494,-65.017907],[77.266922,-65.428356],[77.424188,-72.30498]]' WHERE id = 49;
+UPDATE master_rumah SET polygon_coords = '[[77.389504,-72.290039],[77.243819,-65.654732],[76.523697,-66.124976],[76.677461,-72.760283]]' WHERE id = 50;
+UPDATE master_rumah SET polygon_coords = '[[75.888091,-73.081055],[75.720687,-66.21675],[74.892615,-66.703107],[75.06951,-73.567411]]' WHERE id = 51;
+UPDATE master_rumah SET polygon_coords = '[[75.508158,-61.918945],[75.297735,-55.063477],[74.449358,-55.327148],[74.636748,-62.314453]]' WHERE id = 52;
+UPDATE master_rumah SET polygon_coords = '[[75.061686,-73.432617],[74.875866,-66.446685],[74.034492,-66.886328],[74.230392,-73.87226]]' WHERE id = 53;
+UPDATE master_rumah SET polygon_coords = '[[74.188052,-73.740234],[73.996385,-67.053253],[73.123698,-67.52776],[73.325526,-74.214742]]' WHERE id = 54;
+UPDATE master_rumah SET polygon_coords = '[[74.590108,-62.270508],[74.425777,-55.327148],[73.578167,-55.722656],[73.812574,-62.62207]]' WHERE id = 55;
+UPDATE master_rumah SET polygon_coords = '[[73.289993,-74.267578],[73.065785,-67.256139],[72.107279,-67.695857],[72.343782,-74.707297]]' WHERE id = 56;
+UPDATE master_rumah SET polygon_coords = '[[73.751205,-62.53418],[73.553302,-55.722656],[72.633374,-56.030273],[72.86793,-62.797852]]' WHERE id = 57;
+UPDATE master_rumah SET polygon_coords = '[[72.289067,-74.575195],[72.058438,-67.719454],[71.097013,-68.121358],[71.33957,-74.9771]]' WHERE id = 58;
+UPDATE master_rumah SET polygon_coords = '[[72.829052,-62.841797],[72.60712,-56.118164],[71.649833,-56.557617],[71.856229,-63.237305]]' WHERE id = 59;
+UPDATE master_rumah SET polygon_coords = '[[71.32895,-75.058594],[71.056384,-68.027774],[69.961534,-68.4239],[70.249238,-75.45472]]' WHERE id = 60;
+UPDATE master_rumah SET polygon_coords = '[[70.185103,-75.410156],[69.914125,-68.56501],[68.90814,-68.929167],[69.192099,-75.774313]]' WHERE id = 61;
+UPDATE master_rumah SET polygon_coords = '[[69.162558,-75.893555],[68.876111,-68.998099],[67.650563,-69.411861],[67.952819,-76.307317]]' WHERE id = 62;
+UPDATE master_rumah SET polygon_coords = '[[82.631333,-68.818359],[82.531474,-61.780345],[82.007692,-62.294835],[82.114511,-69.332849]]' WHERE id = 7;
+UPDATE master_rumah SET polygon_coords = '[[67.908619,-76.201172],[67.606678,-69.32584],[66.387453,-69.723021],[66.704937,-76.598352]]' WHERE id = 63;
+UPDATE master_rumah SET polygon_coords = '[[66.670387,-76.508789],[66.354243,-69.671788],[65.050389,-70.075173],[65.382902,-76.912174]]' WHERE id = 73;
+UPDATE master_rumah SET polygon_coords = '[[65.330178,-76.948242],[65.00888,-70.023873],[63.41466,-70.499046],[63.755037,-77.423415]]' WHERE id = 74;
+UPDATE master_rumah SET polygon_coords = '[[63.723289,-77.519147],[63.39328,-70.543845],[61.734341,-71.027628],[62.083315,-78.00293]]' WHERE id = 75;
+UPDATE master_rumah SET polygon_coords = '[[62.060873,-77.966972],[61.689872,-70.839844],[59.737126,-71.333401],[60.131425,-78.460529]]' WHERE id = 92;
+UPDATE master_rumah SET polygon_coords = '[[60.10867,-78.354492],[59.727638,-71.436721],[57.860635,-71.912785],[58.262777,-78.830556]]' WHERE id = 93;
+UPDATE master_rumah SET polygon_coords = '[[58.193871,-78.662109],[57.807775,-71.785769],[55.793885,-72.302129],[56.201344,-79.17847]]' WHERE id = 94;
+UPDATE master_rumah SET polygon_coords = '[[56.194481,-79.101563],[55.772113,-72.268821],[53.706925,-72.759964],[54.151451,-79.592705]]' WHERE id = 95;
+UPDATE master_rumah SET polygon_coords = '[[54.007769,-79.541016],[53.5838,-72.632282],[51.324286,-73.113057],[51.770651,-80.021791]]' WHERE id = 96;
+UPDATE master_rumah SET polygon_coords = '[[51.808615,-79.936523],[51.357303,-73.017449],[49.261955,-73.476884],[49.733673,-80.395958]]' WHERE id = 97;
+UPDATE master_rumah SET polygon_coords = '[[82.107111,-69.27488],[82.003058,-62.182617],[81.45944,-62.710241],[81.570516,-69.802503]]' WHERE id = 8;
+UPDATE master_rumah SET polygon_coords = '[[49.724479,-80.463867],[49.246403,-73.453298],[47.036328,-73.917077],[47.535524,-80.927646]]' WHERE id = 98;
+UPDATE master_rumah SET polygon_coords = '[[47.428087,-80.90332],[46.930817,-73.933816],[44.89624,-74.343288],[45.412164,-81.312793]]' WHERE id = 116;
+UPDATE master_rumah SET polygon_coords = '[[45.36025,-81.180859],[44.831847,-74.267889],[42.422373,-74.73742],[42.972502,-81.650391]]' WHERE id = 117;
+UPDATE master_rumah SET polygon_coords = '[[42.87273,-81.570844],[42.358544,-74.707031],[39.950175,-75.164063],[40.483709,-82.027875]]' WHERE id = 118;
+UPDATE master_rumah SET polygon_coords = '[[40.506568,-81.909907],[39.962206,-74.957427],[37.501833,-75.401036],[38.065392,-82.353516]]' WHERE id = 119;
+UPDATE master_rumah SET polygon_coords = '[[37.95081,-82.143119],[37.386269,-75.501381],[34.885931,-75.9375],[35.468881,-82.579238]]' WHERE id = 120;
+UPDATE master_rumah SET polygon_coords = '[[35.38905,-82.749023],[34.819748,-75.833679],[32.356602,-76.236942],[32.942522,-83.152286]]' WHERE id = 121;
+UPDATE master_rumah SET polygon_coords = '[[32.778092,-83.033356],[32.224817,-75.991986],[29.461475,-76.542614],[30.031055,-83.583984]]' WHERE id = 142;
+UPDATE master_rumah SET polygon_coords = '[[29.93997,-83.449947],[29.324034,-76.540954],[26.544312,-76.982609],[27.176469,-83.891602]]' WHERE id = 143;
+UPDATE master_rumah SET polygon_coords = '[[27.007432,-83.613692],[26.380792,-76.906538],[23.686352,-77.360229],[24.327077,-84.067383]]' WHERE id = 144;
+UPDATE master_rumah SET polygon_coords = '[[81.582843,-69.785156],[81.47278,-62.578125],[80.879795,-63.149414],[80.990573,-70.136719]]' WHERE id = 9;
+UPDATE master_rumah SET polygon_coords = '[[80.983688,-70.180664],[80.868156,-63.202034],[80.377681,-63.623574],[80.499362,-70.602205]]' WHERE id = 10;
+UPDATE master_rumah SET polygon_coords = '[[24.166802,-84.067383],[23.551208,-77.256982],[20.755209,-77.775916],[21.383326,-84.586317]]' WHERE id = 145;
+UPDATE master_rumah SET polygon_coords = '[[21.166484,-84.638672],[20.461297,-77.773387],[17.538117,-78.197783],[18.256031,-85.063068]]' WHERE id = 166;
+UPDATE master_rumah SET polygon_coords = '[[18.187607,-85.03418],[17.505881,-78.173797],[14.450802,-78.610033],[15.14324,-85.470416]]' WHERE id = 167;
+UPDATE master_rumah SET polygon_coords = '[[15.048928,-85.301348],[14.387456,-78.582865],[11.307708,-79.013672],[11.97755,-85.732155]]' WHERE id = 168;
+UPDATE master_rumah SET polygon_coords = '[[11.876059,-85.637719],[11.135287,-78.75],[8.124986,-79.154166],[8.872648,-86.041885]]' WHERE id = 169;
+UPDATE master_rumah SET polygon_coords = '[[8.711359,-86.220703],[7.94584,-79.218858],[4.828908,-79.64112],[5.599385,-86.642964]]' WHERE id = 170;
+UPDATE master_rumah SET polygon_coords = '[[6.699451,-70.595636],[5.928687,-63.61637],[2.475708,-64.12425],[3.250209,-71.103516]]' WHERE id = 171;
+UPDATE master_rumah SET polygon_coords = '[[5.291089,-86.535287],[4.521666,-79.584961],[1.643825,-79.984051],[2.415593,-86.934377]]' WHERE id = 172;
+UPDATE master_rumah SET polygon_coords = '[[3.037342,-71.101299],[2.284551,-64.160156],[-1.036954,-64.553571],[-0.283399,-71.494713]]' WHERE id = 173;
+UPDATE master_rumah SET polygon_coords = '[[2.353403,-86.709275],[1.609756,-79.881089],[-1.622786,-80.315369],[-0.878872,-87.143555]]' WHERE id = 174;
+UPDATE master_rumah SET polygon_coords = '[[80.46679,-70.532227],[80.339433,-63.432145],[79.784434,-63.900022],[79.919034,-71.000104]]' WHERE id = 11;
+UPDATE master_rumah SET polygon_coords = '[[-0.306117,-71.398551],[-1.054628,-64.511719],[-4.127106,-64.908621],[-3.380148,-71.795453]]' WHERE id = 175;
+UPDATE master_rumah SET polygon_coords = '[[79.897449,-70.883789],[79.768948,-63.948625],[79.218948,-64.37101],[79.354278,-71.306174]]' WHERE id = 12;
+UPDATE master_rumah SET polygon_coords = '[[79.351472,-71.235352],[79.216691,-64.329966],[78.610679,-64.771298],[78.752939,-71.676684]]' WHERE id = 13;
+UPDATE master_rumah SET polygon_coords = '[[78.724912,-71.499023],[78.586433,-64.755441],[77.91341,-65.218255],[78.059938,-71.961837]]' WHERE id = 48;
