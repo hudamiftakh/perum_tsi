@@ -5002,6 +5002,63 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			}
 		}
 
+		// Ambil data seluruh anggota keluarga dan KK untuk popup rincian keluarga
+		$anggota_raw = $this->db->query("
+			SELECT ak.id, ak.keluarga_id, ak.nama, ak.nik, ak.hubungan, ak.jenis_kelamin, ak.pekerjaan, ak.status_perkawinan, ak.agama,
+			       kl.nomor_rumah, kl.no_kk, kl.status_rumah
+			FROM master_anggota_keluarga ak
+			JOIN master_keluarga kl ON ak.keluarga_id = kl.id
+			ORDER BY 
+				CASE 
+					WHEN ak.hubungan = 'Kepala Keluarga' THEN 1
+					WHEN ak.hubungan = 'Istri' THEN 2
+					WHEN ak.hubungan = 'Suami' THEN 3
+					WHEN ak.hubungan = 'Anak' THEN 4
+					WHEN ak.hubungan = 'Orang Tua' THEN 5
+					ELSE 6
+				END ASC, ak.id ASC
+		")->result_array();
+
+		$anggota_map = [];
+		$keluarga_info_map = [];
+		foreach ($anggota_raw as $ak) {
+			$k = trim(strtolower($ak['nomor_rumah']));
+			if ($k !== '') {
+				$anggota_map[$k][] = [
+					'id'                => (int)$ak['id'],
+					'nama'              => $ak['nama'],
+					'nik'               => $ak['nik'],
+					'hubungan'          => $ak['hubungan'],
+					'jenis_kelamin'     => $ak['jenis_kelamin'],
+					'pekerjaan'         => $ak['pekerjaan'],
+					'status_perkawinan' => $ak['status_perkawinan'] ?? '',
+					'agama'             => $ak['agama'] ?? ''
+				];
+				if (!isset($keluarga_info_map[$k])) {
+					$keluarga_info_map[$k] = [
+						'no_kk'        => $ak['no_kk'],
+						'status_rumah' => $ak['status_rumah'],
+						'keluarga_id'  => (int)$ak['keluarga_id']
+					];
+				}
+			}
+		}
+
+		$keluarga_list = $this->db->query("
+			SELECT id, nomor_rumah, no_kk, status_rumah
+			FROM master_keluarga
+		")->result_array();
+		foreach ($keluarga_list as $klg) {
+			$k = trim(strtolower($klg['nomor_rumah']));
+			if ($k !== '' && !isset($keluarga_info_map[$k])) {
+				$keluarga_info_map[$k] = [
+					'no_kk'        => $klg['no_kk'],
+					'status_rumah' => $klg['status_rumah'],
+					'keluarga_id'  => (int)$klg['id']
+				];
+			}
+		}
+
 		$houses_list = [];
 		$total_rumah = 0;
 		$total_lunas = 0;
@@ -5059,13 +5116,31 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				}
 			}
 
+			$alamat_key = trim(strtolower($r['alamat']));
+			$anggota = isset($anggota_map[$alamat_key]) ? $anggota_map[$alamat_key] : [];
+			$kinfo = isset($keluarga_info_map[$alamat_key]) ? $keluarga_info_map[$alamat_key] : null;
+
+			// Fallback nama jika di master_rumah masih belum ada nama penghuni
+			$nama_penghuni = $r['nama'];
+			if ((empty($nama_penghuni) || $nama_penghuni === 'Belum Ada Nama') && !empty($anggota)) {
+				foreach ($anggota as $ag) {
+					if ($ag['hubungan'] === 'Kepala Keluarga') {
+						$nama_penghuni = $ag['nama'];
+						break;
+					}
+				}
+				if (empty($nama_penghuni) && isset($anggota[0]['nama'])) {
+					$nama_penghuni = $anggota[0]['nama'];
+				}
+			}
+
 			$houses_list[] = [
 				'id'                 => (int)$r['id'],
 				'user_id'            => !empty($r['user_id']) ? (int)$r['user_id'] : null,
 				'encrypted_user_id'  => !empty($r['user_id']) ? encrypt_url($r['user_id']) : encrypt_url($r['id']),
 				'encrypted_id'       => encrypt_url($r['id']),
 				'alamat'             => $r['alamat'] ?: 'Unit ' . $r['id'],
-				'nama'               => $r['nama'] ?: 'Belum Ada Nama',
+				'nama'               => $nama_penghuni ?: 'Belum Ada Nama',
 				'no_hp'              => $r['no_hp'] ?: '',
 				'koordinator'        => $r['koordinator'] ?: 'Tanpa Koordinator',
 				'id_koordinator'     => (int)$r['id_koordinator'],
@@ -5074,7 +5149,11 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 				'jumlah_bulan_bayar' => $jumlah_bayar,
 				'bulan_tunggak_list' => implode(', ', $tunggak_names),
 				'polygon_coords'     => $parsed_coords,
-				'has_coords'         => $has_coords
+				'has_coords'         => $has_coords,
+				'no_kk'              => $kinfo ? ($kinfo['no_kk'] ?: '') : '',
+				'status_rumah'       => $kinfo ? ($kinfo['status_rumah'] ?: '') : '',
+				'keluarga_id'        => $kinfo ? $kinfo['keluarga_id'] : null,
+				'anggota_keluarga'   => $anggota
 			];
 		}
 

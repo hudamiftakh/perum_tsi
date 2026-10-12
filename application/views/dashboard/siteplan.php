@@ -105,18 +105,68 @@ $koorId = $isKoor ? $userData['id'] : '';
         line-height: 1.4;
     }
     .popup-header-menunggak {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
+        background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
         color: white;
-        padding: 12px 16px;
+        padding: 16px 20px;
     }
     .popup-header-lunas {
-        background: linear-gradient(135deg, #22c55e, #16a34a);
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
         color: white;
-        padding: 12px 16px;
+        padding: 16px 20px;
     }
     .popup-body {
         padding: 14px 16px;
         background: #ffffff;
+    }
+
+    /* Styling Elemen Anggota Keluarga & Modal Proper */
+    .family-member-item {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 14px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .family-member-item:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .gender-avatar-male {
+        background: #e0f2fe;
+        color: #0284c7;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 17px;
+    }
+    .gender-avatar-female {
+        background: #fce7f3;
+        color: #db2777;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 17px;
+    }
+    .tunggak-pill-item {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 600;
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
     }
 
     /* Stat Cards */
@@ -716,88 +766,156 @@ $koorId = $isKoor ? $userData['id'] : '';
     </div>
 </div>
 
-<!-- Modal Rincian Rumah & Pembayaran (Optimasi Mobile Bottom-Sheet) -->
+<!-- Modal Rincian Rumah, Keluarga & Pembayaran (Optimasi Proper Desktop & Mobile Bottom-Sheet) -->
 <div class="modal fade" id="modalHouseDetail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-bottom-sheet">
-        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-bottom-sheet modal-lg">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
             <!-- Drag handle bar untuk mobile -->
-            <div class="bottom-sheet-handle-bar d-md-none bg-primary" id="modal-handle-bar">
+            <div class="bottom-sheet-handle-bar d-md-none" id="modal-handle-bar">
                 <div class="bottom-sheet-handle"></div>
             </div>
 
-            <div class="modal-header text-white" id="modal-house-header">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="ti ti-home fs-5"></i>
-                    <h5 class="modal-title fw-bold text-white mb-0" id="modal-house-title">Detail Rumah</h5>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-3 p-md-4">
-                <!-- Info Alamat & Koordinator -->
-                <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
-                    <div class="round-48 rounded-circle bg-light-primary text-primary d-flex align-items-center justify-content-center flex-shrink-0">
-                        <i class="ti ti-map-pin fs-6"></i>
+            <!-- Header Modal Cantik Bergradasi -->
+            <div class="modal-header text-white px-3 px-md-4 py-3" id="modal-house-header">
+                <div class="d-flex align-items-center gap-3 w-100 pe-2">
+                    <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 44px; height: 44px;">
+                        <i class="ti ti-home fs-6"></i>
                     </div>
-                    <div class="flex-grow-1 overflow-hidden">
-                        <h4 class="fw-bold mb-0 text-dark" id="modal-alamat">-</h4>
-                        <p class="text-muted mb-0 small" id="modal-koordinator">-</p>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h4 class="modal-title fw-bold text-white mb-0" id="modal-house-title">-</h4>
+                            <span id="modal-status-badge-header"></span>
+                        </div>
+                        <p class="text-white-50 mb-0 small" id="modal-sub-info">Perumahan Taman Sukodono Indah</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div class="modal-body p-3 p-md-4" style="background-color: #f8fafc; max-height: calc(85vh - 110px); overflow-y: auto;">
+                
+                <!-- 1. KARTU PROFIL PENGHUNI UTAMA & STATUS KEPEMILIKAN -->
+                <div class="card border-0 shadow-sm rounded-3 mb-3 bg-white">
+                    <div class="card-body p-3 p-md-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="rounded-circle text-primary bg-primary-subtle border border-primary-subtle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold fs-5 shadow-sm" id="modal-avatar-initial" style="width: 50px; height: 50px;">
+                                <i class="ti ti-user"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-1">
+                                    <h5 class="fw-bold text-dark mb-0 text-truncate" id="modal-nama">-</h5>
+                                    <span class="badge bg-light text-secondary border px-2.5 py-1 rounded-pill" id="modal-status-rumah" style="display: none;">-</span>
+                                </div>
+                                
+                                <div class="d-flex flex-wrap align-items-center gap-3 text-muted small mt-2">
+                                    <span class="d-inline-flex align-items-center gap-1.5" id="modal-koordinator-wrap">
+                                        <i class="ti ti-shield-check text-primary fs-4"></i>
+                                        <span id="modal-koordinator">-</span>
+                                    </span>
+                                    <span class="d-inline-flex align-items-center gap-1.5" id="modal-nokk-wrap" style="display: none;">
+                                        <i class="ti ti-id-badge-2 text-info fs-4"></i>
+                                        <span>No. KK: <strong id="modal-nokk" class="text-dark">-</strong></span>
+                                    </span>
+                                    <span class="d-inline-flex align-items-center gap-1.5" id="modal-telepon-display">
+                                        <i class="ti ti-phone text-success fs-4"></i>
+                                        <span id="modal-telepon-text">-</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Info Penghuni & Status -->
-                <div class="row g-2 mb-3">
-                    <div class="col-12 col-md-6">
-                        <div class="p-2 p-md-3 bg-light rounded-3 h-100">
-                            <label class="text-muted fs-2 text-uppercase fw-semibold mb-1 d-block">Penghuni / Pemilik:</label>
-                            <div class="fs-4 fw-bold text-dark text-truncate" id="modal-nama">-</div>
-                            <div class="small text-muted mt-1" id="modal-telepon-display">-</div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="p-2 p-md-3 bg-light rounded-3 h-100">
-                            <label class="text-muted fs-2 text-uppercase fw-semibold mb-1 d-block">Status IPL Periode Ini:</label>
+                <!-- 2. KARTU STATUS KEUANGAN & TUNGGAKAN IPL -->
+                <div class="card border-0 shadow-sm rounded-3 mb-3 bg-white">
+                    <div class="card-body p-3 p-md-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-uppercase fw-bold text-muted" style="font-size: 11px; letter-spacing: 0.5px;">
+                                <i class="ti ti-receipt-2 me-1 text-primary"></i> Status Pembayaran IPL
+                            </span>
                             <div id="modal-status-badge"></div>
                         </div>
+
+                        <!-- Box Tunggakan -->
+                        <div id="modal-tunggak-box" class="p-3 bg-danger-subtle border border-danger-subtle rounded-3 mt-2" style="display: none;">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="text-danger fw-bold fs-3">
+                                    <i class="ti ti-alert-triangle me-1"></i> Rincian Bulan Tunggakan:
+                                </span>
+                                <span class="badge bg-danger rounded-pill px-2.5 py-1" id="modal-tunggak-count">0 Bulan</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mt-2" id="modal-tunggak-list-pills">
+                                <!-- Pills rendered via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Box Lunas -->
+                        <div id="modal-lunas-box" class="p-2.5 bg-success-subtle border border-success-subtle rounded-3 mt-2" style="display: none;">
+                            <div class="d-flex align-items-center gap-2 text-success fw-semibold">
+                                <i class="ti ti-circle-check-filled fs-5"></i>
+                                <span>Iuran IPL rumah ini telah <strong>LUNAS</strong> untuk periode yang dipilih.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Rincian Tunggakan Jika Ada -->
-                <div class="mb-3" id="modal-tunggak-box">
-                    <div class="p-3 bg-light-danger border border-danger rounded-3">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <span class="text-danger fw-bold fs-3"><i class="ti ti-alert-triangle me-1"></i> Rincian Tunggakan:</span>
-                            <span class="badge bg-danger" id="modal-tunggak-count">-</span>
+                <!-- 3. SECTION ANGGOTA KELUARGA (FITUR UTAMA) -->
+                <div class="card border-0 shadow-sm rounded-3 mb-3 bg-white">
+                    <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 px-md-4 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded p-1 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                <i class="ti ti-users-group"></i>
+                            </div>
+                            <span class="fw-bold text-dark fs-3">Rincian Anggota Keluarga</span>
                         </div>
-                        <div class="text-danger fs-3 fw-semibold mt-1" id="modal-tunggak-list">
-                            -
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1" id="modal-anggota-count">0 Jiwa</span>
+                    </div>
+                    <div class="card-body p-3 p-md-4 pt-1">
+                        <!-- List Anggota Keluarga -->
+                        <div id="modal-family-list" class="d-flex flex-column gap-2">
+                            <!-- Items dinamis di-render via JS -->
+                        </div>
+                        
+                        <!-- Empty State Jika Belum Terdata -->
+                        <div id="modal-family-empty" class="text-center py-4 px-3 bg-light rounded-3 border border-dashed" style="display: none;">
+                            <div class="mx-auto mb-2 text-muted opacity-50">
+                                <i class="ti ti-users fs-8"></i>
+                            </div>
+                            <h6 class="fw-semibold text-secondary mb-1">Belum Ada Data Rincian Keluarga</h6>
+                            <p class="text-muted small mb-0">Rincian anggota keluarga penghuni unit kavling ini belum diinput ke database.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tombol Aksi Lapangan: Ramah Sentuhan Jempol (Touch-Friendly) -->
-                <div class="d-flex flex-column gap-2 mt-3 pt-3 border-top">
-                    <!-- Tombol Utama: Input Pembayaran Langsung di Lapangan -->
-                    <a href="#" id="modal-btn-pay" class="btn btn-primary w-100 mobile-touch-btn mobile-touch-btn-primary gap-2 shadow-sm">
-                        <i class="ti ti-cash fs-6"></i>
-                        <span>Input Pembayaran Sekarang</span>
-                    </a>
-
-                    <!-- Tombol Sekunder: WhatsApp Tagihan & Telepon Langsung -->
-                    <div class="row g-2 mt-1">
-                        <div class="col-6" id="modal-wa-col">
-                            <a href="#" target="_blank" id="modal-btn-wa" class="btn btn-success w-100 mobile-touch-btn gap-1 shadow-sm">
-                                <i class="bi bi-whatsapp fs-5"></i>
-                                <span>WhatsApp</span>
+                <!-- 4. TOMBOL AKSI CEPAT LAPANGAN -->
+                <div class="card border-0 shadow-sm rounded-3 bg-white">
+                    <div class="card-body p-3 p-md-3">
+                        <div class="d-flex flex-column gap-2">
+                            <!-- Tombol Bayar / Kasir IPL -->
+                            <a href="#" id="modal-btn-pay" class="btn btn-primary w-100 mobile-touch-btn mobile-touch-btn-primary gap-2 shadow-sm">
+                                <i class="ti ti-cash fs-5"></i>
+                                <span>Input Pembayaran IPL Sekarang</span>
                             </a>
-                        </div>
-                        <div class="col-6" id="modal-tel-col">
-                            <a href="#" id="modal-btn-call" class="btn btn-outline-primary w-100 mobile-touch-btn gap-1">
-                                <i class="ti ti-phone-call fs-5"></i>
-                                <span>Telepon</span>
-                            </a>
+
+                            <!-- Tombol WhatsApp & Telepon -->
+                            <div class="row g-2" id="modal-action-row">
+                                <div class="col-6" id="modal-wa-col">
+                                    <a href="#" target="_blank" id="modal-btn-wa" class="btn btn-success w-100 mobile-touch-btn gap-2 shadow-sm" style="background-color: #25D366; border-color: #25D366;">
+                                        <i class="bi bi-whatsapp fs-5"></i>
+                                        <span>WhatsApp</span>
+                                    </a>
+                                </div>
+                                <div class="col-6" id="modal-tel-col">
+                                    <a href="#" id="modal-btn-call" class="btn btn-outline-primary w-100 mobile-touch-btn gap-2">
+                                        <i class="ti ti-phone-call fs-5"></i>
+                                        <span>Telepon</span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -1341,10 +1459,11 @@ $koorId = $isKoor ? $userData['id'] : '';
         window.open("<?= base_url('siteplan/pdf') ?>?" + params.toString(), '_blank');
     }
 
-    // Tampilkan Modal Detail Rumah & IPL (Optimasi Mobile Touch-Friendly)
+    // Tampilkan Modal Detail Rumah, Anggota Keluarga & IPL (Optimasi Proper Touch-Friendly)
     function showHouseDetail(house) {
         const isLunas = (house.status_ipl === 'lunas');
 
+        // Header Style & Badges
         const headerEl = document.getElementById('modal-house-header');
         headerEl.className = isLunas ? 'modal-header popup-header-lunas' : 'modal-header popup-header-menunggak';
 
@@ -1354,26 +1473,161 @@ $koorId = $isKoor ? $userData['id'] : '';
         }
 
         document.getElementById('modal-house-title').textContent = house.alamat;
-        document.getElementById('modal-alamat').textContent = house.alamat;
-        document.getElementById('modal-koordinator').textContent = 'Koordinator: ' + (house.koordinator || '-');
-        document.getElementById('modal-nama').textContent = house.nama || '(Belum terdata nama)';
+        document.getElementById('modal-koordinator').textContent = house.koordinator || 'Tanpa Koordinator';
 
-        const badgeEl = document.getElementById('modal-status-badge');
-        const tunggakBox = document.getElementById('modal-tunggak-box');
+        // Avatar Inisial & Nama Penghuni Utama
+        const rawNama = (house.nama && house.nama.trim() !== '' && !house.nama.toLowerCase().includes('belum')) ? house.nama.trim() : '(Belum Terdata Nama)';
+        document.getElementById('modal-nama').textContent = rawNama;
 
-        if (isLunas) {
-            badgeEl.innerHTML = '<span class="badge bg-success fs-3 px-3 py-2"><i class="ti ti-check me-1"></i> LUNAS IPL</span>';
-            tunggakBox.style.display = 'none';
-        } else {
-            const countStr = (house.tunggakan || 1) + ' Bulan';
-            badgeEl.innerHTML = `<span class="badge bg-danger fs-3 px-3 py-2"><i class="ti ti-alert-triangle me-1"></i> BELUM BAYAR (${countStr})</span>`;
-            tunggakBox.style.display = 'block';
-            const countBadge = document.getElementById('modal-tunggak-count');
-            if (countBadge) countBadge.textContent = countStr;
-            document.getElementById('modal-tunggak-list').textContent = house.bulan_tunggak_list || 'Periode berjalan';
+        const avatarInitial = document.getElementById('modal-avatar-initial');
+        if (avatarInitial) {
+            if (rawNama.startsWith('(')) {
+                avatarInitial.innerHTML = '<i class="ti ti-user-x"></i>';
+                avatarInitial.className = 'rounded-circle text-muted bg-light border d-flex align-items-center justify-content-center flex-shrink-0 fw-bold fs-5 shadow-sm';
+            } else {
+                const words = rawNama.split(' ').filter(w => w.length > 0);
+                let initial = words[0] ? words[0].substring(0, 1).toUpperCase() : 'H';
+                if (words.length > 1 && words[1]) {
+                    initial += words[1].substring(0, 1).toUpperCase();
+                }
+                avatarInitial.textContent = initial;
+                avatarInitial.className = 'rounded-circle text-primary bg-primary-subtle border border-primary-subtle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold fs-5 shadow-sm';
+            }
         }
 
-        // Direct payment target (pre-selects house/user for 1-tap entry in field)
+        // Status Kepemilikan Rumah & No. KK
+        const statusRumahEl = document.getElementById('modal-status-rumah');
+        if (statusRumahEl) {
+            if (house.status_rumah && house.status_rumah.trim() !== '') {
+                statusRumahEl.textContent = house.status_rumah;
+                statusRumahEl.style.display = 'inline-block';
+            } else {
+                statusRumahEl.style.display = 'none';
+            }
+        }
+
+        const noKkWrap = document.getElementById('modal-nokk-wrap');
+        const noKkEl = document.getElementById('modal-nokk');
+        if (noKkWrap && noKkEl) {
+            if (house.no_kk && house.no_kk.trim() !== '') {
+                noKkEl.textContent = house.no_kk;
+                noKkWrap.style.display = 'inline-flex';
+            } else {
+                noKkWrap.style.display = 'none';
+            }
+        }
+
+        // Status Keuangan & Tunggakan IPL
+        const badgeHeaderEl = document.getElementById('modal-status-badge-header');
+        const badgeEl = document.getElementById('modal-status-badge');
+        const tunggakBox = document.getElementById('modal-tunggak-box');
+        const lunasBox = document.getElementById('modal-lunas-box');
+
+        if (isLunas) {
+            if (badgeHeaderEl) badgeHeaderEl.innerHTML = '<span class="badge bg-white text-success fw-bold px-2.5 py-1 rounded-pill"><i class="ti ti-check me-1"></i>Lunas</span>';
+            badgeEl.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle fs-3 px-3 py-1.5 rounded-pill"><i class="ti ti-circle-check-filled me-1"></i> LUNAS</span>';
+            if (tunggakBox) tunggakBox.style.display = 'none';
+            if (lunasBox) lunasBox.style.display = 'block';
+        } else {
+            const countStr = (house.tunggakan || 1) + ' Bulan';
+            if (badgeHeaderEl) badgeHeaderEl.innerHTML = `<span class="badge bg-white text-danger fw-bold px-2.5 py-1 rounded-pill"><i class="ti ti-alert-triangle me-1"></i>${countStr}</span>`;
+            badgeEl.innerHTML = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-3 px-3 py-1.5 rounded-pill"><i class="ti ti-alert-triangle-filled me-1"></i> BELUM BAYAR</span>`;
+            if (lunasBox) lunasBox.style.display = 'none';
+            if (tunggakBox) {
+                tunggakBox.style.display = 'block';
+                const countBadge = document.getElementById('modal-tunggak-count');
+                if (countBadge) countBadge.textContent = countStr;
+
+                const pillsContainer = document.getElementById('modal-tunggak-list-pills');
+                if (pillsContainer) {
+                    pillsContainer.innerHTML = '';
+                    if (house.bulan_tunggak_list) {
+                        const bulanArr = house.bulan_tunggak_list.split(',');
+                        bulanArr.forEach(b => {
+                            const bName = b.trim();
+                            if (bName) {
+                                const pill = document.createElement('span');
+                                pill.className = 'tunggak-pill-item';
+                                pill.innerHTML = `<i class="ti ti-calendar me-1"></i>${escapeHtml(bName)}`;
+                                pillsContainer.appendChild(pill);
+                            }
+                        });
+                    } else {
+                        pillsContainer.innerHTML = '<span class="tunggak-pill-item">Periode Berjalan</span>';
+                    }
+                }
+            }
+        }
+
+        // =============================================
+        // RENDER DAFTAR ANGGOTA KELUARGA (FITUR UTAMA)
+        // =============================================
+        const anggotaList = house.anggota_keluarga || [];
+        const countAnggotaEl = document.getElementById('modal-anggota-count');
+        const listAnggotaEl = document.getElementById('modal-family-list');
+        const emptyAnggotaEl = document.getElementById('modal-family-empty');
+
+        if (countAnggotaEl) {
+            countAnggotaEl.textContent = anggotaList.length + ' Jiwa';
+        }
+
+        if (listAnggotaEl) {
+            listAnggotaEl.innerHTML = '';
+            if (anggotaList.length > 0) {
+                if (emptyAnggotaEl) emptyAnggotaEl.style.display = 'none';
+
+                anggotaList.forEach(member => {
+                    const isFemale = (member.jenis_kelamin && member.jenis_kelamin.toLowerCase().includes('perempuan'));
+                    const avatarClass = isFemale ? 'gender-avatar-female' : 'gender-avatar-male';
+                    const genderIcon = isFemale ? '<i class="ti ti-gender-female"></i>' : '<i class="ti ti-gender-male"></i>';
+
+                    // Hubungan badge color logic
+                    let relationBadge = '';
+                    const hub = (member.hubungan || '').trim();
+                    if (hub.toLowerCase() === 'kepala keluarga') {
+                        relationBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Kepala Keluarga</span>';
+                    } else if (hub.toLowerCase() === 'istri') {
+                        relationBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">Istri</span>';
+                    } else if (hub.toLowerCase() === 'suami') {
+                        relationBadge = '<span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2.5 py-1">Suami</span>';
+                    } else if (hub.toLowerCase() === 'anak') {
+                        relationBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Anak</span>';
+                    } else if (hub.toLowerCase() === 'orang tua' || hub.toLowerCase() === 'mertua') {
+                        relationBadge = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1">' + escapeHtml(hub) + '</span>';
+                    } else {
+                        relationBadge = '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1">' + escapeHtml(hub || 'Anggota') + '</span>';
+                    }
+
+                    // Info pekerjaan
+                    let pekerjaanInfo = '';
+                    if (member.pekerjaan && member.pekerjaan !== '-' && member.pekerjaan.trim() !== '') {
+                        pekerjaanInfo = `<span class="d-inline-flex align-items-center gap-1 text-muted small"><i class="ti ti-briefcase text-muted"></i> ${escapeHtml(member.pekerjaan)}</span>`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'family-member-item d-flex align-items-center justify-content-between gap-2';
+                    card.innerHTML = `
+                        <div class="d-flex align-items-center gap-2.5 min-w-0">
+                            <div class="${avatarClass}" title="${isFemale ? 'Perempuan' : 'Laki-laki'}">
+                                ${genderIcon}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="fw-bold text-dark text-truncate" style="font-size: 14px;">${escapeHtml(member.nama)}</div>
+                                ${pekerjaanInfo}
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            ${relationBadge}
+                        </div>
+                    `;
+                    listAnggotaEl.appendChild(card);
+                });
+            } else {
+                if (emptyAnggotaEl) emptyAnggotaEl.style.display = 'block';
+            }
+        }
+
+        // Direct payment target
         const payTarget = house.encrypted_user_id || house.encrypted_id;
         const btnPay = document.getElementById('modal-btn-pay');
         if (btnPay) {
@@ -1381,7 +1635,7 @@ $koorId = $isKoor ? $userData['id'] : '';
         }
 
         // Contact info: WhatsApp & Phone Call
-        const telDisplay = document.getElementById('modal-telepon-display');
+        const telText = document.getElementById('modal-telepon-text');
         const btnWa = document.getElementById('modal-btn-wa');
         const btnCall = document.getElementById('modal-btn-call');
         const waCol = document.getElementById('modal-wa-col');
@@ -1394,12 +1648,12 @@ $koorId = $isKoor ? $userData['id'] : '';
                 waPhone = '62' + waPhone.substring(1);
             }
 
-            if (telDisplay) {
-                telDisplay.innerHTML = `<i class="ti ti-phone me-1"></i> ${house.no_hp}`;
+            if (telText) {
+                telText.textContent = house.no_hp;
             }
 
             // Pesan WA santun untuk koordinator keliling di lapangan
-            let pesanWA = `Assalamu'alaikum Wr. Wb. Bapak/Ibu *${house.nama || ''}* (${house.alamat}), mohon maaf mengganggu waktunya sebentar.\n\nSaya selaku Koordinator Lingkungan Perumahan TSI ingin mengonfirmasikan perihal iuran paguyuban/IPL`;
+            let pesanWA = `Assalamu'alaikum Wr. Wb. Bapak/Ibu *${rawNama}* (${house.alamat}), mohon maaf mengganggu waktunya sebentar.\n\nSaya selaku Koordinator Lingkungan Perumahan TSI ingin mengonfirmasikan perihal iuran paguyuban/IPL`;
             if (!isLunas && house.bulan_tunggak_list) {
                 pesanWA += ` untuk periode *${house.bulan_tunggak_list}* (${house.tunggakan} Bulan).\n\nSaat ini kami sedang penarikan keliling di blok. Pembayaran dapat diserahkan langsung secara tunai atau melalui transfer aplikasi. Terima kasih banyak. 🙏`;
             } else {
@@ -1415,8 +1669,8 @@ $koorId = $isKoor ? $userData['id'] : '';
             if (waCol) waCol.style.display = 'block';
             if (telCol) telCol.style.display = 'block';
         } else {
-            if (telDisplay) {
-                telDisplay.innerHTML = `<span class="text-muted fst-italic">No. HP belum terdaftar</span>`;
+            if (telText) {
+                telText.innerHTML = '<span class="text-muted fst-italic">No. HP belum ada</span>';
             }
             if (waCol) waCol.style.display = 'none';
             if (telCol) telCol.style.display = 'none';
