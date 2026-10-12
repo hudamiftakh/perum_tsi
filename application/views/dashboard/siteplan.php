@@ -322,6 +322,47 @@ $koorId = $isKoor ? $userData['id'] : '';
             box-shadow: 0 4px 14px rgba(13, 110, 253, 0.35) !important;
         }
     }
+
+    /* =========================================
+       LABEL NAMA KAVLING SAAT ZOOM (WRAPPING & TIDAK TEMBUS KOTAK)
+       ========================================= */
+    .house-map-label-wrapper {
+        background: transparent !important;
+        border: none !important;
+        pointer-events: none !important;
+    }
+    .house-map-label {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        border-radius: 4px !important;
+        padding: 2px 3px !important;
+        box-sizing: border-box !important;
+        pointer-events: none !important;
+        user-select: none !important;
+        
+        /* Auto Wrapping agar tidak tembus kotak */
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        overflow: hidden !important;
+        
+        box-shadow: 0 1px 4px rgba(0,0,0,0.45) !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.85) !important;
+    }
+    .house-map-label.label-lunas {
+        background: rgba(21, 128, 61, 0.84) !important; /* Hijau lunas */
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    }
+    .house-map-label.label-menunggak {
+        background: rgba(185, 28, 28, 0.88) !important; /* Merah nunggak */
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    }
 </style>
 
 <div class="row mb-3">
@@ -911,6 +952,7 @@ $koorId = $isKoor ? $userData['id'] : '';
     let map = null;
     let mapRenderer = null;
     let polygonLayerGroup = null;
+    let labelLayerGroup = null;
     let activePolygons = {}; // Map id_rumah -> L.Polygon
     let showRedBoxes = true;
     let currentFilterKoor = "<?= htmlspecialchars((string)($id_koordinator ?: $koorId), ENT_QUOTES, 'UTF-8') ?>";
@@ -991,9 +1033,13 @@ $koorId = $isKoor ? $userData['id'] : '';
         }).addTo(map);
 
         polygonLayerGroup = new L.LayerGroup().addTo(map);
+        labelLayerGroup = new L.LayerGroup().addTo(map);
 
         // Render poligon semua rumah
         renderHousePolygons();
+
+        // Event Zoom: Update label nama agar otomatis muncul & pas saat di-zoom
+        map.on('zoomend', updateHouseLabels);
 
         // Event Klik pada Peta (untuk Mode Plotting & Mode Geser)
         map.on('click', function(e) {
@@ -1087,6 +1133,81 @@ $koorId = $isKoor ? $userData['id'] : '';
         });
 
         document.getElementById('unplotted-count').textContent = unplotted;
+        updateHouseLabels();
+    }
+
+    // Helper Escape HTML
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // Tampilkan Nama Warga di Dalam Kotak Kavling Saat Di-zoom (Wrapping & Tidak Tembus Kotak)
+    function updateHouseLabels() {
+        if (!map || !labelLayerGroup) return;
+        labelLayerGroup.clearLayers();
+
+        const currentZoom = map.getZoom();
+        // Hanya muncul saat di-zoom agar tidak padat/menumpuk di overview peta
+        if (currentZoom < 3) return;
+
+        let fontSize = (currentZoom >= 5) ? '12px' : (currentZoom >= 4 ? '10px' : '8px');
+
+        siteplanData.houses.forEach(house => {
+            if (!house.has_coords || !house.polygon_coords || house.polygon_coords.length < 3) return;
+            const poly = activePolygons[house.id];
+            if (!poly) return;
+
+            const bounds = poly.getBounds();
+            if (!bounds || !bounds.isValid || !bounds.isValid()) return;
+
+            // Hitung ukuran dimensi kotak di layar (pixel)
+            const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+            const se = map.latLngToLayerPoint(bounds.getSouthEast());
+            const boxW = Math.abs(se.x - nw.x);
+            const boxH = Math.abs(se.y - nw.y);
+
+            // Jika kotak terlalu kecil pada zoom saat ini, jangan render teks
+            if (boxW < 24 || boxH < 16) return;
+
+            // Alokasikan 88-90% area kotak agar teks aman di dalam & tidak tembus garis batas
+            const labelW = Math.max(20, Math.floor(boxW * 0.90));
+            const labelH = Math.max(14, Math.floor(boxH * 0.88));
+
+            // Ambil nama warga (jika kosong atau belum berpenghuni, gunakan alamat/nomor rumah)
+            let rawName = (house.nama && house.nama.trim() !== '' && !house.nama.toLowerCase().includes('belum')) 
+                ? house.nama.trim() 
+                : house.alamat;
+
+            const safeName = escapeHtml(rawName);
+            const isLunas = (house.status_ipl === 'lunas');
+            const center = bounds.getCenter();
+
+            const labelIcon = L.divIcon({
+                className: 'house-map-label-wrapper',
+                html: `<div class="house-map-label ${isLunas ? 'label-lunas' : 'label-menunggak'}" 
+                            style="width: ${labelW}px; max-width: ${labelW}px; max-height: ${labelH}px; font-size: ${fontSize};"
+                            title="${escapeHtml(house.alamat + ' - ' + (house.nama || ''))}">
+                            <span>${safeName}</span>
+                       </div>`,
+                iconSize: [labelW, labelH],
+                iconAnchor: [labelW / 2, labelH / 2]
+            });
+
+            const marker = L.marker(center, {
+                icon: labelIcon,
+                interactive: false,
+                keyboard: false,
+                zIndexOffset: 400
+            });
+
+            marker.addTo(labelLayerGroup);
+        });
     }
 
     function toggleRedBoxes() {
@@ -1689,6 +1810,9 @@ $koorId = $isKoor ? $userData['id'] : '';
         dragStartMouse = null;
         dragStartCoords = null;
         isDraggingBox = false;
+
+        // Perbarui posisi label nama kavling
+        updateHouseLabels();
     }
 
     // === RESIZE HANDLE (corner markers) ===
@@ -1862,6 +1986,7 @@ $koorId = $isKoor ? $userData['id'] : '';
                         document.getElementById('drag-count').textContent = Object.keys(movedPolygons).length;
                     }
                     forceCanvasRedraw();
+                    updateHouseLabels();
                 }
                 origLayerPoints = null;
             });
@@ -1899,6 +2024,7 @@ $koorId = $isKoor ? $userData['id'] : '';
             movedPolygons[houseData.id] = true;
             document.getElementById('drag-count').textContent = Object.keys(movedPolygons).length;
         }
+        updateHouseLabels();
     }
 
     // Update posisi semua corner handles
