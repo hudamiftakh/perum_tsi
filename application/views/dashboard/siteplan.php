@@ -196,6 +196,12 @@ $koorId = $isKoor ? $userData['id'] : '';
         .mobile-map-fab-container {
             display: none !important;
         }
+        .map-legend .legend-chevron {
+            display: none !important;
+        }
+        .map-legend .legend-content {
+            display: block !important;
+        }
     }
 
     @media (max-width: 768px) {
@@ -234,37 +240,74 @@ $koorId = $isKoor ? $userData['id'] : '';
             gap: 6px !important;
         }
 
-        /* Legenda peta mobile yang ringkas */
+        /* Tombol Floating Mobile: Dibuat kompak melingkar (FAB icon-only) agar tidak menutupi peta */
+        .mobile-map-fab-container {
+            top: 10px !important;
+            right: 10px !important;
+            gap: 8px !important;
+        }
+        .mobile-fab-btn {
+            width: 36px !important;
+            height: 36px !important;
+            min-height: 36px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25) !important;
+        }
+        .mobile-fab-btn i {
+            font-size: 18px !important;
+            margin: 0 !important;
+        }
+        .mobile-fab-label {
+            display: none !important; /* Sembunyikan teks di mobile agar tombol berbentuk bulatan rapi */
+        }
+
+        /* Legenda peta mobile: Collapsible & Sangat Kompak */
         .map-legend {
-            bottom: 12px !important;
+            bottom: 10px !important;
             left: 10px !important;
-            padding: 8px 12px !important;
+            padding: 6px 10px !important;
             font-size: 11px !important;
-            max-width: calc(100% - 90px) !important;
+            max-width: 220px !important;
             background: rgba(255, 255, 255, 0.94) !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
             border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+            user-select: none !important;
+        }
+        .map-legend.collapsed-mobile {
+            padding: 4px 10px !important;
+            border-radius: 20px !important;
+            background: rgba(255, 255, 255, 0.92) !important;
+        }
+        .map-legend.collapsed-mobile .legend-content {
+            display: none !important;
+        }
+        .map-legend.collapsed-mobile .legend-chevron {
+            transform: rotate(180deg) !important;
         }
         .map-legend .legend-box {
-            width: 14px !important;
-            height: 14px !important;
+            width: 13px !important;
+            height: 13px !important;
         }
         .map-legend .fw-bold {
             font-size: 11px !important;
-            margin-bottom: 4px !important;
-            padding-bottom: 2px !important;
+            margin-bottom: 0 !important;
         }
         .legend-item {
-            margin-bottom: 3px !important;
+            margin-bottom: 2px !important;
         }
 
-        /* Tombol Zoom Leaflet lebih besar dan ramah sentuhan */
+        /* Tombol Zoom Leaflet lebih kompak agar tidak memakan ruang sentuh */
         .leaflet-touch .leaflet-bar a {
-            width: 42px !important;
-            height: 42px !important;
-            line-height: 42px !important;
-            font-size: 20px !important;
-            border-radius: 8px !important;
+            width: 32px !important;
+            height: 32px !important;
+            line-height: 32px !important;
+            font-size: 16px !important;
+            border-radius: 6px !important;
         }
 
         /* Bottom Sheet Modal untuk Detail Rumah */
@@ -593,20 +636,27 @@ $koorId = $isKoor ? $userData['id'] : '';
             </button>
         </div>
 
-        <!-- Floating Legend -->
-        <div class="map-legend">
-            <div class="fw-bold mb-2 pb-1 border-bottom text-dark">Legenda Status IPL</div>
-            <div class="legend-item">
-                <div class="legend-box box-menunggak"></div>
-                <span><strong>Merah:</strong> Belum Bayar IPL</span>
+        <!-- Floating Legend (Collapsible on Mobile) -->
+        <div class="map-legend collapsed-mobile" id="map-legend">
+            <div class="legend-header d-flex align-items-center justify-content-between" onclick="toggleLegendCollapse()" title="Klik untuk buka/tutup legenda" style="cursor: pointer;">
+                <span class="fw-bold text-dark d-flex align-items-center gap-1" style="font-size: 11px;">
+                    <i class="ti ti-info-circle text-primary"></i> Legenda
+                </span>
+                <i class="ti ti-chevron-up ms-2 text-muted legend-chevron" id="legend-chevron" style="transition: transform 0.2s ease;"></i>
             </div>
-            <div class="legend-item">
-                <div class="legend-box box-lunas"></div>
-                <span><strong>Hijau:</strong> Lunas IPL</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-box box-unplotted"></div>
-                <span class="text-muted"><small>Kotak belum di-plot (<span id="unplotted-count">0</span> rumah)</small></span>
+            <div class="legend-content" id="legend-content">
+                <div class="legend-item mt-2">
+                    <div class="legend-box box-menunggak"></div>
+                    <span><strong>Merah:</strong> Belum Bayar IPL</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box box-lunas"></div>
+                    <span><strong>Hijau:</strong> Lunas IPL</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box box-unplotted"></div>
+                    <span class="text-muted"><small>Kotak belum di-plot (<span id="unplotted-count">0</span>)</small></span>
+                </div>
             </div>
         </div>
 
@@ -1210,6 +1260,12 @@ $koorId = $isKoor ? $userData['id'] : '';
 
             marker.addTo(labelLayerGroup);
         });
+    }
+
+    function toggleLegendCollapse() {
+        const leg = document.getElementById('map-legend');
+        if (!leg) return;
+        leg.classList.toggle('collapsed-mobile');
     }
 
     function toggleRedBoxes() {
