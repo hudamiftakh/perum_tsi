@@ -4915,8 +4915,10 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		// Ambil seluruh master rumah (selalu load seluruh kavling agar tampilan peta utuh)
 		$all_rumah = $this->db->query("
 			SELECT r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator,
+			       MAX(u.id) as user_id,
 			       MAX(k.nama) as koordinator, MAX(kl.no_hp) as no_hp
 			FROM master_rumah r
+			LEFT JOIN master_users u ON u.id_rumah = r.id
 			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
 			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
 			WHERE r.id IS NOT NULL
@@ -5011,6 +5013,9 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 
 			$houses_list[] = [
 				'id'                 => (int)$r['id'],
+				'user_id'            => !empty($r['user_id']) ? (int)$r['user_id'] : null,
+				'encrypted_user_id'  => !empty($r['user_id']) ? encrypt_url($r['user_id']) : encrypt_url($r['id']),
+				'encrypted_id'       => encrypt_url($r['id']),
 				'alamat'             => $r['alamat'] ?: 'Unit ' . $r['id'],
 				'nama'               => $r['nama'] ?: 'Belum Ada Nama',
 				'no_hp'              => $r['no_hp'] ?: '',

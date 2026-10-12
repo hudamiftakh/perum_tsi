@@ -151,6 +151,179 @@ $koorId = $isKoor ? $userData['id'] : '';
     .resize-handle-icon:active {
         cursor: grabbing !important;
     }
+
+    /* =========================================
+       OPTIMASI KHUSUS MOBILE / KOORDINATOR KELILING
+       ========================================= */
+    .mobile-map-fab-container {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: auto;
+    }
+
+    .mobile-fab-btn {
+        border-radius: 30px !important;
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        border: 1px solid rgba(255,255,255,0.4) !important;
+        color: #ffffff !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        backdrop-filter: blur(8px);
+        min-height: 42px !important;
+        cursor: pointer !important;
+        user-select: none !important;
+    }
+    .mobile-fab-btn:active {
+        transform: scale(0.92) !important;
+    }
+    .mobile-fab-recenter {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45) !important;
+    }
+    .mobile-fab-toggle-red {
+        background: linear-gradient(135deg, #b91c1c, #ef4444) !important;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45) !important;
+    }
+
+    @media (min-width: 769px) {
+        .mobile-map-fab-container {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        /* Peta responsif di layar ponsel */
+        #siteplan-map {
+            height: 62vh !important;
+            min-height: 420px !important;
+            border-radius: 0 0 12px 12px !important;
+        }
+
+        /* Toolbar atas: horizontal scroll pill buttons agar rapi di HP */
+        .siteplan-top-toolbar {
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding-bottom: 6px !important;
+            width: 100% !important;
+            scrollbar-width: thin;
+        }
+        .siteplan-top-toolbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .siteplan-top-toolbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .siteplan-top-toolbar .btn {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            padding: 8px 15px !important;
+            font-size: 13px !important;
+            border-radius: 50px !important;
+            min-height: 40px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+
+        /* Legenda peta mobile yang ringkas */
+        .map-legend {
+            bottom: 12px !important;
+            left: 10px !important;
+            padding: 8px 12px !important;
+            font-size: 11px !important;
+            max-width: calc(100% - 90px) !important;
+            background: rgba(255, 255, 255, 0.94) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+            border-radius: 8px !important;
+        }
+        .map-legend .legend-box {
+            width: 14px !important;
+            height: 14px !important;
+        }
+        .map-legend .fw-bold {
+            font-size: 11px !important;
+            margin-bottom: 4px !important;
+            padding-bottom: 2px !important;
+        }
+        .legend-item {
+            margin-bottom: 3px !important;
+        }
+
+        /* Tombol Zoom Leaflet lebih besar dan ramah sentuhan */
+        .leaflet-touch .leaflet-bar a {
+            width: 42px !important;
+            height: 42px !important;
+            line-height: 42px !important;
+            font-size: 20px !important;
+            border-radius: 8px !important;
+        }
+
+        /* Bottom Sheet Modal untuk Detail Rumah */
+        .modal-dialog-bottom-sheet {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .modal.show .modal-dialog-bottom-sheet {
+            transform: translateY(0) !important;
+        }
+        .modal-dialog-bottom-sheet .modal-content {
+            border-radius: 24px 24px 0 0 !important;
+            border: none !important;
+            max-height: 86vh !important;
+            overflow-y: auto !important;
+            box-shadow: 0 -10px 35px rgba(0,0,0,0.3) !important;
+        }
+        .bottom-sheet-handle-bar {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 0 2px 0;
+            background: inherit;
+        }
+        .bottom-sheet-handle {
+            width: 44px;
+            height: 5px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.65);
+        }
+
+        /* Tombol aksi mobile jempol-friendly */
+        .mobile-touch-btn {
+            min-height: 48px !important;
+            border-radius: 12px !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .mobile-touch-btn-primary {
+            min-height: 52px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 14px rgba(13, 110, 253, 0.35) !important;
+        }
+    }
 </style>
 
 <div class="row mb-3">
@@ -167,7 +340,7 @@ $koorId = $isKoor ? $userData['id'] : '';
                             <p class="card-subtitle mb-0 text-muted">Integrasi Peta Kavling dengan Status Pembayaran IPL Warga (Merah = Menunggak, Hijau = Lunas)</p>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 flex-wrap siteplan-top-toolbar">
                         <?php if ($isAdmin): ?>
                         <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-1" id="btn-auto-plot" onclick="autoGeneratePolygons()" title="Plot semua kavling rumah secara otomatis dan presisi">
                             <i class="ti ti-wand"></i>
@@ -334,6 +507,18 @@ $koorId = $isKoor ? $userData['id'] : '';
     <div style="position: relative;">
         <div id="siteplan-map"></div>
 
+        <!-- Mobile Floating Controls (Koordinator Keliling) -->
+        <div class="mobile-map-fab-container">
+            <button type="button" class="btn mobile-fab-btn mobile-fab-recenter shadow" onclick="focusFilteredPolygons()" title="Pusatkan ke Blok Saya">
+                <i class="ti ti-crosshair fs-4"></i>
+                <span class="mobile-fab-label">Blok Saya</span>
+            </button>
+            <button type="button" class="btn mobile-fab-btn mobile-fab-toggle-red shadow" id="mobile-fab-red" onclick="toggleRedBoxes()" title="Sembunyikan/Tampilkan Merah">
+                <i class="ti ti-eye-off fs-4" id="mobile-fab-red-icon"></i>
+                <span class="mobile-fab-label" id="mobile-fab-red-text">Menunggak</span>
+            </button>
+        </div>
+
         <!-- Floating Legend -->
         <div class="map-legend">
             <div class="fw-bold mb-2 pb-1 border-bottom text-dark">Legenda Status IPL</div>
@@ -406,49 +591,87 @@ $koorId = $isKoor ? $userData['id'] : '';
     </div>
 </div>
 
-<!-- Modal Rincian Rumah & Pembayaran -->
+<!-- Modal Rincian Rumah & Pembayaran (Optimasi Mobile Bottom-Sheet) -->
 <div class="modal fade" id="modalHouseDetail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 14px; overflow: hidden;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-bottom-sheet">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <!-- Drag handle bar untuk mobile -->
+            <div class="bottom-sheet-handle-bar d-md-none bg-primary" id="modal-handle-bar">
+                <div class="bottom-sheet-handle"></div>
+            </div>
+
             <div class="modal-header text-white" id="modal-house-header">
-                <h5 class="modal-title fw-bold text-white" id="modal-house-title">Detail Rumah</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="ti ti-home fs-5"></i>
+                    <h5 class="modal-title fw-bold text-white mb-0" id="modal-house-title">Detail Rumah</h5>
+                </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4">
+            <div class="modal-body p-3 p-md-4">
+                <!-- Info Alamat & Koordinator -->
                 <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
-                    <div class="round-48 rounded-circle bg-light text-primary d-flex align-items-center justify-content-center">
-                        <i class="ti ti-home fs-7"></i>
+                    <div class="round-48 rounded-circle bg-light-primary text-primary d-flex align-items-center justify-content-center flex-shrink-0">
+                        <i class="ti ti-map-pin fs-6"></i>
                     </div>
-                    <div>
-                        <h5 class="fw-bold mb-0" id="modal-alamat">-</h5>
-                        <p class="text-muted mb-0" id="modal-koordinator">-</p>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <h4 class="fw-bold mb-0 text-dark" id="modal-alamat">-</h4>
+                        <p class="text-muted mb-0 small" id="modal-koordinator">-</p>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="text-muted fs-2 text-uppercase fw-semibold mb-1">Penghuni / Pemilik:</label>
-                    <div class="fs-4 fw-bold text-dark" id="modal-nama">-</div>
+                <!-- Info Penghuni & Status -->
+                <div class="row g-2 mb-3">
+                    <div class="col-12 col-md-6">
+                        <div class="p-2 p-md-3 bg-light rounded-3 h-100">
+                            <label class="text-muted fs-2 text-uppercase fw-semibold mb-1 d-block">Penghuni / Pemilik:</label>
+                            <div class="fs-4 fw-bold text-dark text-truncate" id="modal-nama">-</div>
+                            <div class="small text-muted mt-1" id="modal-telepon-display">-</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-2 p-md-3 bg-light rounded-3 h-100">
+                            <label class="text-muted fs-2 text-uppercase fw-semibold mb-1 d-block">Status IPL Periode Ini:</label>
+                            <div id="modal-status-badge"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="text-muted fs-2 text-uppercase fw-semibold mb-1">Status IPL Periode Ini:</label>
-                    <div id="modal-status-badge"></div>
-                </div>
-
+                <!-- Rincian Tunggakan Jika Ada -->
                 <div class="mb-3" id="modal-tunggak-box">
-                    <label class="text-muted fs-2 text-uppercase fw-semibold mb-1">Bulan Belum Terbayar:</label>
-                    <div class="p-2 bg-light-danger text-danger rounded fs-3 fw-semibold" id="modal-tunggak-list">
-                        -
+                    <div class="p-3 bg-light-danger border border-danger rounded-3">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="text-danger fw-bold fs-3"><i class="ti ti-alert-triangle me-1"></i> Rincian Tunggakan:</span>
+                            <span class="badge bg-danger" id="modal-tunggak-count">-</span>
+                        </div>
+                        <div class="text-danger fs-3 fw-semibold mt-1" id="modal-tunggak-list">
+                            -
+                        </div>
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2 mt-4 pt-3 border-top">
-                    <a href="#" target="_blank" id="modal-btn-wa" class="btn btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-1">
-                        <i class="bi bi-whatsapp"></i> Chat WhatsApp
+                <!-- Tombol Aksi Lapangan: Ramah Sentuhan Jempol (Touch-Friendly) -->
+                <div class="d-flex flex-column gap-2 mt-3 pt-3 border-top">
+                    <!-- Tombol Utama: Input Pembayaran Langsung di Lapangan -->
+                    <a href="#" id="modal-btn-pay" class="btn btn-primary w-100 mobile-touch-btn mobile-touch-btn-primary gap-2 shadow-sm">
+                        <i class="ti ti-cash fs-6"></i>
+                        <span>Input Pembayaran Sekarang</span>
                     </a>
-                    <a href="<?= base_url('pembayaran') ?>" class="btn btn-primary flex-grow-1">
-                        <i class="ti ti-cash"></i> Entri Pembayaran
-                    </a>
+
+                    <!-- Tombol Sekunder: WhatsApp Tagihan & Telepon Langsung -->
+                    <div class="row g-2 mt-1">
+                        <div class="col-6" id="modal-wa-col">
+                            <a href="#" target="_blank" id="modal-btn-wa" class="btn btn-success w-100 mobile-touch-btn gap-1 shadow-sm">
+                                <i class="bi bi-whatsapp fs-5"></i>
+                                <span>WhatsApp</span>
+                            </a>
+                        </div>
+                        <div class="col-6" id="modal-tel-col">
+                            <a href="#" id="modal-btn-call" class="btn btn-outline-primary w-100 mobile-touch-btn gap-1">
+                                <i class="ti ti-phone-call fs-5"></i>
+                                <span>Telepon</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -650,6 +873,19 @@ $koorId = $isKoor ? $userData['id'] : '';
         document.getElementById('btn-toggle-red').className = showRedBoxes
             ? 'btn btn-outline-danger btn-sm d-flex align-items-center gap-1'
             : 'btn btn-secondary btn-sm d-flex align-items-center gap-1';
+
+        // Sinkronisasi tombol FAB mobile jika ada
+        const fabIcon = document.getElementById('mobile-fab-red-icon');
+        const fabText = document.getElementById('mobile-fab-red-text');
+        const fabBtn = document.getElementById('mobile-fab-red');
+        if (fabIcon) fabIcon.className = showRedBoxes ? 'ti ti-eye-off fs-4' : 'ti ti-eye fs-4';
+        if (fabText) fabText.textContent = showRedBoxes ? 'Menunggak' : 'Semua';
+        if (fabBtn) {
+            fabBtn.className = showRedBoxes
+                ? 'btn mobile-fab-btn mobile-fab-toggle-red shadow'
+                : 'btn mobile-fab-btn btn-secondary shadow';
+        }
+
         renderHousePolygons();
         focusFilteredPolygons();
     }
@@ -703,42 +939,85 @@ $koorId = $isKoor ? $userData['id'] : '';
         window.open("<?= base_url('siteplan/pdf') ?>?" + params.toString(), '_blank');
     }
 
-    // Tampilkan Modal Detail Rumah & IPL
+    // Tampilkan Modal Detail Rumah & IPL (Optimasi Mobile Touch-Friendly)
     function showHouseDetail(house) {
         const isLunas = (house.status_ipl === 'lunas');
 
         const headerEl = document.getElementById('modal-house-header');
         headerEl.className = isLunas ? 'modal-header popup-header-lunas' : 'modal-header popup-header-menunggak';
 
+        const handleBar = document.getElementById('modal-handle-bar');
+        if (handleBar) {
+            handleBar.className = isLunas ? 'bottom-sheet-handle-bar d-md-none bg-success' : 'bottom-sheet-handle-bar d-md-none bg-danger';
+        }
+
         document.getElementById('modal-house-title').textContent = house.alamat;
         document.getElementById('modal-alamat').textContent = house.alamat;
-        document.getElementById('modal-koordinator').textContent = 'Koordinator: ' + house.koordinator;
-        document.getElementById('modal-nama').textContent = house.nama || '(Belum terdata nama penghuni)';
+        document.getElementById('modal-koordinator').textContent = 'Koordinator: ' + (house.koordinator || '-');
+        document.getElementById('modal-nama').textContent = house.nama || '(Belum terdata nama)';
 
         const badgeEl = document.getElementById('modal-status-badge');
         const tunggakBox = document.getElementById('modal-tunggak-box');
 
         if (isLunas) {
-            badgeEl.innerHTML = '<span class="badge bg-success fs-3 px-3 py-2"><i class="ti ti-check"></i> LUNAS IPL</span>';
+            badgeEl.innerHTML = '<span class="badge bg-success fs-3 px-3 py-2"><i class="ti ti-check me-1"></i> LUNAS IPL</span>';
             tunggakBox.style.display = 'none';
         } else {
-            badgeEl.innerHTML = `<span class="badge bg-danger fs-3 px-3 py-2"><i class="ti ti-alert-triangle"></i> MENUNGGAK (${house.tunggakan} Bulan)</span>`;
+            const countStr = (house.tunggakan || 1) + ' Bulan';
+            badgeEl.innerHTML = `<span class="badge bg-danger fs-3 px-3 py-2"><i class="ti ti-alert-triangle me-1"></i> BELUM BAYAR (${countStr})</span>`;
             tunggakBox.style.display = 'block';
+            const countBadge = document.getElementById('modal-tunggak-count');
+            if (countBadge) countBadge.textContent = countStr;
             document.getElementById('modal-tunggak-list').textContent = house.bulan_tunggak_list || 'Periode berjalan';
         }
 
-        // Setup WhatsApp link
+        // Direct payment target (pre-selects house/user for 1-tap entry in field)
+        const payTarget = house.encrypted_user_id || house.encrypted_id;
+        const btnPay = document.getElementById('modal-btn-pay');
+        if (btnPay) {
+            btnPay.href = "<?= base_url('pembayaran/') ?>" + (payTarget ? payTarget : '');
+        }
+
+        // Contact info: WhatsApp & Phone Call
+        const telDisplay = document.getElementById('modal-telepon-display');
         const btnWa = document.getElementById('modal-btn-wa');
+        const btnCall = document.getElementById('modal-btn-call');
+        const waCol = document.getElementById('modal-wa-col');
+        const telCol = document.getElementById('modal-tel-col');
+
         if (house.no_hp && house.no_hp.trim() !== '') {
-            let phone = house.no_hp.replace(/[^0-9]/g, '');
-            if (phone.startsWith('0')) {
-                phone = '62' + phone.substring(1);
+            let cleanPhone = house.no_hp.replace(/[^0-9]/g, '');
+            let waPhone = cleanPhone;
+            if (waPhone.startsWith('0')) {
+                waPhone = '62' + waPhone.substring(1);
             }
-            const pesan = encodeURIComponent(`Assalamu'alaikum Bapak/Ibu ${house.nama || ''} (${house.alamat}), kami dari pengurus Perum TSI ingin mengonfirmasi status iuran IPL.`);
-            btnWa.href = `https://wa.me/${phone}?text=${pesan}`;
-            btnWa.style.display = 'inline-flex';
+
+            if (telDisplay) {
+                telDisplay.innerHTML = `<i class="ti ti-phone me-1"></i> ${house.no_hp}`;
+            }
+
+            // Pesan WA santun untuk koordinator keliling di lapangan
+            let pesanWA = `Assalamu'alaikum Wr. Wb. Bapak/Ibu *${house.nama || ''}* (${house.alamat}), mohon maaf mengganggu waktunya sebentar.\n\nSaya selaku Koordinator Lingkungan Perumahan TSI ingin mengonfirmasikan perihal iuran paguyuban/IPL`;
+            if (!isLunas && house.bulan_tunggak_list) {
+                pesanWA += ` untuk periode *${house.bulan_tunggak_list}* (${house.tunggakan} Bulan).\n\nSaat ini kami sedang penarikan keliling di blok. Pembayaran dapat diserahkan langsung secara tunai atau melalui transfer aplikasi. Terima kasih banyak. 🙏`;
+            } else {
+                pesanWA += `.\n\nTerima kasih atas partisipasi dan kerjasamanya. 🙏`;
+            }
+
+            if (btnWa) {
+                btnWa.href = `https://wa.me/${waPhone}?text=${encodeURIComponent(pesanWA)}`;
+            }
+            if (btnCall) {
+                btnCall.href = `tel:${cleanPhone}`;
+            }
+            if (waCol) waCol.style.display = 'block';
+            if (telCol) telCol.style.display = 'block';
         } else {
-            btnWa.style.display = 'none';
+            if (telDisplay) {
+                telDisplay.innerHTML = `<span class="text-muted fst-italic">No. HP belum terdaftar</span>`;
+            }
+            if (waCol) waCol.style.display = 'none';
+            if (telCol) telCol.style.display = 'none';
         }
 
         const modal = new bootstrap.Modal(document.getElementById('modalHouseDetail'));

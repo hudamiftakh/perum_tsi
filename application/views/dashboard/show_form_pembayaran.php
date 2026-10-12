@@ -26,7 +26,10 @@ if ($level == 'koordinator') {
     } else {
         if (!empty($id_decrypt)) {
             $result_rumah = $this->db
-                ->where('id_rumah', $id_decrypt)
+                ->group_start()
+                    ->where('id_rumah', $id_decrypt)
+                    ->or_where('id', $id_decrypt)
+                ->group_end()
                 ->get("master_users")
                 ->result_array();
         } else {
@@ -328,7 +331,7 @@ if (isset($data_update['untuk_bulan']) && !empty($data_update['untuk_bulan'])) {
                         <select class="form-select select2" id="nomorRumah" name="user_id" style="width: 100% !important; height: 100px;" required>
                             <option value="">Pilih Nomor Rumah</option>
                             <?php foreach ($result_rumah as $value) : ?>
-                                <option value="<?php echo $value['id']; ?>" <?= ($value['id'] == $selected_user_id) ? 'selected' : '' ?>>
+                                <option value="<?php echo $value['id']; ?>" <?= ($value['id'] == $selected_user_id || (isset($value['id_rumah']) && $value['id_rumah'] == $selected_user_id)) ? 'selected' : '' ?>>
                                     <?php echo $value['id']; ?> - <?php echo $value['nama'] . " - " . $value['rumah']; ?>
                                 </option>
                             <?php endforeach; ?>
