@@ -324,7 +324,7 @@ $koorId = $isKoor ? $userData['id'] : '';
     }
 
     /* =========================================
-       TEXT NAMA KAVLING LANGSUNG DI DALAM KOTAK (MURNI TEKS, TANPA KOTAK BARU)
+       TEXT NAMA KAVLING LANGSUNG DI DALAM KOTAK (MURNI TEKS, TEPAT DI TENGAH KOTAK)
        ========================================= */
     .house-map-label-wrapper.leaflet-div-icon,
     .house-map-label-wrapper {
@@ -332,8 +332,13 @@ $koorId = $isKoor ? $userData['id'] : '';
         border: none !important;
         box-shadow: none !important;
         pointer-events: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     .house-map-label {
+        width: 100% !important;
+        height: 100% !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -346,6 +351,7 @@ $koorId = $isKoor ? $userData['id'] : '';
         box-shadow: none !important;        /* Hapus shadow kotak */
         border-radius: 0 !important;
         padding: 0 !important;
+        margin: 0 !important;
         box-sizing: border-box !important;
         pointer-events: none !important;
         user-select: none !important;
@@ -1187,9 +1193,9 @@ $koorId = $isKoor ? $userData['id'] : '';
             const labelIcon = L.divIcon({
                 className: 'house-map-label-wrapper',
                 html: `<div class="house-map-label" 
-                            style="width: ${labelW}px; max-width: ${labelW}px; max-height: ${labelH}px; font-size: ${fontSize};"
+                            style="width: ${labelW}px; height: ${labelH}px; max-width: ${labelW}px; max-height: ${labelH}px; font-size: ${fontSize};"
                             title="${escapeHtml(house.alamat + ' - ' + (house.nama || ''))}">
-                            <span style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; line-height: 1.1;">${safeName}</span>
+                            <span style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; line-height: 1.15; text-align: center;">${safeName}</span>
                        </div>`,
                 iconSize: [labelW, labelH],
                 iconAnchor: [labelW / 2, labelH / 2]
