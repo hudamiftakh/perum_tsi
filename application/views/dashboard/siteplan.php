@@ -132,24 +132,22 @@ $koorId = $isKoor ? $userData['id'] : '';
     /* Resize handle untuk mode geser */
     .resize-handle-icon {
         background: #2563eb !important;
-        border: 2px solid #ffffff !important;
-        border-radius: 3px !important;
-        width: 14px !important;
-        height: 14px !important;
-        margin-left: -7px !important;
-        margin-top: -7px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.6) !important;
-        cursor: grab !important;
+        border: 2.5px solid #ffffff !important;
+        border-radius: 4px !important;
+        width: 18px !important;
+        height: 18px !important;
+        margin-left: -9px !important;
+        margin-top: -9px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
+        cursor: crosshair !important;
         z-index: 9999 !important;
         pointer-events: auto !important;
+        touch-action: none !important;
         transition: transform 0.1s ease, background 0.1s ease;
     }
-    .resize-handle-icon:hover {
+    .resize-handle-icon:hover, .resize-handle-icon:active {
         background: #f59e0b !important;
-        transform: scale(1.35);
-    }
-    .resize-handle-icon:active {
-        cursor: grabbing !important;
+        transform: scale(1.3);
     }
 
     /* =========================================
@@ -576,14 +574,15 @@ $koorId = $isKoor ? $userData['id'] : '';
                 <button type="button" class="btn-close btn-sm" onclick="toggleDragMode()"></button>
             </div>
             <div class="alert alert-warning py-2 px-2 fs-2 mb-2">
-                <strong>Cara pakai:</strong><br>
-                1. <strong>Klik-tahan</strong> kotak rumah &rarr; <strong>geser</strong> untuk MEMINDAH kotak<br>
-                2. <strong>Klik-tahan titik sudut</strong> &rarr; geser untuk <strong>RESIZE</strong> ukuran kotak<br>
-                3. <strong>Geser area kosong peta / scroll mouse</strong> untuk navigasi &amp; zoom peta bebas<br>
-                4. Klik <strong>Simpan</strong> untuk menyimpan ke database<br>
-                <hr class="my-1">
-                Klik area kosong untuk membatalkan seleksi titik sudut
+                <strong>Cara Mengatur:</strong><br>
+                1. <strong>Klik &amp; geser kotak</strong> untuk memindah seluruh kavling.<br>
+                2. <strong>Tarik titik sudut biru</strong> secara bebas &amp; dinamis untuk menyesuaikan tiap sudut kavling (bisa persegi, trapesium, serong).<br>
+                3. Klik <strong>Luruskan Kotak</strong> jika ingin merapikan bentuk menjadi persegi tegak.<br>
+                4. Klik <strong>Simpan Posisi</strong> setelah selesai.
             </div>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" id="btn-straighten" onclick="straightenSelectedPolygon()" style="display: none;">
+                <i class="ti ti-layout-align-middle"></i> Luruskan Kotak Terpilih (Persegi)
+            </button>
             <button type="button" class="btn btn-success btn-sm w-100" onclick="saveAllDraggedPolygons()">
                 <i class="ti ti-device-floppy"></i> Simpan Posisi (<span id="drag-count">0</span>)
             </button>
@@ -1566,6 +1565,10 @@ $koorId = $isKoor ? $userData['id'] : '';
         selectedPolygon.setStyle({ color: '#f59e0b', weight: 3, dashArray: '4, 3', fillOpacity: 0.75 });
         forceCanvasRedraw();
 
+        // Tampilkan tombol luruskan jika ada kotak yang dipilih
+        const btnStraighten = document.getElementById('btn-straighten');
+        if (btnStraighten) btnStraighten.style.display = 'block';
+
         // Bersihkan marker lama
         resizeMarkers.forEach(m => map.removeLayer(m));
         resizeMarkers = [];
@@ -1605,25 +1608,14 @@ $koorId = $isKoor ? $userData['id'] : '';
 
                 const currentLayerPoint = map.latLngToLayerPoint(marker.getLatLng());
                 const cornerIdx = marker._cornerIndex;
-                const isShift = e.originalEvent && e.originalEvent.shiftKey;
 
-                let newLayerPoints;
-                if (!isShift && origLayerPoints.length === 4) {
-                    newLayerPoints = resizeQuad(origLayerPoints, cornerIdx, currentLayerPoint);
-                } else {
-                    newLayerPoints = origLayerPoints.map((p, i) => i === cornerIdx ? currentLayerPoint : p);
-                }
+                // Mode Dinamis Bebas: Setiap sudut bergerak mandiri dan presisi mengikuti kursor/jari
+                // Tidak lagi dipaksa menjadi jajar genjang, sehingga bentuk kavling apapun (persegi, trapesium, serong) bisa diatur dengan sempurna
+                const newLayerPoints = origLayerPoints.map((p, i) => i === cornerIdx ? currentLayerPoint : p);
 
                 const newLatLngCoords = newLayerPoints.map(p => map.layerPointToLatLng(p));
                 selectedPolygon.setLatLngs(newLatLngCoords);
                 forceCanvasRedraw();
-
-                // Update posisi marker sudut lainnya secara real-time
-                resizeMarkers.forEach((m, i) => {
-                    if (i !== cornerIdx && newLatLngCoords[i]) {
-                        m.setLatLng(newLatLngCoords[i]);
-                    }
-                });
             });
 
             marker.on('dragend', function(e) {
@@ -1661,6 +1653,30 @@ $koorId = $isKoor ? $userData['id'] : '';
         });
     }
 
+    // Luruskan polygon terpilih menjadi persegi tegak sejajar
+    function straightenSelectedPolygon() {
+        if (!selectedPolygon) return;
+        const bounds = selectedPolygon.getBounds();
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        // 4 titik persegi tegak: NW, NE, SE, SW
+        const rectCoords = [
+            L.latLng(ne.lat, sw.lng),
+            L.latLng(ne.lat, ne.lng),
+            L.latLng(sw.lat, ne.lng),
+            L.latLng(sw.lat, sw.lng)
+        ];
+        selectedPolygon.setLatLngs(rectCoords);
+        updateResizeHandles(rectCoords);
+        forceCanvasRedraw();
+
+        const houseData = selectedPolygon.options.houseData;
+        if (houseData) {
+            movedPolygons[houseData.id] = true;
+            document.getElementById('drag-count').textContent = Object.keys(movedPolygons).length;
+        }
+    }
+
     // Update posisi semua corner handles
     function updateResizeHandles(coords) {
         resizeMarkers.forEach((m, i) => {
@@ -1679,6 +1695,9 @@ $koorId = $isKoor ? $userData['id'] : '';
         if (selectedPolygon && isDragMode) {
             selectedPolygon.setStyle({ weight: 3, dashArray: '5, 3', fillOpacity: 0.65 });
         }
+        const btnStraighten = document.getElementById('btn-straighten');
+        if (btnStraighten) btnStraighten.style.display = 'none';
+
         resizeMarkers.forEach(m => map.removeLayer(m));
         resizeMarkers = [];
         selectedPolygon = null;
