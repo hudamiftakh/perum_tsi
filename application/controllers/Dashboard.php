@@ -4386,10 +4386,12 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 		$bulan = (int)($this->input->get('bulan') ?: $bulan_sekarang);
 
 		$siteplan_data = $this->_get_siteplan_sampah_data($tahun, $bulan);
+		$koordinators = $this->db->query("SELECT id, nama FROM master_koordinator_blok ORDER BY id ASC")->result_array();
 
 		$data['tahun']         = $tahun;
 		$data['bulan']         = $bulan;
 		$data['siteplan_data'] = $siteplan_data;
+		$data['koordinators']  = $koordinators;
 		$data['userData']      = $this->session->userdata('username');
 		$data['halaman']       = 'dashboard/siteplan_sampah';
 
@@ -4468,6 +4470,95 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			'id_rumah'      => $id_rumah,
 			'status_sampah' => $status_sampah,
 			'message'       => 'Status sampah berhasil diubah: ' . ($status_sampah === 'ambil' ? 'BOLEH DIAMBIL' : 'JANGAN DIAMBIL')
+		]);
+	}
+
+	/**
+	 * AJAX Endpoint Toggle Massal / Centang All Status Sampah
+	 * Memperbarui status banyak rumah sekaligus berdasarkan centang / filter
+	 */
+	public function ajax_bulk_toggle_sampah()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$house_ids_raw = $this->input->post('house_ids');
+		$periode_bulan = trim($this->input->post('periode_bulan') ?? '');
+		$status_sampah = trim($this->input->post('status_sampah') ?? ''); // 'ambil', 'tahan', 'reset'
+		$keterangan    = trim($this->input->post('keterangan') ?? '');
+
+		if (empty($house_ids_raw) || empty($periode_bulan) || !in_array($status_sampah, ['ambil', 'tahan', 'reset'])) {
+			echo json_encode(['status' => 'error', 'message' => 'Parameter tidak valid.']);
+			return;
+		}
+
+		$house_ids = is_array($house_ids_raw) ? $house_ids_raw : json_decode($house_ids_raw, true);
+		if (!is_array($house_ids) || empty($house_ids)) {
+			echo json_encode(['status' => 'error', 'message' => 'Daftar ID rumah kosong.']);
+			return;
+		}
+
+		$house_ids = array_map('intval', $house_ids);
+		$house_ids = array_values(array_filter($house_ids, function($id) { return $id > 0; }));
+
+		if (empty($house_ids)) {
+			echo json_encode(['status' => 'error', 'message' => 'Tidak ada ID rumah valid.']);
+			return;
+		}
+
+		$userData = $this->session->userdata('username');
+		$updated_by = $userData['username'] ?? 'user';
+
+		$this->db->trans_start();
+
+		if ($status_sampah === 'reset') {
+			$this->db->where_in('id_rumah', $house_ids);
+			$this->db->where('periode_bulan', $periode_bulan);
+			$this->db->delete('status_sampah_rumah');
+			$action_msg = count($house_ids) . ' rumah berhasil direset ke status otomatis IPL';
+		} else {
+			$default_ket = ($status_sampah === 'ambil') ? 'Diizinkan Massal oleh Koordinator' : 'Ditahan Massal oleh Koordinator';
+			$ket_save = $keterangan ?: $default_ket;
+
+			$this->db->where_in('id_rumah', $house_ids);
+			$this->db->where('periode_bulan', $periode_bulan);
+			$this->db->delete('status_sampah_rumah');
+
+			$insert_batch = [];
+			$now = date('Y-m-d H:i:s');
+			foreach ($house_ids as $hid) {
+				$insert_batch[] = [
+					'id_rumah'      => $hid,
+					'periode_bulan' => $periode_bulan,
+					'status_sampah' => $status_sampah,
+					'keterangan'    => $ket_save,
+					'updated_by'    => $updated_by,
+					'updated_at'    => $now
+				];
+			}
+			if (!empty($insert_batch)) {
+				$this->db->insert_batch('status_sampah_rumah', $insert_batch);
+			}
+			$action_msg = count($house_ids) . ' rumah berhasil ditandai: ' . ($status_sampah === 'ambil' ? 'BOLEH DIAMBIL' : 'JANGAN DIAMBIL');
+		}
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			echo json_encode(['status' => 'error', 'message' => 'Gagal memperbarui status secara massal di database.']);
+			return;
+		}
+
+		if (function_exists('catat_log_aktivitas')) {
+			catat_log_aktivitas('Siteplan Sampah', 'Bulk Toggle', $action_msg . " ($periode_bulan)");
+		}
+
+		echo json_encode([
+			'status'        => 'success',
+			'count'         => count($house_ids),
+			'updated_ids'   => $house_ids,
+			'status_sampah' => $status_sampah,
+			'message'       => $action_msg
 		]);
 	}
 
@@ -4742,9 +4833,20 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			$has_coords = !empty($r['polygon_coords']) && $r['polygon_coords'] !== 'null' && $r['polygon_coords'] !== '[]';
 			$parsed_coords = $has_coords ? json_decode($r['polygon_coords'], true) : null;
 
+			$alamat = $r['alamat'] ?: 'Unit ' . $idr;
+			$blok = 'Lainnya';
+			if (stripos($alamat, 'Ruha') !== false) {
+				$blok = 'Ruha';
+			} elseif (stripos($alamat, 'Raya') !== false) {
+				$blok = 'Raya';
+			} elseif (preg_match('/Blok\s*(IIIB|XB|XI|IX|VIII|VII|VI|IV|V|III|II|I|X)/i', $alamat, $m)) {
+				$blok = 'Blok ' . strtoupper($m[1]);
+			}
+
 			$houses[] = [
 				'id'             => $idr,
-				'alamat'         => $r['alamat'] ?: 'Unit ' . $idr,
+				'alamat'         => $alamat,
+				'blok'           => $blok,
 				'nama'           => $r['nama'] ?: 'Warga',
 				'no_hp'          => $r['no_hp'] ?: '',
 				'koordinator'    => $r['koordinator'] ?: 'Tanpa Koordinator',
@@ -4758,6 +4860,8 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			];
 		}
 
+		$blocks_order = ['Ruha', 'Raya', 'Blok I', 'Blok II', 'Blok III', 'Blok IIIB', 'Blok IV', 'Blok V', 'Blok VI', 'Blok VII', 'Blok VIII', 'Blok IX', 'Blok X', 'Blok XB', 'Blok XI'];
+
 		return [
 			'tahun'          => $tahun,
 			'bulan'          => $bulan,
@@ -4768,6 +4872,7 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 			'total_tahan'    => $total_tahan,
 			'total_override' => $total_override,
 			'persen_ambil'   => ($total_rumah > 0) ? round(($total_ambil / $total_rumah) * 100, 1) : 0,
+			'blocks'         => $blocks_order,
 			'houses'         => $houses
 		];
 	}

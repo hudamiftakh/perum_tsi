@@ -130,6 +130,7 @@ $route['keuangan/buku-kas/pdf'] = 'kas/buku_kas_pdf';
 $route['siteplan-sampah'] = 'dashboard/siteplan_sampah';
 $route['siteplan-sampah/ajax_data'] = 'dashboard/ajax_siteplan_sampah_data';
 $route['siteplan-sampah/toggle'] = 'dashboard/ajax_toggle_sampah';
+$route['siteplan-sampah/bulk_toggle'] = 'dashboard/ajax_bulk_toggle_sampah';
 $route['siteplan-sampah/pdf'] = 'dashboard/siteplan_sampah_pdf';
 
 $route['404_override'] = '';

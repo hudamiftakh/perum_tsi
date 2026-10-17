@@ -267,10 +267,11 @@ $houses_json = json_encode($siteplan_data['houses']);
 </div>
 
 <!-- Filter Periode & Switch Mode Tampilan -->
+<!-- Filter Periode, Koordinator, Blok & Switch Mode Tampilan -->
 <div class="card border-0 shadow-sm rounded-4 mb-3">
     <div class="card-body p-3">
         <div class="row g-2 align-items-center">
-            <div class="col-12 col-md-6 d-flex gap-2">
+            <div class="col-12 col-md-5 d-flex gap-2">
                 <form method="GET" action="<?= base_url('siteplan-sampah') ?>" id="formFilterSampah" class="d-flex gap-2 w-100">
                     <select name="bulan" class="form-select form-select-sm rounded-pill fw-semibold" onchange="document.getElementById('formFilterSampah').submit();">
                         <?php foreach ($nama_bulan_arr as $b_num => $b_nama): ?>
@@ -288,7 +289,7 @@ $houses_json = json_encode($siteplan_data['houses']);
                     </select>
                 </form>
             </div>
-            <div class="col-12 col-md-6 text-md-end">
+            <div class="col-12 col-md-7 text-md-end">
                 <ul class="nav nav-pills justify-content-center justify-content-md-end gap-1" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active btn-sm rounded-pill px-3 py-1 fw-bold" id="pills-map-tab" data-bs-toggle="pill" data-bs-target="#pills-map" type="button" role="tab">
@@ -301,6 +302,41 @@ $houses_json = json_encode($siteplan_data['houses']);
                         </button>
                     </li>
                 </ul>
+            </div>
+        </div>
+
+        <!-- Filter Khusus Koordinator & Blok Siteplan -->
+        <div class="row g-2 align-items-center mt-2 pt-2 border-top">
+            <div class="col-12 col-sm-6 col-md-5">
+                <div class="d-flex align-items-center gap-1">
+                    <span class="text-muted small fw-bold text-nowrap"><i class="ti ti-user-check text-primary"></i> Koordinator:</span>
+                    <select id="filterKoordinator" class="form-select form-select-sm rounded-pill fw-semibold" onchange="applyAllFilters()">
+                        <option value="">Semua Koordinator</option>
+                        <?php if (!empty($koordinators)): ?>
+                            <?php foreach ($koordinators as $kb): ?>
+                                <option value="<?= $kb['id'] ?>"><?= htmlspecialchars($kb['nama']) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-5">
+                <div class="d-flex align-items-center gap-1">
+                    <span class="text-muted small fw-bold text-nowrap"><i class="ti ti-layout-grid text-success"></i> Blok Siteplan:</span>
+                    <select id="filterBlok" class="form-select form-select-sm rounded-pill fw-semibold" onchange="applyAllFilters()">
+                        <option value="">Semua Blok (Ruha, Raya, I - XI)</option>
+                        <?php if (!empty($siteplan_data['blocks'])): ?>
+                            <?php foreach ($siteplan_data['blocks'] as $blk): ?>
+                                <option value="<?= $blk ?>"><?= $blk ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-md-2 text-md-end text-center">
+                <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 fw-semibold w-100" onclick="resetAllFilters()">
+                    <i class="ti ti-rotate me-1"></i> Reset
+                </button>
             </div>
         </div>
     </div>
@@ -343,7 +379,7 @@ $houses_json = json_encode($siteplan_data['houses']);
             <div class="card-body p-3 p-md-4">
                 <!-- Search Box Cepat -->
                 <div class="mb-3 position-relative">
-                    <input type="text" id="searchHouseInput" class="form-control rounded-pill ps-4 py-2" placeholder="🔍 Cari nomor rumah / nama warga (contoh: I-3, Raya 5, Denny)..." onkeyup="filterHouseList()">
+                    <input type="text" id="searchHouseInput" class="form-control rounded-pill ps-4 py-2" placeholder="🔍 Cari nomor rumah / nama warga (contoh: I-3, Raya 5, Denny)..." onkeyup="applyAllFilters()">
                 </div>
 
                 <!-- Tombol Filter Cepat -->
@@ -354,41 +390,82 @@ $houses_json = json_encode($siteplan_data['houses']);
                     <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 btn-filter-pill" onclick="setQuickFilter('menunggak', this)">Iuran Nunggak</button>
                 </div>
 
+                <!-- TOOLBAR CENTANG ALL & TINDAKAN MASSAL -->
+                <div class="card bg-light border-0 rounded-4 p-3 mb-3 shadow-none">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="form-check mb-0 d-flex align-items-center">
+                            <input class="form-check-input fs-5 me-2 mt-0" type="checkbox" id="masterSelectAll" onchange="toggleSelectAll(this.checked)" style="cursor: pointer; width: 1.25em; height: 1.25em;">
+                            <label class="form-check-label fw-bold text-dark user-select-none" for="masterSelectAll" style="cursor: pointer;">
+                                Centang Semua (<span id="countSelectedHouses">0</span>/<span id="countVisibleHouses"><?= count($siteplan_data['houses']) ?></span> Rumah)
+                            </label>
+                        </div>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm" onclick="executeBulkAction('ambil')">
+                                <i class="ti ti-check me-1"></i> Bolehkan (<span class="badge-sel-count">0</span>)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-sm" onclick="executeBulkAction('tahan')">
+                                <i class="ti ti-x me-1"></i> Tahan/Stop (<span class="badge-sel-count">0</span>)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 fw-semibold" onclick="executeBulkAction('reset')" title="Kembalikan ke status otomatis berdasarkan pembayaran IPL">
+                                <i class="ti ti-rotate me-1"></i> Reset IPL
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Container List Kartu Rumah -->
                 <div id="houseListContainer">
                     <?php foreach ($siteplan_data['houses'] as $h): ?>
                         <div class="card-rumah-item <?= ($h['status_sampah'] === 'ambil') ? 'item-ambil' : 'item-tahan' ?>" 
                              id="card-h-<?= $h['id'] ?>"
+                             data-id="<?= $h['id'] ?>"
                              data-alamat="<?= strtolower($h['alamat']) ?>"
                              data-nama="<?= strtolower($h['nama']) ?>"
+                             data-koor="<?= $h['id_koordinator'] ?>"
+                             data-blok="<?= $h['blok'] ?>"
                              data-sampah="<?= $h['status_sampah'] ?>"
                              data-ipl="<?= $h['status_ipl'] ?>">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h5 class="fw-bold mb-0 text-dark"><?= htmlspecialchars($h['alamat']) ?></h5>
-                                    <span class="text-muted small d-block"><?= htmlspecialchars($h['nama']) ?></span>
-                                    <div class="mt-1">
-                                        <span class="badge <?= ($h['status_ipl'] === 'lunas') ? 'bg-success' : 'bg-danger' ?> rounded-pill" style="font-size: 0.65rem;">
-                                            IPL: <?= strtoupper($h['status_ipl']) ?>
-                                        </span>
-                                        <span class="badge bg-light text-dark border rounded-pill ms-1" style="font-size: 0.65rem;" id="badge-ket-<?= $h['id'] ?>">
-                                            <?= htmlspecialchars($h['ket_sampah']) ?>
-                                        </span>
-                                    </div>
+                            <div class="d-flex align-items-center">
+                                <!-- Checkbox Centang Individu -->
+                                <div class="me-2 pe-1">
+                                    <input type="checkbox" class="form-check-input house-bulk-chk fs-5 mt-0" value="<?= $h['id'] ?>" onchange="updateSelectedCount()" style="cursor: pointer; width: 1.2em; height: 1.2em;">
                                 </div>
-                                <div class="text-end ps-2">
-                                    <label class="switch-sampah mb-1">
-                                        <input type="checkbox" id="toggle-list-<?= $h['id'] ?>" <?= ($h['status_sampah'] === 'ambil') ? 'checked' : '' ?> onchange="onToggleSwitchChange(<?= $h['id'] ?>, this.checked)">
-                                        <span class="slider-sampah"></span>
-                                    </label>
-                                    <span class="d-block small fw-bold" id="status-label-<?= $h['id'] ?>" style="color: <?= ($h['status_sampah'] === 'ambil') ? '#16a34a' : '#dc2626' ?>; font-size: 0.72rem;">
-                                        <?= ($h['status_sampah'] === 'ambil') ? 'BOLEH' : 'TAHAN [X]' ?>
-                                    </span>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-1 flex-wrap">
+                                                <h5 class="fw-bold mb-0 text-dark"><?= htmlspecialchars($h['alamat']) ?></h5>
+                                                <span class="badge bg-light text-dark border rounded-pill" style="font-size: 0.65rem;"><?= htmlspecialchars($h['blok']) ?></span>
+                                            </div>
+                                            <span class="text-muted small d-block"><?= htmlspecialchars($h['nama']) ?> <span class="text-secondary" style="font-size: 0.72rem;">(<?= htmlspecialchars($h['koordinator']) ?>)</span></span>
+                                            <div class="mt-1">
+                                                <span class="badge <?= ($h['status_ipl'] === 'lunas') ? 'bg-success' : 'bg-danger' ?> rounded-pill" style="font-size: 0.65rem;">
+                                                    IPL: <?= strtoupper($h['status_ipl']) ?>
+                                                </span>
+                                                <span class="badge bg-light text-dark border rounded-pill ms-1" style="font-size: 0.65rem;" id="badge-ket-<?= $h['id'] ?>">
+                                                    <?= htmlspecialchars($h['ket_sampah']) ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="text-end ps-2">
+                                            <label class="switch-sampah mb-1">
+                                                <input type="checkbox" id="toggle-list-<?= $h['id'] ?>" <?= ($h['status_sampah'] === 'ambil') ? 'checked' : '' ?> onchange="onToggleSwitchChange(<?= $h['id'] ?>, this.checked)">
+                                                <span class="slider-sampah"></span>
+                                            </label>
+                                            <span class="d-block small fw-bold" id="status-label-<?= $h['id'] ?>" style="color: <?= ($h['status_sampah'] === 'ambil') ? '#16a34a' : '#dc2626' ?>; font-size: 0.72rem;">
+                                                <?= ($h['status_sampah'] === 'ambil') ? 'BOLEH' : 'TAHAN [X]' ?>
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -817,38 +894,271 @@ $houses_json = json_encode($siteplan_data['houses']);
         document.getElementById('badge-count-tahan').innerText = totalTahan + ' Ditahan';
     }
 
-    // Filter Cepat Checklist HP
-    function filterHouseList() {
-        const query = document.getElementById('searchHouseInput').value.toLowerCase().trim();
+    // Filter & Bulk Toggle Checklist HP
+    let currentQuickFilter = 'semua';
+
+    function setQuickFilter(type, btnEl) {
+        currentQuickFilter = type;
+        document.querySelectorAll('.btn-filter-pill').forEach(b => b.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+        applyAllFilters();
+    }
+
+    function resetAllFilters() {
+        document.getElementById('searchHouseInput').value = '';
+        const koorEl = document.getElementById('filterKoordinator');
+        if (koorEl) koorEl.value = '';
+        const blokEl = document.getElementById('filterBlok');
+        if (blokEl) blokEl.value = '';
+
+        currentQuickFilter = 'semua';
+        const pills = document.querySelectorAll('.btn-filter-pill');
+        pills.forEach(b => b.classList.remove('active'));
+        if (pills.length > 0) pills[0].classList.add('active');
+
+        applyAllFilters();
+    }
+
+    function applyAllFilters() {
+        const query = (document.getElementById('searchHouseInput').value || '').toLowerCase().trim();
+        const selectedKoor = document.getElementById('filterKoordinator') ? document.getElementById('filterKoordinator').value : '';
+        const selectedBlok = document.getElementById('filterBlok') ? document.getElementById('filterBlok').value : '';
+
         const cards = document.querySelectorAll('.card-rumah-item');
+        let visibleCount = 0;
 
         cards.forEach(card => {
             const alamat = card.getAttribute('data-alamat') || '';
             const nama = card.getAttribute('data-nama') || '';
-            const match = (alamat.includes(query) || nama.includes(query));
-            card.style.display = match ? 'block' : 'none';
+            const koor = card.getAttribute('data-koor') || '';
+            const blok = card.getAttribute('data-blok') || '';
+            const sampah = card.getAttribute('data-sampah') || '';
+            const ipl = card.getAttribute('data-ipl') || '';
+
+            // Search query match
+            const matchSearch = (!query || alamat.includes(query) || nama.includes(query));
+            // Koordinator match
+            const matchKoor = (!selectedKoor || koor === selectedKoor);
+            // Blok match
+            const matchBlok = (!selectedBlok || blok === selectedBlok);
+            // Quick status pill match
+            let matchStatus = true;
+            if (currentQuickFilter === 'ambil') {
+                matchStatus = (sampah === 'ambil');
+            } else if (currentQuickFilter === 'tahan') {
+                matchStatus = (sampah === 'tahan');
+            } else if (currentQuickFilter === 'menunggak') {
+                matchStatus = (ipl === 'menunggak');
+            }
+
+            const isVisible = (matchSearch && matchKoor && matchBlok && matchStatus);
+            card.style.display = isVisible ? 'block' : 'none';
+            if (isVisible) {
+                visibleCount++;
+            } else {
+                // Uncheck hidden cards
+                const chk = card.querySelector('.house-bulk-chk');
+                if (chk) chk.checked = false;
+            }
+        });
+
+        const countVisEl = document.getElementById('countVisibleHouses');
+        if (countVisEl) countVisEl.innerText = visibleCount;
+
+        updateSelectedCount();
+
+        // Sinkronisasi fokus peta siteplan ke blok / koordinator yang dipilih
+        filterMapPolygons(selectedBlok, selectedKoor);
+    }
+
+    // Centang Semua
+    function toggleSelectAll(isChecked) {
+        const visibleCards = document.querySelectorAll('.card-rumah-item');
+        visibleCards.forEach(card => {
+            if (card.style.display !== 'none') {
+                const chk = card.querySelector('.house-bulk-chk');
+                if (chk) chk.checked = isChecked;
+            }
+        });
+        updateSelectedCount();
+    }
+
+    // Hitung Jumlah Tercentang
+    function updateSelectedCount() {
+        const checkedList = document.querySelectorAll('.card-rumah-item:not([style*="display: none"]) .house-bulk-chk:checked');
+        const count = checkedList.length;
+
+        const countSelEl = document.getElementById('countSelectedHouses');
+        if (countSelEl) countSelEl.innerText = count;
+
+        document.querySelectorAll('.badge-sel-count').forEach(el => {
+            el.innerText = count;
+        });
+
+        // Update status master checkbox
+        const visibleCards = document.querySelectorAll('.card-rumah-item:not([style*="display: none"])');
+        const masterChk = document.getElementById('masterSelectAll');
+        if (masterChk) {
+            masterChk.checked = (visibleCards.length > 0 && count === visibleCards.length);
+            masterChk.indeterminate = (count > 0 && count < visibleCards.length);
+        }
+    }
+
+    // Eksekusi Tindakan Massal (Centang All)
+    function executeBulkAction(actionType) {
+        // Ambil semua ID rumah yang tercentang pada kartu yang tampil
+        const checkedBoxes = document.querySelectorAll('.card-rumah-item:not([style*="display: none"]) .house-bulk-chk:checked');
+        let selectedIds = [];
+        checkedBoxes.forEach(cb => {
+            const idVal = parseInt(cb.value, 10);
+            if (idVal > 0) selectedIds.push(idVal);
+        });
+
+        // Jika tidak ada yang dicentang secara manual, tawarkan apakah ingin menerapkan ke seluruh rumah yang sedang difilter/tampil
+        if (selectedIds.length === 0) {
+            const visibleCards = document.querySelectorAll('.card-rumah-item:not([style*="display: none"])');
+            if (visibleCards.length === 0) {
+                alert('Tidak ada rumah yang tampil pada filter saat ini.');
+                return;
+            }
+            const confirmAll = confirm(`Belum ada rumah yang dicentang secara manual.\n\nApakah Anda ingin menerapkan tindakan ini ke SEMUA ${visibleCards.length} rumah yang saat ini sedang tampil di layar?`);
+            if (!confirmAll) return;
+
+            visibleCards.forEach(card => {
+                const idVal = parseInt(card.getAttribute('data-id'), 10);
+                if (idVal > 0) selectedIds.push(idVal);
+            });
+        }
+
+        let actionLabel = '';
+        let confirmText = '';
+        if (actionType === 'ambil') {
+            actionLabel = 'BOLEHKAN DIAMBIL SAMPAHNYA (🟢)';
+            confirmText = `Ubah status ${selectedIds.length} rumah menjadi ${actionLabel}?`;
+        } else if (actionType === 'tahan') {
+            actionLabel = 'JANGAN DIAMBIL / TAHAN (🔴)';
+            confirmText = `Ubah status ${selectedIds.length} rumah menjadi ${actionLabel}?`;
+        } else if (actionType === 'reset') {
+            actionLabel = 'RESET KE OTOMATIS IPL';
+            confirmText = `Kembalikan ${selectedIds.length} rumah ke status default pembayaran IPL?`;
+        }
+
+        if (!confirm(confirmText)) return;
+
+        const formData = new FormData();
+        formData.append('periode_bulan', currentPeriode);
+        formData.append('status_sampah', actionType);
+        formData.append('house_ids', JSON.stringify(selectedIds));
+        formData.append('keterangan', 'Update massal koordinator lingkungan');
+
+        fetch("<?= base_url('siteplan-sampah/bulk_toggle') ?>", {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                // Update local state untuk setiap rumah yang diubah
+                selectedIds.forEach(hid => {
+                    const house = housesData.find(item => item.id == hid);
+                    if (!house) return;
+
+                    if (actionType === 'reset') {
+                        house.status_sampah = (house.status_ipl === 'lunas') ? 'ambil' : 'tahan';
+                        house.has_override = false;
+                        house.ket_sampah = (house.status_ipl === 'lunas') ? 'Lunas IPL' : 'Menunggak IPL';
+                    } else {
+                        house.status_sampah = actionType;
+                        house.has_override = true;
+                        house.ket_sampah = (actionType === 'ambil') ? 'Diizinkan Massal' : 'Ditahan Massal';
+                    }
+
+                    // Update Leaflet polygon
+                    if (housePolygonsMap[hid]) {
+                        housePolygonsMap[hid].setStyle(getHouseColor(house.status_sampah));
+                    }
+
+                    // Update Card di Checklist HP
+                    const card = document.getElementById('card-h-' + hid);
+                    if (card) {
+                        card.className = 'card-rumah-item ' + ((house.status_sampah === 'ambil') ? 'item-ambil' : 'item-tahan');
+                        card.setAttribute('data-sampah', house.status_sampah);
+                    }
+                    const toggleList = document.getElementById('toggle-list-' + hid);
+                    if (toggleList) {
+                        toggleList.checked = (house.status_sampah === 'ambil');
+                    }
+                    const labelStatus = document.getElementById('status-label-' + hid);
+                    if (labelStatus) {
+                        labelStatus.innerText = (house.status_sampah === 'ambil') ? 'BOLEH' : 'TAHAN [X]';
+                        labelStatus.style.color = (house.status_sampah === 'ambil') ? '#16a34a' : '#dc2626';
+                    }
+                    const badgeKet = document.getElementById('badge-ket-' + hid);
+                    if (badgeKet) {
+                        badgeKet.innerText = house.ket_sampah;
+                    }
+                });
+
+                // Uncheck semua centang
+                document.querySelectorAll('.house-bulk-chk').forEach(chk => chk.checked = false);
+                const masterChk = document.getElementById('masterSelectAll');
+                if (masterChk) masterChk.checked = false;
+                updateSelectedCount();
+
+                // Recalculate KPIs
+                recalculateKPI();
+
+                showToast(res.message, true);
+            } else {
+                showToast(res.message || 'Gagal mengubah status massal.', false);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Terjadi kesalahan koneksi server.', false);
         });
     }
 
-    function setQuickFilter(type, btnEl) {
-        document.querySelectorAll('.btn-filter-pill').forEach(b => b.classList.remove('active'));
-        if (btnEl) btnEl.classList.add('active');
+    // Filter poligon di Leaflet map saat Blok atau Koordinator dipilih
+    function filterMapPolygons(selectedBlok, selectedKoor) {
+        if (!map || !polygonLayerGroup) return;
 
-        const cards = document.querySelectorAll('.card-rumah-item');
-        cards.forEach(card => {
-            const sampah = card.getAttribute('data-sampah');
-            const ipl = card.getAttribute('data-ipl');
+        let boundsToFit = [];
 
-            if (type === 'semua') {
-                card.style.display = 'block';
-            } else if (type === 'ambil') {
-                card.style.display = (sampah === 'ambil') ? 'block' : 'none';
-            } else if (type === 'tahan') {
-                card.style.display = (sampah === 'tahan') ? 'block' : 'none';
-            } else if (type === 'menunggak') {
-                card.style.display = (ipl === 'menunggak') ? 'block' : 'none';
+        housesData.forEach(h => {
+            const poly = housePolygonsMap[h.id];
+            if (!poly) return;
+
+            const matchKoor = (!selectedKoor || h.id_koordinator == selectedKoor);
+            const matchBlok = (!selectedBlok || h.blok == selectedBlok);
+            const isMatch = (matchKoor && matchBlok);
+
+            if (isMatch) {
+                poly.setStyle(getHouseColor(h.status_sampah));
+                if (h.has_coords && poly.getBounds && poly.getBounds().isValid()) {
+                    boundsToFit.push(poly.getBounds());
+                }
+            } else {
+                // Dim non-matching polygon
+                poly.setStyle({
+                    fillColor: '#94a3b8',
+                    color: '#cbd5e1',
+                    fillOpacity: 0.12,
+                    weight: 1
+                });
             }
         });
+
+        // Jika user memilih blok tertentu, otomatis zoom/fokus ke blok tersebut
+        if (selectedBlok && boundsToFit.length > 0) {
+            let groupBounds = boundsToFit[0];
+            for (let i = 1; i < boundsToFit.length; i++) {
+                groupBounds = groupBounds.extend(boundsToFit[i]);
+            }
+            if (groupBounds.isValid()) {
+                map.fitBounds(groupBounds, { padding: [20, 20], maxZoom: 4 });
+            }
+        }
     }
 
     // Modal WhatsApp Generator
