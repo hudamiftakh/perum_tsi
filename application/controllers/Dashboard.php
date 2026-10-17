@@ -4371,6 +4371,481 @@ _⚠️ Pesan ini dikirim otomatis melalui sistem aplikasi paguyuban. Mohon tida
 	}
 
 	/**
+	 * Modul Siteplan Operasional Sampah (Pos Satpam & Koordinator Lingkungan)
+	 * Kotak koordinat read-only (tidak bisa diedit), status sampah bisa dikustomisasi
+	 */
+	public function siteplan_sampah()
+	{
+		$this->checkSession();
+		$this->_create_log_tables();
+
+		$tahun_sekarang = (int)date('Y');
+		$bulan_sekarang = (int)date('m');
+
+		$tahun = (int)($this->input->get('tahun') ?: $tahun_sekarang);
+		$bulan = (int)($this->input->get('bulan') ?: $bulan_sekarang);
+
+		$siteplan_data = $this->_get_siteplan_sampah_data($tahun, $bulan);
+
+		$data['tahun']         = $tahun;
+		$data['bulan']         = $bulan;
+		$data['siteplan_data'] = $siteplan_data;
+		$data['userData']      = $this->session->userdata('username');
+		$data['halaman']       = 'dashboard/siteplan_sampah';
+
+		$this->load->view('modul', $data);
+	}
+
+	/**
+	 * AJAX Endpoint untuk mengambil data siteplan sampah
+	 */
+	public function ajax_siteplan_sampah_data()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$tahun = (int)($this->input->post_get('tahun') ?: date('Y'));
+		$bulan = (int)($this->input->post_get('bulan') ?: date('m'));
+
+		$data = $this->_get_siteplan_sampah_data($tahun, $bulan);
+		echo json_encode($data);
+	}
+
+	/**
+	 * AJAX Endpoint Toggle Cepat Status Sampah Rumah
+	 * Dapat di-toggle via Peta atau Daftar Checklist di HP
+	 */
+	public function ajax_toggle_sampah()
+	{
+		$this->checkSession();
+		header('Content-Type: application/json');
+
+		$id_rumah      = (int)$this->input->post('id_rumah');
+		$periode_bulan = trim($this->input->post('periode_bulan') ?? '');
+		$status_sampah = trim($this->input->post('status_sampah') ?? '');
+		$keterangan    = trim($this->input->post('keterangan') ?? '');
+
+		if (!$id_rumah || empty($periode_bulan) || !in_array($status_sampah, ['ambil', 'tahan'])) {
+			echo json_encode(['status' => 'error', 'message' => 'Parameter tidak valid.']);
+			return;
+		}
+
+		$userData = $this->session->userdata('username');
+		$updated_by = $userData['username'] ?? 'user';
+
+		// Cek apakah sudah ada record kustomisasi untuk rumah & periode ini
+		$cek = $this->db->get_where('status_sampah_rumah', [
+			'id_rumah'      => $id_rumah,
+			'periode_bulan' => $periode_bulan
+		])->row_array();
+
+		$default_ket = ($status_sampah === 'ambil') ? 'Diizinkan oleh Koordinator' : 'Ditahan oleh Koordinator';
+
+		if ($cek) {
+			$this->db->where('id', $cek['id'])->update('status_sampah_rumah', [
+				'status_sampah' => $status_sampah,
+				'keterangan'    => $keterangan ?: $default_ket,
+				'updated_by'    => $updated_by,
+				'updated_at'    => date('Y-m-d H:i:s')
+			]);
+		} else {
+			$this->db->insert('status_sampah_rumah', [
+				'id_rumah'      => $id_rumah,
+				'periode_bulan' => $periode_bulan,
+				'status_sampah' => $status_sampah,
+				'keterangan'    => $keterangan ?: $default_ket,
+				'updated_by'    => $updated_by,
+				'updated_at'    => date('Y-m-d H:i:s')
+			]);
+		}
+
+		if (function_exists('catat_log_aktivitas')) {
+			catat_log_aktivitas('Siteplan Sampah', 'Toggle Status', "Rumah ID $id_rumah diubah status sampahnya menjadi: $status_sampah ($periode_bulan)");
+		}
+
+		echo json_encode([
+			'status'        => 'success',
+			'id_rumah'      => $id_rumah,
+			'status_sampah' => $status_sampah,
+			'message'       => 'Status sampah berhasil diubah: ' . ($status_sampah === 'ambil' ? 'BOLEH DIAMBIL' : 'JANGAN DIAMBIL')
+		]);
+	}
+
+	/**
+	 * Cetak PDF Siteplan Sampah Landscape untuk Pos Satpam & Petugas Sampah
+	 */
+	public function siteplan_sampah_pdf()
+	{
+		$this->checkSession();
+		require_once(APPPATH . 'libraries/tcpdf/tcpdf.php');
+
+		$tahun_sekarang = (int)date('Y');
+		$bulan_sekarang = (int)date('m');
+
+		$tahun = (int)($this->input->get('tahun') ?: $tahun_sekarang);
+		$bulan = (int)($this->input->get('bulan') ?: $bulan_sekarang);
+
+		$data = $this->_get_siteplan_sampah_data($tahun, $bulan);
+		$map_image = $this->_create_siteplan_sampah_pdf_map_image($data['houses']);
+
+		$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator('Perum TSI');
+		$pdf->SetAuthor('Paguyuban TSI');
+		$pdf->SetTitle('Siteplan Sampah TSI - ' . $data['periode_label']);
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(true);
+		$pdf->setFooterFont(['dejavusans', 'I', 8]);
+		$pdf->SetMargins(10, 8, 10, true);
+		$pdf->SetAutoPageBreak(true, 10);
+
+		// ==========================================
+		// HALAMAN 1: PETA VISUAL SITEPLAN TSI LANDSCAPE
+		// ==========================================
+		$pdf->AddPage();
+
+		$pdf->SetFont('dejavusans', 'B', 14);
+		$pdf->Cell(0, 6, 'PAGUYUBAN WARGA TAMAN SEDAYU INDAH (TSI)', 0, 1, 'C');
+		$pdf->SetFont('dejavusans', 'B', 11);
+		$pdf->SetTextColor(0, 141, 76);
+		$pdf->Cell(0, 5, 'PETA OPERASIONAL PENGANGKUTAN SAMPAH (POS SATPAM & PETUGAS)', 0, 1, 'C');
+		$pdf->SetTextColor(50, 50, 50);
+		$pdf->SetFont('dejavusans', '', 9);
+		$pdf->Cell(0, 5, 'Periode Operasional: ' . $data['periode_label'] . ' | Dicetak: ' . date('d/m/Y H:i') . ' WIB', 0, 1, 'C');
+		$pdf->Ln(2);
+
+		// Box Ringkasan
+		$html_stat = '
+		<table border="0" cellpadding="4" style="font-size: 8.5pt;">
+			<tr>
+				<td width="33%" align="center" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;">
+					<strong>TOTAL RUMAH:</strong> ' . $data['total_rumah'] . ' Unit
+				</td>
+				<td width="33%" align="center" style="background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; border-radius: 4px;">
+					<strong>[✓] BOLEH DIAMBIL:</strong> ' . $data['total_ambil'] . ' Unit (' . $data['persen_ambil'] . '%)
+				</td>
+				<td width="34%" align="center" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 4px;">
+					<strong>[✗] JANGAN DIAMBIL / TAHAN:</strong> ' . $data['total_tahan'] . ' Unit
+				</td>
+			</tr>
+		</table>';
+		$pdf->writeHTML($html_stat, true, false, true, false, '');
+		$pdf->Ln(2);
+
+		// Gambar Peta Full Width
+		if ($map_image && file_exists($map_image)) {
+			// Dimensi gambar peta di A4 landscape (lebar kertas 297mm - margin 20mm = 277mm)
+			$pdf->Image($map_image, 75, 42, 145, 145, 'PNG');
+		}
+
+		// Keterangan / Legenda samping peta
+		$pdf->SetY(190);
+		$html_legenda = '
+		<table border="0" cellpadding="2" style="font-size: 8pt; color: #334155;">
+			<tr>
+				<td width="70%">
+					<strong>PANDUAN POS SATPAM & PETUGAS:</strong><br>
+					<span style="color: #15803d; font-weight: bold;">■ KOTAK HIJAU:</span> Boleh Diambil Sampahnya (Warga Lunas / Memiliki Izin Dispensasi).<br>
+					<span style="color: #b91c1c; font-weight: bold;">■ KOTAK MERAH:</span> <strong>STOP! JANGAN DIAMBIL SAMPAHNYA</strong> (Warga Menunggak / Disanksi).
+				</td>
+				<td width="30%" align="right">
+					<em>Halaman 1 dari 2 (Lihat Halaman Berikutnya untuk Daftar Urut Jalan)</em>
+				</td>
+			</tr>
+		</table>';
+		$pdf->writeHTML($html_legenda, true, false, true, false, '');
+
+		// ==========================================
+		// HALAMAN 2: DAFTAR RUMAH DITAHAN (URUT JALUR GEROBAK)
+		// ==========================================
+		$pdf->AddPage();
+
+		$pdf->SetFont('dejavusans', 'B', 13);
+		$pdf->SetTextColor(185, 28, 28);
+		$pdf->Cell(0, 6, 'DAFTAR RUMAH YANG JANGAN DIAMBIL SAMPAHNYA (STOP / TAHAN)', 0, 1, 'C');
+		$pdf->SetTextColor(50, 50, 50);
+		$pdf->SetFont('dejavusans', '', 9);
+		$pdf->Cell(0, 5, 'Diurutkan Sesuai Jalur Pengangkutan Sampah | Periode: ' . $data['periode_label'], 0, 1, 'C');
+		$pdf->Ln(3);
+
+		// Filter daftar rumah yang ditahan
+		$tahan_list = array_values(array_filter($data['houses'], function ($h) {
+			return $h['status_sampah'] === 'tahan';
+		}));
+
+		// Urutkan alamat (Raya 1 s.d 61, Blok I s.d XB)
+		usort($tahan_list, function ($a, $b) {
+			return strnatcasecmp($a['alamat'], $b['alamat']);
+		});
+
+		$html_tabel = '
+		<table border="1" cellpadding="4" cellspacing="0" style="font-size: 8.5pt; border-collapse: collapse;">
+			<thead>
+				<tr style="background-color: #b91c1c; color: #ffffff; font-weight: bold; text-align: center;">
+					<th width="6%">No</th>
+					<th width="24%">Blok & Nomor Rumah</th>
+					<th width="24%">Nama Penghuni / Warga</th>
+					<th width="18%">Koordinator Blok</th>
+					<th width="16%">Alasan / Status</th>
+					<th width="12%">Cek Petugas</th>
+				</tr>
+			</thead>
+			<tbody>';
+
+		if (empty($tahan_list)) {
+			$html_tabel .= '
+				<tr>
+					<td colspan="6" align="center" style="padding: 20px; color: #15803d; font-weight: bold;">
+						ALHAMDULILLAH! Semua rumah pada periode ini diperbolehkan untuk diambil sampahnya.
+					</td>
+				</tr>';
+		} else {
+			$no = 1;
+			foreach ($tahan_list as $th) {
+				$bg = ($no % 2 === 0) ? '#f8fafc' : '#ffffff';
+				$html_tabel .= '
+					<tr style="background-color: ' . $bg . ';">
+						<td align="center">' . $no++ . '</td>
+						<td><strong>' . htmlspecialchars($th['alamat']) . '</strong></td>
+						<td>' . htmlspecialchars($th['nama']) . '</td>
+						<td>' . htmlspecialchars($th['koordinator']) . '</td>
+						<td style="color: #b91c1c;">' . htmlspecialchars($th['ket_sampah']) . '</td>
+						<td align="center" style="font-size: 7.5pt;">[  ] Lewati</td>
+					</tr>';
+			}
+		}
+
+		$html_tabel .= '
+			</tbody>
+		</table>';
+
+		$pdf->writeHTML($html_tabel, true, false, true, false, '');
+
+		// Tanda tangan di halaman 2
+		$pdf->Ln(6);
+		$sig_html = '
+		<table border="0" cellpadding="2" style="font-size: 9pt;">
+			<tr>
+				<td width="35%" align="center">
+					Mengetahui,<br><strong>Koordinator Lingkungan TSI</strong><br><br><br><br>
+					( ___________________________ )
+				</td>
+				<td width="30%"></td>
+				<td width="35%" align="center">
+					Petugas Pengangkut Sampah / Pos Satpam,<br><br><br><br><br>
+					( ___________________________ )
+				</td>
+			</tr>
+		</table>';
+		$pdf->writeHTML($sig_html, true, false, true, false, '');
+
+		if ($map_image && file_exists($map_image)) {
+			@unlink($map_image);
+		}
+
+		$filename = 'siteplan_sampah_' . $tahun . '_' . str_pad($bulan, 2, '0', STR_PAD_LEFT) . '_' . date('Ymd_His') . '.pdf';
+		$pdf->Output($filename, 'I');
+	}
+
+	/**
+	 * Helper untuk mengambil data siteplan sampah per tahun dan bulan
+	 */
+	private function _get_siteplan_sampah_data($tahun, $bulan)
+	{
+		$periode_str = sprintf('%04d-%02d', $tahun, $bulan);
+		$nama_bulan_arr = [
+			1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+			5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+			9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+		];
+		$periode_label = ($nama_bulan_arr[$bulan] ?? '') . ' ' . $tahun;
+
+		// 1. Ambil seluruh data master rumah
+		$all_rumah = $this->db->query("
+			SELECT r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator,
+			       MAX(u.id) as user_id,
+			       MAX(k.nama) as koordinator, MAX(kl.no_hp) as no_hp
+			FROM master_rumah r
+			LEFT JOIN master_users u ON u.id_rumah = r.id
+			LEFT JOIN master_koordinator_blok k ON r.id_koordinator = k.id
+			LEFT JOIN master_keluarga kl ON kl.nomor_rumah COLLATE utf8mb4_general_ci = r.alamat COLLATE utf8mb4_general_ci AND kl.no_hp IS NOT NULL AND kl.no_hp != ''
+			WHERE r.id IS NOT NULL
+			GROUP BY r.id, r.alamat, r.nama, r.polygon_coords, r.id_koordinator
+			ORDER BY r.alamat ASC
+		")->result_array();
+
+		// 2. Ambil data pembayaran IPL untuk bulan berjalan
+		$pembayaran_raw = $this->db->query("
+			SELECT p.id, u.id_rumah, p.status, p.jumlah_bayar, p.tanggal_bayar,
+			       DATE_FORMAT(p.bulan_mulai, '%Y-%m') as bulan_mulai_ym,
+			       DATE_FORMAT(p.untuk_bulan, '%Y-%m') as untuk_bulan_ym,
+			       p.bulan_rapel
+			FROM master_pembayaran p
+			LEFT JOIN master_users u ON p.user_id = u.id
+			WHERE p.status IN ('verified', 'pending')
+			AND (
+				DATE_FORMAT(p.untuk_bulan, '%Y-%m') = ?
+				OR FIND_IN_SET(?, p.bulan_rapel) > 0
+				OR (
+					DATE_FORMAT(p.bulan_mulai, '%Y-%m') = ?
+					AND (p.bulan_rapel IS NULL OR p.bulan_rapel = '')
+					AND (p.untuk_bulan IS NULL OR p.untuk_bulan = '' OR p.untuk_bulan = '0000-00-00')
+				)
+			)
+		", [$periode_str, $periode_str, $periode_str])->result_array();
+
+		$lunas_map = [];
+		foreach ($pembayaran_raw as $p) {
+			if (!empty($p['id_rumah'])) {
+				$lunas_map[$p['id_rumah']] = true;
+			}
+		}
+
+		// 3. Ambil data kustomisasi status sampah dari status_sampah_rumah
+		$status_sampah_raw = $this->db->query("
+			SELECT id_rumah, status_sampah, keterangan, updated_by, updated_at
+			FROM status_sampah_rumah
+			WHERE periode_bulan = ?
+		", [$periode_str])->result_array();
+
+		$sampah_override_map = [];
+		foreach ($status_sampah_raw as $s) {
+			$sampah_override_map[$s['id_rumah']] = $s;
+		}
+
+		// 4. Proses status tiap rumah
+		$houses = [];
+		$total_rumah = count($all_rumah);
+		$total_ambil = 0;
+		$total_tahan = 0;
+		$total_override = 0;
+
+		foreach ($all_rumah as $r) {
+			$idr = (int)$r['id'];
+			$is_ipl_lunas = isset($lunas_map[$idr]);
+			$has_override = isset($sampah_override_map[$idr]);
+
+			if ($has_override) {
+				$status_sampah = $sampah_override_map[$idr]['status_sampah'];
+				$ket_sampah    = $sampah_override_map[$idr]['keterangan'];
+				$total_override++;
+			} else {
+				$status_sampah = $is_ipl_lunas ? 'ambil' : 'tahan';
+				$ket_sampah    = $is_ipl_lunas ? 'Lunas IPL' : 'Menunggak IPL';
+			}
+
+			if ($status_sampah === 'ambil') {
+				$total_ambil++;
+			} else {
+				$total_tahan++;
+			}
+
+			$has_coords = !empty($r['polygon_coords']) && $r['polygon_coords'] !== 'null' && $r['polygon_coords'] !== '[]';
+			$parsed_coords = $has_coords ? json_decode($r['polygon_coords'], true) : null;
+
+			$houses[] = [
+				'id'             => $idr,
+				'alamat'         => $r['alamat'] ?: 'Unit ' . $idr,
+				'nama'           => $r['nama'] ?: 'Warga',
+				'no_hp'          => $r['no_hp'] ?: '',
+				'koordinator'    => $r['koordinator'] ?: 'Tanpa Koordinator',
+				'id_koordinator' => (int)$r['id_koordinator'],
+				'status_ipl'     => $is_ipl_lunas ? 'lunas' : 'menunggak',
+				'status_sampah'  => $status_sampah,
+				'has_override'   => $has_override,
+				'ket_sampah'     => $ket_sampah,
+				'polygon_coords' => $parsed_coords,
+				'has_coords'     => $has_coords
+			];
+		}
+
+		return [
+			'tahun'          => $tahun,
+			'bulan'          => $bulan,
+			'periode_str'    => $periode_str,
+			'periode_label'  => $periode_label,
+			'total_rumah'    => $total_rumah,
+			'total_ambil'    => $total_ambil,
+			'total_tahan'    => $total_tahan,
+			'total_override' => $total_override,
+			'persen_ambil'   => ($total_rumah > 0) ? round(($total_ambil / $total_rumah) * 100, 1) : 0,
+			'houses'         => $houses
+		];
+	}
+
+	/**
+	 * Helper untuk membuat gambar PNG peta siteplan khusus sampah (Landscape)
+	 */
+	private function _create_siteplan_sampah_pdf_map_image($houses)
+	{
+		if (!extension_loaded('gd')) {
+			return null;
+		}
+
+		$tile_root = FCPATH . 'assets/siteplan/tsi/tiles/2/';
+		if (!is_dir($tile_root)) {
+			return null;
+		}
+
+		$canvas = imagecreatetruecolor(768, 768);
+		$white = imagecolorallocate($canvas, 255, 255, 255);
+		imagefill($canvas, 0, 0, $white);
+		imagealphablending($canvas, true);
+		imagesavealpha($canvas, true);
+
+		for ($x = 0; $x <= 2; $x++) {
+			for ($y = 0; $y <= 2; $y++) {
+				$tile = $tile_root . $x . '/' . $y . '.png';
+				if (!file_exists($tile)) continue;
+				$img = imagecreatefrompng($tile);
+				imagecopy($canvas, $img, $x * 256, $y * 256, 0, 0, 256, 256);
+				imagedestroy($img);
+			}
+		}
+
+		$red_fill = imagecolorallocatealpha($canvas, 239, 68, 68, 40); // Merah kontras
+		$red_line = imagecolorallocatealpha($canvas, 185, 28, 28, 5);
+		$green_fill = imagecolorallocatealpha($canvas, 34, 197, 94, 55); // Hijau cerah
+		$green_line = imagecolorallocatealpha($canvas, 21, 128, 61, 5);
+
+		foreach ($houses as $h) {
+			if (empty($h['polygon_coords']) || !is_array($h['polygon_coords'])) continue;
+
+			$points = [];
+			foreach ($h['polygon_coords'] as $pt) {
+				if (!is_array($pt) || count($pt) < 2) continue;
+				$px = $this->_siteplan_latlng_to_px((float)$pt[0], (float)$pt[1], 2);
+				$points[] = (int)round($px[0]);
+				$points[] = (int)round($px[1]);
+			}
+			if (count($points) < 6) continue;
+
+			$is_ambil = ($h['status_sampah'] === 'ambil');
+			$point_count = (int)(count($points) / 2);
+			if (PHP_VERSION_ID >= 80100) {
+				imagefilledpolygon($canvas, $points, $is_ambil ? $green_fill : $red_fill);
+			} else {
+				imagefilledpolygon($canvas, $points, $point_count, $is_ambil ? $green_fill : $red_fill);
+			}
+			imagesetthickness($canvas, 2);
+			if (PHP_VERSION_ID >= 80100) {
+				imagepolygon($canvas, $points, $is_ambil ? $green_line : $red_line);
+			} else {
+				imagepolygon($canvas, $points, $point_count, $is_ambil ? $green_line : $red_line);
+			}
+		}
+
+		$temp_dir = FCPATH . 'assets/temp_pdf/';
+		if (!is_dir($temp_dir)) {
+			@mkdir($temp_dir, 0777, true);
+		}
+		$out = $temp_dir . 'siteplan_sampah_' . date('YmdHis') . '_' . mt_rand(1000, 9999) . '.png';
+		imagepng($canvas, $out);
+		imagedestroy($canvas);
+
+		return $out;
+	}
+
+	/**
 	 * AJAX Endpoint untuk mengambil data siteplan saat filter diubah
 	 */
 	public function ajax_siteplan_data()

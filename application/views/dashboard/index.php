@@ -451,6 +451,10 @@
     <?php $this->load->view('dashboard/admin_dashboard'); ?>
 <?php endif; ?>
 
+<?php if (isset($_SESSION['username']['role']) && $_SESSION['username']['role'] == 'koordinator_lingkungan') : ?>
+    <?php $this->load->view('dashboard/lingkungan_dashboard'); ?>
+<?php endif; ?>
+
 
 
 

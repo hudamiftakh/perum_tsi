@@ -123,6 +123,15 @@ $route['sinkron-wa'] = 'syncwa/public';
 $route['warga/laporan-pembayaran'] = 'dashboard/laporan_pembayaran';
 // kas
 $route['edit-pengeluaran/(:any)'] = 'kas/form/$1';
+$route['keuangan/buku-kas'] = 'kas/buku_kas';
+$route['keuangan/buku-kas/pdf'] = 'kas/buku_kas_pdf';
+
+// Siteplan Operasional Sampah (Pos Satpam & Lingkungan)
+$route['siteplan-sampah'] = 'dashboard/siteplan_sampah';
+$route['siteplan-sampah/ajax_data'] = 'dashboard/ajax_siteplan_sampah_data';
+$route['siteplan-sampah/toggle'] = 'dashboard/ajax_toggle_sampah';
+$route['siteplan-sampah/pdf'] = 'dashboard/siteplan_sampah_pdf';
+
 $route['404_override'] = '';
 $route['cli/migrate'] = 'migration/index';
 $route['translate_uri_dashes'] = FALSE;

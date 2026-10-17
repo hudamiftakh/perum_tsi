@@ -61,8 +61,19 @@ $role_user = $_SESSION['username']['role'] ?? '';
                     <i class="ti ti-map-pin"></i>
                 </span>
                 <span class="hide-menu d-flex align-items-center justify-content-between flex-grow-1">
-                    <span>Siteplan</span>
-                    <span class="badge-siteplan-new ms-auto">NEW</span>
+                    <span>Siteplan IPL</span>
+                    <span class="badge-siteplan-new ms-auto">MAP</span>
+                </span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a class="sidebar-link <?php echo ($menu == 'siteplan-sampah') ? 'active' : ''; ?>" href="<?php echo base_url('siteplan-sampah') ?>" aria-expanded="false">
+                <span class="rounded-3" style="width: 24px; height: 24px; background: #16a34a; color: #fff; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;">
+                    <i class="ti ti-trash"></i>
+                </span>
+                <span class="hide-menu d-flex align-items-center justify-content-between flex-grow-1 ms-2">
+                    <span>Siteplan Sampah</span>
+                    <span class="badge bg-success ms-auto" style="font-size: 0.65rem;">POS</span>
                 </span>
             </a>
         </li>
@@ -246,12 +257,52 @@ $role_user = $_SESSION['username']['role'] ?? '';
                 <ul aria-expanded="false"
                     class="collapse first-level <?php echo (in_array($menu, array('kas'))) ? 'in' : ''; ?>">
                     <li class="sidebar-item">
+                        <a href="<?php echo base_url('keuangan/buku-kas') ?>"
+                            class="sidebar-link <?php echo ($menu == 'keuangan' || $submenu == 'buku-kas') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Buku Kas (Debit-Kredit)</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
                         <a href="<?php echo base_url('kas/pengeluaran') ?>"
                             class="sidebar-link <?php echo (in_array($submenu, array('pengeluaran', 'contact-group'))) ? 'active' : ''; ?>">
                             <div class="round-16 d-flex align-items-center justify-content-center">
                                 <i class="ti ti-circle"></i>
                             </div>
                             <span class="hide-menu">Pengeluaran</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        <?php elseif ($_SESSION['username']['role'] == 'koordinator_lingkungan') : ?>
+            <li class="sidebar-item">
+                <a class="sidebar-link has-arrow <?php echo (in_array($menu, array('kas', 'keuangan'))) ? 'active' : ''; ?>"
+                    href="javascript:void(0)" aria-expanded="false">
+                    <span class="d-flex">
+                        <i class="ti ti-cash"></i>
+                    </span>
+                    <span class="hide-menu">Keuangan Lingkungan</span>
+                </a>
+                <ul aria-expanded="false"
+                    class="collapse first-level <?php echo (in_array($menu, array('kas', 'keuangan'))) ? 'in' : ''; ?>">
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('keuangan/buku-kas') ?>"
+                            class="sidebar-link <?php echo ($menu == 'keuangan' || $submenu == 'buku-kas') ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Buku Kas (Debit-Kredit)</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="<?php echo base_url('kas/pengeluaran') ?>"
+                            class="sidebar-link <?php echo (in_array($submenu, array('pengeluaran', 'contact-group'))) ? 'active' : ''; ?>">
+                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-circle"></i>
+                            </div>
+                            <span class="hide-menu">Catat Pengeluaran</span>
                         </a>
                     </li>
                 </ul>

@@ -349,6 +349,41 @@ if (!function_exists('ensure_database_schema_exist')) {
         } catch (\Throwable $e) {
         }
 
+        // 6. Pastikan tabel status_sampah_rumah ada (kustomisasi pengambilan sampah per rumah & bulan)
+        if (!$CI->db->table_exists('status_sampah_rumah')) {
+            $CI->db->query("
+                CREATE TABLE IF NOT EXISTS `status_sampah_rumah` (
+                    `id` INT(11) NOT NULL AUTO_INCREMENT,
+                    `id_rumah` INT(11) NOT NULL,
+                    `periode_bulan` VARCHAR(7) NOT NULL,
+                    `status_sampah` ENUM('ambil', 'tahan') NOT NULL DEFAULT 'ambil',
+                    `keterangan` VARCHAR(255) DEFAULT NULL,
+                    `updated_by` VARCHAR(100) DEFAULT NULL,
+                    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`id`),
+                    UNIQUE KEY `idx_rumah_periode` (`id_rumah`, `periode_bulan`),
+                    KEY `idx_periode` (`periode_bulan`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+
+        // 7. Pastikan akun Koordinator Lingkungan tersedia di master_admin
+        if ($CI->db->table_exists('master_admin')) {
+            $checkLingkungan = $CI->db->get_where('master_admin', ['username' => 'lingkungan'])->num_rows();
+            if ($checkLingkungan == 0) {
+                $max_id_row = $CI->db->select_max('id')->get('master_admin')->row();
+                $new_id = ($max_id_row && isset($max_id_row->id)) ? ((int)$max_id_row->id + 1) : 10;
+                @$CI->db->insert('master_admin', [
+                    'id'       => $new_id,
+                    'nama'     => 'Koordinator Lingkungan TSI',
+                    'username' => 'lingkungan',
+                    'password' => md5('lingkungan123'),
+                    'role'     => 'koordinator_lingkungan',
+                    'login_at' => null
+                ]);
+            }
+        }
+
         $schema_checked = true;
     }
 }
